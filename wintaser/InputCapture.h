@@ -1,7 +1,7 @@
 #ifndef INPUT_CAPTURE_H
 #define INPUT_CAPTURE_H
 
-#define DIRECTINPUT_VERSION 0x0500  // for joystick support
+#define DIRECTINPUT_VERSION 0x0800  // for joystick support
 #define DI_KEY_PRESSED_FLAG 0x80 // To test if a DI key was pressed.
 #define DI_KEY_PRESSED(key) (key & DI_KEY_PRESSED_FLAG)
 #define DI_KEY_NUMBER 256 // How many keys are there.
@@ -67,9 +67,9 @@ class InputCapture
 {
 
 private:
-	LPDIRECTINPUT lpDI; // Direct Input controller.
-	LPDIRECTINPUTDEVICE lpDIDKeyboard; // Direct Input keyboard.
-	LPDIRECTINPUTDEVICE lpDIDMouse; // Direct Input mouse.
+	LPDIRECTINPUT8 lpDI; // Direct Input controller.
+	LPDIRECTINPUTDEVICE8 lpDIDKeyboard; // Direct Input keyboard.
+	LPDIRECTINPUTDEVICE8 lpDIDMouse; // Direct Input mouse.
 	static std::map<SingleInput,SingleInput> inputMapping; // mapping from a single input to a single input.
 	static std::map<SingleInput,WORD> eventMapping; // mapping from a single input to an event.
 

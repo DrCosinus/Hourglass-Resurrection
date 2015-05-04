@@ -10,7 +10,7 @@
 	#define _DIRLOCKDEBUG
 #endif
 
-#ifdef _DIRLOCKDEBUG || 0 //1
+#if defined(_DIRLOCKDEBUG) || 0 //1
 	#define dirlockdebug debugprintf
 	#define DirLockPrintLastError PrintLastError
 #else

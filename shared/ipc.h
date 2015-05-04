@@ -9,7 +9,7 @@
 
 struct TasFlags
 {
-	int playback;
+	bool playback;
 	int framerate;
 	int keylimit;
 	int forceSoftware;
@@ -22,7 +22,7 @@ struct TasFlags
 	int aviMode;
 	int emuMode;
 	int forceWindowed;
-	int fastForward;
+	bool fastForward;
 	int forceSurfaceMemory;
 	int audioFrequency;
 	int audioBitsPerSecond;

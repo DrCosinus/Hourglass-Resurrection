@@ -6,10 +6,11 @@
 // TODO: split up this file. at least the AVI recording part can be separated.
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#define _WIN32_WINNT 0x0500
+#define _WIN32_WINNT 0x0501
 // Windows Header Files:
 #include <windows.h>
-#pragma comment(lib,"Version.lib") // Needed for the new Windows version detection
+#include <VersionHelpers.h>
+//#pragma comment(lib,"Version.lib") // Needed for the new Windows version detection
 
 #include <mmsystem.h>
 // C RunTime Header Files
@@ -212,65 +213,74 @@ static const int s_safeSleepPerIter = 10;
 void DetectWindowsVersion(int *major, int *minor)
 {
 	debugprintf("Detecting Windows version...\n");
-	char filename[MAX_PATH+1];
-	UINT value = GetWindowsDirectory(filename, MAX_PATH);
-	if(value != 0)
-	{
-		// Fix for Windows installations in root dirs, GetWindowsDirectory does not include the final slash EXCEPT for when Windows is installed in root.
-		if(filename[value-1] == '\\') filename[value-1] = '\0'; 
+	//char filename[MAX_PATH+1];
+	//UINT value = GetWindowsDirectory(filename, MAX_PATH);
+	//if(value != 0)
+	//{
+	//	// Fix for Windows installations in root dirs, GetWindowsDirectory does not include the final slash EXCEPT for when Windows is installed in root.
+	//	if(filename[value-1] == '\\') filename[value-1] = '\0'; 
 
-		strcat(filename, "\\System32\\kernel32.dll");
-		debugprintf("Using file '%s' for the detection.\n", filename);
+	//	strcat(filename, "\\System32\\kernel32.dll");
+	//	debugprintf("Using file '%s' for the detection.\n", filename);
 
-		UINT size = 0;
+	//	UINT size = 0;
 
-		// Despite being a pointer this must NOT be deleted by us, it will be taken care of properly by the destructors of the other structures when we delete verInfo.
-		VS_FIXEDFILEINFO *buffer = NULL;
-		DWORD infoSize = GetFileVersionInfoSize(filename, NULL);
+	//	// Despite being a pointer this must NOT be deleted by us, it will be taken care of properly by the destructors of the other structures when we delete verInfo.
+	//	VS_FIXEDFILEINFO *buffer = NULL;
+	//	DWORD infoSize = GetFileVersionInfoSize(filename, NULL);
 
-		if(infoSize != 0)
-		{
-			BYTE *verInfo = new BYTE[(unsigned int)infoSize];
+	//	if(infoSize != 0)
+	//	{
+	//		BYTE *verInfo = new BYTE[(unsigned int)infoSize];
 
-			// On some Windows versions the return value of GetFileVersionInfo is not to be trusted.
-			// It may return TRUE even if the function failed, but it always sets the right error code.
-			// So instead of catching the return value of the function, we query GetLastError for the function's return status.
-			GetFileVersionInfo(filename, NULL, infoSize, verInfo);
-			if(GetLastError() == ERROR_SUCCESS)
-			{
-				BOOL parseSuccess = VerQueryValueA(verInfo, "\\", (LPVOID*)&buffer, &size);
-				if (parseSuccess != FALSE && size > 0)
-				{
-					if (buffer->dwSignature == 0xFEEF04BD)
-					{
-						/* 
-						   kernel32.dll versions and their Windows counter parts:
-						   5.2 = XP
-						   6.0 = Vista
-						   6.1 = Win7
-						   6.2 = Win8
-						   6.3 = Win8.1
-						   Now don't these remind a lot of the actual windows versions?
-						*/
-						*major = HIWORD(buffer->dwFileVersionMS);
-						*minor = LOWORD(buffer->dwFileVersionMS);
+	//		// On some Windows versions the return value of GetFileVersionInfo is not to be trusted.
+	//		// It may return TRUE even if the function failed, but it always sets the right error code.
+	//		// So instead of catching the return value of the function, we query GetLastError for the function's return status.
+	//		GetFileVersionInfo(filename, NULL, infoSize, verInfo);
+	//		if(GetLastError() == ERROR_SUCCESS)
+	//		{
+	//			BOOL parseSuccess = VerQueryValueA(verInfo, "\\", (LPVOID*)&buffer, &size);
+	//			if (parseSuccess != FALSE && size > 0)
+	//			{
+	//				if (buffer->dwSignature == 0xFEEF04BD)
+	//				{
+	//					/* 
+	//					   kernel32.dll versions and their Windows counter parts:
+	//					   5.2 = XP
+	//					   6.0 = Vista
+	//					   6.1 = Win7
+	//					   6.2 = Win8
+	//					   6.3 = Win8.1
+	//					   Now don't these remind a lot of the actual windows versions?
+	//					*/
+	//					*major = HIWORD(buffer->dwFileVersionMS);
+	//					*minor = LOWORD(buffer->dwFileVersionMS);
 
-						delete [] verInfo; // We no longer need to hold on to this.
-						
-						debugprintf("Detection succeeded, detected version %d.%d\n", *major, *minor);
-						return;
-					}
-				}
-			}
-			delete [] verInfo; // Destroy this if we failed, we cannot have a memory leak now can we?
-		}
-	}
-	debugprintf("Failed to determinate Windows version, using old unsafe method...\n");
+	//					delete [] verInfo; // We no longer need to hold on to this.
+	//					
+	//					debugprintf("Detection succeeded, detected version %d.%d\n", *major, *minor);
+	//					return;
+	//				}
+	//			}
+	//		}
+	//		delete [] verInfo; // Destroy this if we failed, we cannot have a memory leak now can we?
+	//	}
+	//}
+	//debugprintf("Failed to determinate Windows version, using old unsafe method...\n");
 
-	OSVERSIONINFO osvi = {sizeof(OSVERSIONINFO)};
-	GetVersionEx(&osvi);
-	*major = osvi.dwMajorVersion;
-	*minor = osvi.dwMinorVersion;
+	//OSVERSIONINFO osvi = {sizeof(OSVERSIONINFO)};
+	//GetVersionEx(&osvi);
+	//*major = osvi.dwMajorVersion;
+	//*minor = osvi.dwMinorVersion;
+
+    if (IsWindows8Point1OrGreater()) { *major = 6; *minor = 3; }
+	else if (IsWindows8OrGreater()) { *major = 6; *minor = 2; }
+	else if (IsWindows7OrGreater()) { *major = 6; *minor = 1; }
+	else if (IsWindowsVistaOrGreater()) { *major = 6; *minor = 0; }
+	else if (IsWindowsXPOrGreater()) { *major = 5; *minor = 2; }
+	else { *major = 1; *minor = 0; }
+	debugprintf("Detection succeeded, detected version %d.%d\n", *major, *minor);
+
 	return;
 }
 
@@ -6024,8 +6034,8 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						int dialogPosX = 0;
 						int dialogPosY = 0;
 						
-						static unsigned int dialogSizeX = 0;
-						static unsigned int dialogSizeY = 0;
+						static int dialogSizeX = 0;
+						static int dialogSizeY = 0;
 
 						HotkeyHWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_CONTROLCONF), hWnd, (DLGPROC) &InputCapture::ConfigureInput);
 

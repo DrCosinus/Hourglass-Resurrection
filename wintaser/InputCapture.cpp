@@ -1,9 +1,9 @@
-#define DIRECTINPUT_VERSION 0x0500  // for joystick support
+#define DIRECTINPUT_VERSION 0x0800  // >= 0x500 for joystick support
 #include "InputCapture.h"
 #include "Resource.h"
 #include "CustomDLGs.h"
 #include "logging.h"
-#pragma comment(lib, "../external/lib/dinput.lib")
+#pragma comment(lib, "../external/lib/dinput8.lib")
 #pragma comment(lib, "../external/lib/dxguid.lib")
 
 struct ModifierKey InputCapture::modifierKeys[] = 
@@ -462,7 +462,7 @@ void InputCapture::GetMouseState(DIMOUSESTATE* mouse){
 bool InputCapture::InitInputs(HINSTANCE hInst, HWND hWnd){
 
 	// Init the main DI interface.
-	HRESULT rval = DirectInputCreate(hInst, DIRECTINPUT_VERSION, &lpDI, NULL);
+	HRESULT rval = DirectInput8Create(hInst, DIRECTINPUT_VERSION, IID_IDirectInput8, (VOID**)&lpDI, NULL);
 	if(rval != DI_OK)
 	{
 		MessageBox(hWnd, "DirectInput failed... You must have at least DirectX 5", "Error", MB_OK);
@@ -1015,7 +1015,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 				{
 					int buf[1]; // Necessary, function crashes if you send a pointer to a simple varialbe.
 
-					SingleInput si;
+					//SingleInput si;
 
 					// Check if the selection happened in HotKeys
 					if(SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_GETSELITEMS, 1, (LPARAM)buf))

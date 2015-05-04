@@ -66,10 +66,10 @@ HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(
 	 */
 	fullySupportedGamepad.bLeftTrigger = 0xFF;
 	fullySupportedGamepad.bRightTrigger = 0xFF;
-	fullySupportedGamepad.sThumbLX = 0xFFFF;
-	fullySupportedGamepad.sThumbLY = 0xFFFF;
-	fullySupportedGamepad.sThumbRX = 0xFFFF;
-	fullySupportedGamepad.sThumbRY = 0xFFFF;
+	fullySupportedGamepad.sThumbLX = -1;
+	fullySupportedGamepad.sThumbLY = -1;
+	fullySupportedGamepad.sThumbRX = -1;
+	fullySupportedGamepad.sThumbRY = -1;
 	pCapabilities->Gamepad = fullySupportedGamepad;
 
 	XINPUT_VIBRATION noVibration;
