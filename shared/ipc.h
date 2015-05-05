@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef IPC_H_INCL
-#define IPC_H_INCL
+#pragma once
 
 #include "logcat.h"
 #include <mmsystem.h>
@@ -33,7 +32,7 @@ struct TasFlags
 	int debugPrintMode;
 	int timescale, timescaleDivisor;
 	int frameAdvanceHeld;
-	int allowLoadInstalledDlls, allowLoadUxtheme;
+	bool allowLoadInstalledDlls, allowLoadUxtheme;
 	int storeVideoMemoryInSavestates;
 	int appLocale;
 	unsigned int movieVersion;
@@ -48,16 +47,9 @@ struct TasFlags
 extern TasFlags tasflags;
 #endif
 
-struct DllLoadInfo
-{
-	bool loaded; // true=load, false=unload
-	char dllname [64];
-};
-struct DllLoadInfos
-{
-	int numInfos; // (must be the first thing in this struct, due to an assumption in AddAndSendDllInfo)
-	DllLoadInfo infos [128];
-};
+
+
+
 
 
 struct InfoForDebugger // GeneralInfoFromDll
@@ -118,4 +110,3 @@ struct TrustedRangeInfos
 #define SUCCESSFUL_EXITCODE 4242
 #endif
 
-#endif // IPC_H_INCL

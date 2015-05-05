@@ -156,7 +156,6 @@ extern int g_midFrameAsyncKeyRequests;
 
 
 void ModuleDllMainInit();
-void UpdateLoadedOrUnloadedDllHooks();
 void ClearDllLoadInfos();
 void ApplyModuleIntercepts();
 
@@ -278,7 +277,7 @@ static InfoForDebugger infoForDebugger = {};
 
 static TrustedRangeInfos trustedRangeInfos = {};
 
-extern DllLoadInfos dllLoadInfos;
+#include "../shared/DllLoadInfos.h"
 
 TasFlags tasflags = {};
 
@@ -1676,7 +1675,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		cmdprintf("INPUTSBUF: %Iu", &curinput);
 
 		// tell it where to write dll load/unload info
-		cmdprintf("DLLLOADINFOBUF: %Iu", &dllLoadInfos); // must happen before we call Apply*Intercepts functions
+		cmdprintf("DLLLOADINFOBUF: %Iu", &Score::theDllLoadInfos); // must happen before we call Apply*Intercepts functions
 
 		// tell it where to write trusted address range info
 		cmdprintf("TRUSTEDRANGEINFOBUF: %Iu", &trustedRangeInfos);
@@ -1734,7 +1733,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		ApplyXinputIntercepts();
 
 		cmdprintf("GIMMEDLLLOADINFOS: 0");
-		UpdateLoadedOrUnloadedDllHooks();
+		Score::theDllLoadInfos.UpdateHooks();
 
 		notramps = false;
 

@@ -116,26 +116,9 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
 //	return rv;
 //}
 
-DllLoadInfos dllLoadInfos = {};
+#include "../../shared/DllLoadInfos.h"
 
 static CRITICAL_SECTION s_dllLoadAndRetryInterceptCS;
-
-// consumes data sent by AddAndSendDllInfo
-void UpdateLoadedOrUnloadedDllHooks()
-{
-	AutoCritSect cs(&s_dllLoadAndRetryInterceptCS);
-
-	//for(int i = 0; i < dllLoadInfos.numInfos; i++)
-	//	debugprintf("dllLoadInfos[%d].dllname = %s\n", i, dllLoadInfos.infos[i].dllname);
-	while(dllLoadInfos.numInfos > 0)
-	{
-		DllLoadInfo info = dllLoadInfos.infos[--dllLoadInfos.numInfos];
-		if(info.loaded)
-			RetryInterceptAPIs(info.dllname);
-		//else
-		//	UnInterceptUnloadingAPIs(info.dllname);
-	}
-}
 
 
 
@@ -284,7 +267,8 @@ HOOKFUNC NTSTATUS NTAPI MyLdrLoadDll(PWCHAR PathToFile, ULONG Flags, PUNICODE_ST
 	NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
 	//if(rv < 0)
 	//	debuglog(LCF_MODULE|LCF_ERROR, "FAILED to load DLL: %S (0x%X)\n", ModuleFileName->Buffer, rv);
-	UpdateLoadedOrUnloadedDllHooks();
+    Score::theDllLoadInfos.UpdateHooks();
+
 	if(pCurtls)
 		pCurtls->callerisuntrusted--;
 	return rv;
@@ -498,8 +482,6 @@ const char* riidToName(REFIID riid)
 	return NULL;
 }
 
-void UpdateLoadedOrUnloadedDllHooks();
-
 // in case either MyCoCreateInstance doesn't call MyCoCreateInstanceEx or MyCoCreateInstance is called and MyCoCreateInstanceEx failed to get hooked
 HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv)
 {
@@ -526,7 +508,7 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstance(REFCLSID rclsid, LPUNKNOWN pU
 	}
 	if(newName)
 		curtls.curThreadCreateName = oldName;
-	UpdateLoadedOrUnloadedDllHooks();
+    Score::theDllLoadInfos.UpdateHooks();
 	curtls.callerisuntrusted--;
 	return rv;
 }
@@ -556,7 +538,7 @@ static void PostCoGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID FAR* ppv, 
 		HookCOMInterface(riid, ppv);
 	//if(newName)
 		curtls.curThreadCreateName = oldName;
-	UpdateLoadedOrUnloadedDllHooks();
+        Score::theDllLoadInfos.UpdateHooks();
 }
 
 HOOKFUNC HRESULT STDAPICALLTYPE MyCoGetClassObject(REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID FAR* ppv)

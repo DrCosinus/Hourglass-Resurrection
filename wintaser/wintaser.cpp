@@ -154,6 +154,7 @@ TasFlags localTASflags =
 #define ASSERT(x) do{if(!(x))_asm{int 3}}while(0)
 #endif
 
+#include "../shared/DllLoadInfos.h"
 
 static const int s_safeMaxIter = 300;
 static const int s_safeSleepPerIter = 10;
@@ -821,15 +822,10 @@ void ReceiveTASFlagsPointer(__int64 pointerAsInt)
 }
 
 
-static void* remoteDllLoadInfos = 0;
-
-DllLoadInfos dllLoadInfos = {};
-bool dllLoadInfosSent = false;
-
 void ReceiveDllLoadInfosPointer(__int64 pointerAsInt)
 {
-	remoteDllLoadInfos = (void*)pointerAsInt;
-	dllLoadInfos.numInfos = 0;
+    Score::theDllLoadInfos.SetRemoteDllLoadInfos(reinterpret_cast<Score::DllLoadInfos*>(pointerAsInt));
+    Score::theDllLoadInfos.Clear();
 }
 
 
@@ -2147,36 +2143,7 @@ void CheckHotkeys(int frameCount, bool frameSynced)
 
 
 
-// sends to UpdateLoadedOrUnloadedDllHooks
-void AddAndSendDllInfo(const char* filename, bool loaded, HANDLE hProcess)
-{
-	if(!loaded)
-		return; // because UnInterceptUnloadingAPIs is disabled now
 
-	if(dllLoadInfos.numInfos < (int)ARRAYSIZE(dllLoadInfos.infos) + (filename ? 0 : 1))
-	{
-		SIZE_T bytesRead = 0;
-		if(dllLoadInfosSent)
-			ReadProcessMemory(hProcess, remoteDllLoadInfos, &dllLoadInfos.numInfos, sizeof(dllLoadInfos.numInfos), &bytesRead);
-
-		if(filename)
-		{
-			const char* slash = max(strrchr(filename, '\\'), strrchr(filename, '/'));
-			const char* dllname = slash ? slash+1 : filename;
-			// insert at start, since dll consumes from end
-			memmove(&dllLoadInfos.infos[1], dllLoadInfos.infos, dllLoadInfos.numInfos*sizeof(*dllLoadInfos.infos));
-			DllLoadInfo& info = dllLoadInfos.infos[0];
-			strncpy(info.dllname, dllname, sizeof(info.dllname));
-			info.dllname[sizeof(info.dllname)-1] = 0;
-			info.loaded = loaded;
-			dllLoadInfos.numInfos++;
-		}
-
-		SIZE_T bytesWritten = 0;
-		if(WriteProcessMemory(hProcess, remoteDllLoadInfos, &dllLoadInfos, sizeof(dllLoadInfos), &bytesWritten))
-			dllLoadInfosSent = true;
-	}
-}
 
 
 
@@ -3610,8 +3577,8 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 	gotSrcDllVersion = false;
 
 	//g_gammaRampEnabled = false;
-	dllLoadInfos.numInfos = 0;
-	dllLoadInfosSent = false;
+    Score::theDllLoadInfos.Clear();
+    Score::theDllLoadInfos.SetDllLoadInfosSent(false);
 
 	EnterCriticalSection(&g_processMemCS);
 	runningNow = true;
@@ -3854,10 +3821,14 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						}
 						else if(MessagePrefixMatch("HERESMYCARD"))
 							ReceiveCommandSlotPointer(_atoi64(pstr));
-						else if(MessagePrefixMatch("DLLLOADINFOBUF")) //GETDLLLIST
-							ReceiveDllLoadInfosPointer(_atoi64(pstr));
-						else if(MessagePrefixMatch("GIMMEDLLLOADINFOS"))
-							AddAndSendDllInfo(NULL, true, hProcess);
+                        else if (MessagePrefixMatch("DLLLOADINFOBUF")) //GETDLLLIST
+                        {
+                            ReceiveDllLoadInfosPointer(_atoi64(pstr));
+                        }
+                        else if (MessagePrefixMatch("GIMMEDLLLOADINFOS"))
+                        {
+                            Score::theDllLoadInfos.AddAndSend(nullptr, true, hProcess);
+                        }
 						else if(MessagePrefixMatch("TRUSTEDRANGEINFOBUF"))
 							ReceiveTrustedRangeInfosPointer(_atoi64(pstr), hProcess);
 						else if(MessagePrefixMatch("INPUTSBUF"))
@@ -4310,7 +4281,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						debugprintf("LOADED DLL: %s\n", filename);
 						HANDLE hProcess = GetProcessHandle(processInfo,de);
 						RegisterModuleInfo(de.u.LoadDll.lpBaseOfDll, hProcess, filename);
-						AddAndSendDllInfo(filename, true, hProcess);
+						Score::theDllLoadInfos.AddAndSend(filename, true, hProcess);
 
 #if 0 // DLL LOAD CALLSTACK PRINTING
 
@@ -4349,7 +4320,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					debugprintf("UNLOADED DLL: %s\n", filename);
 					HANDLE hProcess = GetProcessHandle(processInfo,de);
 					UnregisterModuleInfo(de.u.UnloadDll.lpBaseOfDll, hProcess, filename);
-					AddAndSendDllInfo(filename, false, hProcess);
+					Score::theDllLoadInfos.AddAndSend(filename, false, hProcess);
 					//dllBaseToHandle[de.u.LoadDll.lpBaseOfDll] = NULL;
 					dllBaseToFilename[de.u.UnloadDll.lpBaseOfDll] = "";
 					//debugprintf("CLOSE HANDLE( THREAD:?): fhandle=0x%X\n", hFile);

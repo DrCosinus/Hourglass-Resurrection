@@ -258,6 +258,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Score\DllLoadInfos.cpp" />
     <ClCompile Include="wintaser.cpp" />
     <ClCompile Include="trace\extendedtrace.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
@@ -273,6 +274,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\shared\DllLoadInfos.h" />
     <ClInclude Include="..\shared\input.h" />
     <ClInclude Include="AVIDumper.h" />
     <ClInclude Include="Config.h" />

@@ -18,6 +18,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
     </Filter>
+    <Filter Include="Score">
+      <UniqueIdentifier>{7cbf2124-e503-4d22-81a5-48fc3c1c40aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AVIDumper.cpp">
@@ -76,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="md5.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Score\DllLoadInfos.cpp">
+      <Filter>Score</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +162,9 @@
     </ClInclude>
     <ClInclude Include="MD5Checksum.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\DllLoadInfos.h">
+      <Filter>Source Files\shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

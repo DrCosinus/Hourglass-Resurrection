@@ -11,6 +11,9 @@
     <Filter Include="Source Files\hooks_and_tramps">
       <UniqueIdentifier>{8f45bc76-8410-4dcf-9011-dcc4bf233648}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Score">
+      <UniqueIdentifier>{b70bdae4-e799-4df1-ace0-be95949ae6de}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dettime.cpp">
@@ -90,6 +93,9 @@
     </ClCompile>
     <ClCompile Include="hooks\Xinputhooks.cpp">
       <Filter>Source Files\hooks_and_tramps</Filter>
+    </ClCompile>
+    <ClCompile Include="Score\DllLoadInfos.cpp">
+      <Filter>Score</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -190,6 +196,9 @@
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\input.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\DllLoadInfos.h">
       <Filter>Source Files\shared</Filter>
     </ClInclude>
   </ItemGroup>
