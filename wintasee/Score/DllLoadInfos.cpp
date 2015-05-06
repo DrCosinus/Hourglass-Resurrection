@@ -3,6 +3,9 @@
 // only for DLL
 #include "winutil.h" // for AutoCritSect
 #include "../wintasee/intercept.h" // for RetryInterceptAPIs
+//#include <vector>
+
+#include <sstream>
 
 namespace Score
 {
@@ -22,25 +25,29 @@ namespace Score
         {
             AutoCritSect cs(&s_dllLoadAndRetryInterceptCS);
 
-            //int i = 0;
-            //for (auto info : myInfos)
-            //{
-            //    debugprintf("theDllLoadInfos.dllname #%d = %s\n", i++, info.myName.c_str());
-            //}
-
-            while (!myInfos.empty())
+            auto cbuffer = myBuffer;
+            do
             {
-                const DllLoadInfo& info = myInfos.back(); //dllLoadInfos.infos[--dllLoadInfos.numInfos];
-                if (info.myIsLoaded)
+                auto c = *cbuffer++;
+                if (c != ';')
                 {
-                    RetryInterceptAPIs(info.myName.c_str());
+                    std::ostringstream oss;
+                    do
+                    {
+                        oss << c;
+                        c = *cbuffer++;
+                    } while (c != '+');
+                    auto strDll = oss.str();
+                    RetryInterceptAPIs(strDll.c_str());
                 }
-                //else
-                //{
-                //    UnInterceptUnloadingAPIs(info.dllname);
-                //}
-                myInfos.pop_back();
-            }
+                else
+                {
+                    break;
+                }
+            } while (true);
+
+            myInfoCount = 0;
+
         }
     }
 }

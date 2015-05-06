@@ -2,6 +2,8 @@
 
 #include "../logging.h"
 
+#include <sstream>
+
 namespace Score
 {
     DllLoadInfos theDllLoadInfos;
@@ -16,16 +18,16 @@ namespace Score
         // sends to UpdateHooks
         auto DllLoadInfos::AddAndSend(const char* filename, bool loaded, HANDLE hProcess) -> void
         {
-            debugprintf("--  DllLoadInfos::AddAndSend( \"%s\", %s, 0x%x );\n", filename, loaded ? "true" : "false", reinterpret_cast<unsigned int>(hProcess));
+            //debugprintf("--  DllLoadInfos::AddAndSend( \"%s\", %s, 0x%x );\n", filename, loaded ? "true" : "false", reinterpret_cast<unsigned int>(hProcess));
             if (loaded)
             {
                 SIZE_T bytesRead = 0;
                 if (myDllLoadInfosSent && myRemoteDllLoadInfos)
                 {
                     int numInfos;
-                    ReadProcessMemory(hProcess, myRemoteDllLoadInfos, &numInfos, sizeof(numInfos), &bytesRead);
-                    //myInfos.resize(numInfos);
-                    debugprintf("#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N# %d => %d\n", myInfos.size(), numInfos);
+                    ReadProcessMemory(hProcess, myRemoteDllLoadInfos + offsetof(Dll::DllLoadInfos, myInfoCount), &numInfos, sizeof(numInfos), &bytesRead);
+                    debugprintf("--  change info count from %d to %d\n", myInfos.size(), numInfos);
+                    myInfos.resize(numInfos);
                 }
 
                 if (filename)
@@ -38,8 +40,28 @@ namespace Score
 
                 if (myRemoteDllLoadInfos)
                 {
+                    // preparing buffer
+                    std::ostringstream oss;
+                    int count = 0;
+                    for (auto info : myInfos)
+                    {
+                        if (info.myIsLoaded)
+                        {
+                            oss << info.myName << '+';
+                        }
+                        count++;
+                    }
+                    oss << ';';
+
+                    auto str = oss.str();
+                    auto buff = str.c_str();
+                    auto len = std::streamoff(oss.tellp());
+
+                    debugprintf("##  \"%s\" (%d)\n", buff, count);
+
                     SIZE_T bytesWritten = 0;
-                    if (WriteProcessMemory(hProcess, myRemoteDllLoadInfos, &theDllLoadInfos, sizeof(theDllLoadInfos), &bytesWritten))
+                    WriteProcessMemory(hProcess, myRemoteDllLoadInfos + offsetof(Dll::DllLoadInfos, myInfoCount), &count, sizeof(int), &bytesWritten);
+                    if (WriteProcessMemory(hProcess, myRemoteDllLoadInfos + offsetof(Dll::DllLoadInfos, myBuffer), buff, SIZE_T(len), &bytesWritten))
                     {
                         SetDllLoadInfosSent(true);
                     }
