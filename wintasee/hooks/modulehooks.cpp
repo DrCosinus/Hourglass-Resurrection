@@ -118,9 +118,6 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
 
 #include "../../shared/DllLoadInfos.h"
 
-static CRITICAL_SECTION s_dllLoadAndRetryInterceptCS;
-
-
 
 // MyLdrUnloadDll disabled because
 // there's no need to call UpdateLoadedOrUnloadedDllHooks immediately when an unload happens 
@@ -839,7 +836,7 @@ HOOKFUNC PVOID WINAPI MyFlsGetValue(DWORD dwFlsIndex) IMPOSSIBLE_IMPL
 
 void ModuleDllMainInit()
 {
-	InitializeCriticalSection(&s_dllLoadAndRetryInterceptCS);
+    Score::theDllLoadInfos.InitializeCriticalSection();
 }
 
 void ApplyModuleIntercepts()

@@ -12,6 +12,11 @@ namespace Score
     {
         static CRITICAL_SECTION s_dllLoadAndRetryInterceptCS;
 
+        auto DllLoadInfos::InitializeCriticalSection() -> void
+        {
+            ::InitializeCriticalSection(&s_dllLoadAndRetryInterceptCS);
+        }
+
         // consumes data sent by AddAndSend
         auto DllLoadInfos::UpdateHooks() -> void
         {

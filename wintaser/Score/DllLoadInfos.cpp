@@ -22,10 +22,10 @@ namespace Score
                 SIZE_T bytesRead = 0;
                 if (myDllLoadInfosSent && myRemoteDllLoadInfos)
                 {
-                    //int numInfos;
-                    //ReadProcessMemory(hProcess, myRemoteDllLoadInfos, &numInfos, sizeof(numInfos), &bytesRead);
+                    int numInfos;
+                    ReadProcessMemory(hProcess, myRemoteDllLoadInfos, &numInfos, sizeof(numInfos), &bytesRead);
                     //myInfos.resize(numInfos);
-                    debugprintf("#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#\n");
+                    debugprintf("#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N#N# %d => %d\n", myInfos.size(), numInfos);
                 }
 
                 if (filename)
