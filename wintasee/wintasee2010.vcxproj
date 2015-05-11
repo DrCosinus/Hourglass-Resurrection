@@ -260,6 +260,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\shared\DllLoadInfos_SHARED.cpp" />
     <ClCompile Include="dettime.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
@@ -277,7 +278,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Score\DllLoadInfos.cpp" />
+    <ClCompile Include="Score\DllLoadInfos_DLL.cpp" />
     <ClCompile Include="soundmixing.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Full</Optimization>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">AnySuitable</InlineFunctionExpansion>

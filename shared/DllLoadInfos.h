@@ -1,11 +1,9 @@
 #pragma once
 
 #include <Windows.h> // for HANDLE
-#include <string>
-#include <deque>
 
 #include <functional>
-#include "../wintasee/print.h"
+#include <assert.h>
 
 namespace Score
 {
@@ -15,124 +13,101 @@ namespace Score
     enum { IsDll = 0 };
 #endif
 
-    namespace Shared
+    namespace SharedMemory
     {
-        class Memory
+        template<typename T>
+        class Object
         {
-        public:
-            Memory()
+        protected:
+            // For now, I assume that CreateFileMapping and MapViewOfFile will not fail.
+            Object(const char* aFileMappingName)
+                : myHandle(CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(T), aFileMappingName))
+                , myDataPtr(reinterpret_cast<T*>(MapViewOfFile(myHandle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(T))))
+                , myData(*myDataPtr)
             {
-                Init();
             }
-            ~Memory()
+            ~Object() // /!\ for now the destructor does not need to be virtual but we must forget to make it virtual if we add a virtual method
             {
-                UnmapViewOfFile(myDefinitionPtr);
-                if (myHandle != INVALID_HANDLE_VALUE)
-                {
-                    CloseHandle(myHandle);
-                    myHandle = INVALID_HANDLE_VALUE;
-                }
+                UnmapViewOfFile(myDataPtr);
+                myDataPtr = nullptr;
+
+                CloseHandle(myHandle);
+                myHandle = INVALID_HANDLE_VALUE;
             }
 
-            auto SetInfoCount(int anInfoCount) -> void
-            {
-                myDefinitionPtr->myInfoCount = anInfoCount;
-            }
-            auto GetInfoCount() -> int
-            {
-                return myDefinitionPtr->myInfoCount;
-            }
-            auto GetMagicNumber() -> int
-            {
-                return myDefinitionPtr->myMagicNumber;
-            }
-            auto GetBuffer() -> char*
-            {
-                return myDefinitionPtr->myBuffer;
-            }
-            auto GetBufferSize() -> size_t
-            {
-                return ARRAYSIZE(myDefinitionPtr->myBuffer);
-            }
-
-        private:
-            struct definition
-            {
-                int     myInfoCount;
-                int     myMagicNumber;
-                char    myBuffer[4096];
-            };
-
-            auto Init() -> void
-            {
-                myHandle = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(definition), "ShareMem");
-
-                if (myHandle != INVALID_HANDLE_VALUE)
-                {
-                    myDefinitionPtr = reinterpret_cast<definition*>(MapViewOfFile(myHandle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(definition)));
-                    //debugprintf("##  SharedMemory initilized successfully. %s %s\n", GetLastError() == ERROR_ALREADY_EXISTS ? "(Already exist)" : "", IsDll ? "[DLL]" : "[EXE]");
-                }
-                else
-                {
-                    //debugprintf("##  Failed to initilize SharedMemory. ErrorCode %d\n", GetLastError());
-                }
-                if (IsDll && myDefinitionPtr)
-                {
-                    myDefinitionPtr->myMagicNumber = 0x07142128;
-                }
-            }
-
+            // WARNING: the order of the variable is very important
             HANDLE myHandle = INVALID_HANDLE_VALUE;
-            definition* myDefinitionPtr;
+
+            T* myDataPtr;
+            T& myData;
         };
     }
 
-    extern Shared::Memory SharedMemory;
+    struct DllInfo
+    {
+        //bool        myIsLoaded; // true=load, false=unload
+        char        myDllName[64];
+    };
+
+    struct DllInfos
+    {
+        size_t      myInfoCount = 0;
+        DllInfo     myDllInfos[128];
+    };
+
+    class LoadedDllList : SharedMemory::Object<DllInfos>
+    {
+        typedef SharedMemory::Object<DllInfos> Super;
+        static const char* ourFileMappingName;
+    protected:
+        LoadedDllList() : Super(ourFileMappingName)
+        {
+        }
+
+        auto GetInfoCount() -> int
+        {
+            return myData.myInfoCount;
+        }
+
+        auto PushFirst(const char* aDllName) -> void
+        {
+            assert(myData.myInfoCount < ARRAYSIZE(myData->myDllInfos));
+            memmove(&myData.myDllInfos[1], &myData.myDllInfos[0], sizeof(*myData.myDllInfos)*myData.myInfoCount);
+
+            strncpy(myData.myDllInfos[0].myDllName, aDllName, ARRAYSIZE(myData.myDllInfos[0].myDllName));
+            ++myData.myInfoCount;
+        }
+
+        auto PopLast() -> DllInfo&
+        {
+            assert(myData.myInfoCount);
+            return myData.myDllInfos[--myData.myInfoCount];
+        }
+
+        auto Last() -> DllInfo&
+        {
+            assert(myData.myInfoCount);
+            return myData.myDllInfos[myData.myInfoCount - 1];
+        }
+    };
 
     // EXE only
     namespace Exe
     {
-        class DllLoadInfos final
+        class DllLoadInfos final : public LoadedDllList
         {
         public:
-            auto    AddAndSend(const char* filename, bool loaded, HANDLE hProcess)    -> void;
-            auto    SetRemoteDllLoadInfos(DllLoadInfos* aRemoteDllLoadInfos)                     -> void;
-            auto    SetDllLoadInfosSent(bool aDllLoadInfosSent)                                -> void;
-
-            inline auto Clear() -> void
-            {
-                myInfos.clear();
-            }
-        private:
-            class DllLoadInfo
-            {
-            public:
-                DllLoadInfo() = default;
-                DllLoadInfo(const char* aName, bool isLoaded)
-                    : myName(aName)
-                    , myIsLoaded(isLoaded)
-                {
-                }
-                bool            myIsLoaded = false;
-                std::string     myName = "";
-            };
-            std::deque<DllLoadInfo> myInfos;
+            auto    AddAndSend(const char* filename, bool loaded)    -> void;
         };
     }
 
     // DLL only
     namespace Dll
     {
-        class DllLoadInfos final
+        class DllLoadInfos final : public LoadedDllList
         {
         public:
-            auto    InitializeCriticalSection() -> void;
             auto    UpdateHooks() -> void;
-        private:
-            //friend Exe::DllLoadInfos;
-
-            //int     myInfoCount = 0;
-            //char    myBuffer[4096];
         };
     }
 

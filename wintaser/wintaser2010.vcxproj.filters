@@ -80,7 +80,10 @@
     <ClCompile Include="md5.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Score\DllLoadInfos.cpp">
+    <ClCompile Include="..\shared\DllLoadInfos.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="Score\DllLoadInfos_EXE.cpp">
       <Filter>Score</Filter>
     </ClCompile>
   </ItemGroup>

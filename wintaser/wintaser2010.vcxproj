@@ -237,6 +237,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\shared\DllLoadInfos_SHARED.cpp" />
     <ClCompile Include="AVIDumper.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="CPUinfo.cpp" />
@@ -258,7 +259,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Score\DllLoadInfos.cpp" />
+    <ClCompile Include="Score\DllLoadInfos_EXE.cpp" />
     <ClCompile Include="wintaser.cpp" />
     <ClCompile Include="trace\extendedtrace.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugUnity|Win32'">true</ExcludedFromBuild>

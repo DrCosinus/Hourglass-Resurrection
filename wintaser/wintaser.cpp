@@ -821,14 +821,6 @@ void ReceiveTASFlagsPointer(__int64 pointerAsInt)
 	SendTASFlags();
 }
 
-
-void ReceiveDllLoadInfosPointer(__int64 pointerAsInt)
-{
-    Score::theDllLoadInfos.SetRemoteDllLoadInfos(reinterpret_cast<Score::DllLoadInfos*>(pointerAsInt));
-    Score::theDllLoadInfos.Clear();
-}
-
-
 static void* remoteTrustedRangeInfos = 0;
 
 void ReceiveTrustedRangeInfosPointer(__int64 pointerAsInt, HANDLE hProcess)
@@ -3577,8 +3569,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 	gotSrcDllVersion = false;
 
 	//g_gammaRampEnabled = false;
-    Score::theDllLoadInfos.Clear();
-    Score::theDllLoadInfos.SetDllLoadInfosSent(false);
+    //Score::theDllLoadInfos.Clear();
 
 	EnterCriticalSection(&g_processMemCS);
 	runningNow = true;
@@ -3821,14 +3812,6 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						}
 						else if(MessagePrefixMatch("HERESMYCARD"))
 							ReceiveCommandSlotPointer(_atoi64(pstr));
-                        else if (MessagePrefixMatch("DLLLOADINFOBUF")) //GETDLLLIST
-                        {
-                            ReceiveDllLoadInfosPointer(_atoi64(pstr));
-                        }
-                        else if (MessagePrefixMatch("GIMMEDLLLOADINFOS"))
-                        {
-                            Score::theDllLoadInfos.AddAndSend(nullptr, true, hProcess);
-                        }
 						else if(MessagePrefixMatch("TRUSTEDRANGEINFOBUF"))
 							ReceiveTrustedRangeInfosPointer(_atoi64(pstr), hProcess);
 						else if(MessagePrefixMatch("INPUTSBUF"))
@@ -4281,7 +4264,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 						debugprintf("LOADED DLL: %s\n", filename);
 						HANDLE hProcess = GetProcessHandle(processInfo,de);
 						RegisterModuleInfo(de.u.LoadDll.lpBaseOfDll, hProcess, filename);
-						Score::theDllLoadInfos.AddAndSend(filename, true, hProcess);
+						Score::theDllLoadInfos.AddAndSend(filename, true);
 
 #if 0 // DLL LOAD CALLSTACK PRINTING
 
@@ -4320,7 +4303,7 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
 					debugprintf("UNLOADED DLL: %s\n", filename);
 					HANDLE hProcess = GetProcessHandle(processInfo,de);
 					UnregisterModuleInfo(de.u.UnloadDll.lpBaseOfDll, hProcess, filename);
-					Score::theDllLoadInfos.AddAndSend(filename, false, hProcess);
+					Score::theDllLoadInfos.AddAndSend(filename, false);
 					//dllBaseToHandle[de.u.LoadDll.lpBaseOfDll] = NULL;
 					dllBaseToFilename[de.u.UnloadDll.lpBaseOfDll] = "";
 					//debugprintf("CLOSE HANDLE( THREAD:?): fhandle=0x%X\n", hFile);

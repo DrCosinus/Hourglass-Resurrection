@@ -155,7 +155,6 @@ void ApplyTimeIntercepts();
 extern int g_midFrameAsyncKeyRequests;
 
 
-void ModuleDllMainInit();
 void ClearDllLoadInfos();
 void ApplyModuleIntercepts();
 
@@ -1663,7 +1662,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		TimerDllMainInit();
 		MessageDllMainInit();
 		SoundDllMainInit();
-		ModuleDllMainInit();
 
 		cmdprintf("SRCDLLVERSION: %d", VERSION); // must send before the DLLVERSION
 		cmdprintf("DLLVERSION: %d.%d, %s", 0, __LINE__, __DATE__);
@@ -1673,9 +1671,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 		// tell it where to read/write full inputs status
 		cmdprintf("INPUTSBUF: %Iu", &curinput);
-
-		// tell it where to write dll load/unload info
-		cmdprintf("DLLLOADINFOBUF: %Iu", &Score::theDllLoadInfos); // must happen before we call Apply*Intercepts functions
 
 		// tell it where to write trusted address range info
 		cmdprintf("TRUSTEDRANGEINFOBUF: %Iu", &trustedRangeInfos);
@@ -1731,9 +1726,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		ApplyFileIntercepts();
 		ApplyRegistryIntercepts();
 		ApplyXinputIntercepts();
-
-		cmdprintf("GIMMEDLLLOADINFOS: 0");
-		Score::theDllLoadInfos.UpdateHooks();
 
 		notramps = false;
 

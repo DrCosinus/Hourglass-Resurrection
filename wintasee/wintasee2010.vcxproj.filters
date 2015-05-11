@@ -94,8 +94,11 @@
     <ClCompile Include="hooks\Xinputhooks.cpp">
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClCompile>
-    <ClCompile Include="Score\DllLoadInfos.cpp">
+    <ClCompile Include="Score\DllLoadInfos_DLL.cpp">
       <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\DllLoadInfos_SHARED.cpp">
+      <Filter>Source Files\shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

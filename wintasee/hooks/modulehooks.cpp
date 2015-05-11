@@ -834,11 +834,6 @@ HOOKFUNC LPVOID WINAPI MyTlsGetValue(DWORD dwTlsIndex) IMPOSSIBLE_IMPL
 HOOKFUNC PVOID WINAPI MyFlsGetValue(DWORD dwFlsIndex) IMPOSSIBLE_IMPL
 
 
-void ModuleDllMainInit()
-{
-    Score::theDllLoadInfos.InitializeCriticalSection();
-}
-
 void ApplyModuleIntercepts()
 {
 	static const InterceptDescriptor intercepts [] = 
