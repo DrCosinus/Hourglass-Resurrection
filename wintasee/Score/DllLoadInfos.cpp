@@ -11,6 +11,8 @@ namespace Score
 {
     DllLoadInfos theDllLoadInfos;
 
+    Shared::Memory SharedMemory;
+
     namespace Dll
     {
         static CRITICAL_SECTION s_dllLoadAndRetryInterceptCS;
@@ -25,7 +27,7 @@ namespace Score
         {
             AutoCritSect cs(&s_dllLoadAndRetryInterceptCS);
 
-            auto cbuffer = myBuffer;
+            auto cbuffer = SharedMemory.GetBuffer();
             do
             {
                 auto c = *cbuffer++;
@@ -46,7 +48,7 @@ namespace Score
                 }
             } while (true);
 
-            myInfoCount = 0;
+            SharedMemory.SetInfoCount(0);
 
         }
     }

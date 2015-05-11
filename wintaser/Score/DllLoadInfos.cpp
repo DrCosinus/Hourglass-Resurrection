@@ -8,24 +8,22 @@ namespace Score
 {
     DllLoadInfos theDllLoadInfos;
 
+    Shared::Memory SharedMemory;
+
     namespace Exe
     {
         namespace
         {
-            DllLoadInfos*   myRemoteDllLoadInfos = nullptr;
             bool            myDllLoadInfosSent = false;
         }
         // sends to UpdateHooks
         auto DllLoadInfos::AddAndSend(const char* filename, bool loaded, HANDLE hProcess) -> void
         {
-            //debugprintf("--  DllLoadInfos::AddAndSend( \"%s\", %s, 0x%x );\n", filename, loaded ? "true" : "false", reinterpret_cast<unsigned int>(hProcess));
             if (loaded)
             {
-                SIZE_T bytesRead = 0;
-                if (myDllLoadInfosSent && myRemoteDllLoadInfos)
+                if (myDllLoadInfosSent)
                 {
-                    int numInfos;
-                    ReadProcessMemory(hProcess, myRemoteDllLoadInfos + offsetof(Dll::DllLoadInfos, myInfoCount), &numInfos, sizeof(numInfos), &bytesRead);
+                    int numInfos = SharedMemory.GetInfoCount();
                     debugprintf("--  change info count from %d to %d\n", myInfos.size(), numInfos);
                     myInfos.resize(numInfos);
                 }
@@ -38,7 +36,7 @@ namespace Score
                     myInfos.emplace_front(dllname, loaded);
                 }
 
-                if (myRemoteDllLoadInfos)
+                //if (myRemoteDllLoadInfos)
                 {
                     // preparing buffer
                     std::ostringstream oss;
@@ -59,17 +57,19 @@ namespace Score
 
                     debugprintf("##  \"%s\" (%d)\n", buff, count);
 
-                    SIZE_T bytesWritten = 0;
-                    WriteProcessMemory(hProcess, myRemoteDllLoadInfos + offsetof(Dll::DllLoadInfos, myInfoCount), &count, sizeof(int), &bytesWritten);
-                    if (WriteProcessMemory(hProcess, myRemoteDllLoadInfos + offsetof(Dll::DllLoadInfos, myBuffer), buff, SIZE_T(len), &bytesWritten))
-                    {
+                    SharedMemory.SetInfoCount(count);
+                    memcpy(SharedMemory.GetBuffer(), buff, size_t(len));
+                    //SIZE_T bytesWritten = 0;
+                    //WriteProcessMemory(hProcess, myRemoteDllLoadInfos + offsetof(Dll::DllLoadInfos, myInfoCount), &count, sizeof(int), &bytesWritten);
+                    //if (WriteProcessMemory(hProcess, myRemoteDllLoadInfos + offsetof(Dll::DllLoadInfos, myBuffer), buff, SIZE_T(len), &bytesWritten))
+                    //{
                         SetDllLoadInfosSent(true);
-                    }
-                    else
-                    {
-                        auto error = GetLastError();
-                        debugprintf("--  ->  WriteProcessMemory failed with error code %d (=0x%x)\n", error, error);
-                    }
+                    //}
+                    //else
+                    //{
+                    //    auto error = GetLastError();
+                    //    debugprintf("--  ->  WriteProcessMemory failed with error code %d (=0x%x)\n", error, error);
+                    //}
                 }
             }
             //else
@@ -79,12 +79,15 @@ namespace Score
 
         auto DllLoadInfos::SetRemoteDllLoadInfos(DllLoadInfos* aRemoteDllLoadInfos)               -> void
         {
-            debugprintf("##  DllLoadInfos::SetRemoteDllLoadInfos to %p\n", aRemoteDllLoadInfos);
-            myRemoteDllLoadInfos = aRemoteDllLoadInfos;
+            debugprintf("##  DllLoadInfos::SetRemoteDllLoadInfos to %p IGNORED\n", aRemoteDllLoadInfos);
+            //myRemoteDllLoadInfos = aRemoteDllLoadInfos;
         }
         auto DllLoadInfos::SetDllLoadInfosSent(bool aDllLoadInfosSent)                    -> void
         {
-            debugprintf("##  DllLoadInfos::SetDllLoadInfosSent to %s\n", aDllLoadInfosSent?"true":"false");
+            debugprintf("##  DllLoadInfos::SetDllLoadInfosSent to %s \n", aDllLoadInfosSent?"true":"false");
+
+            debugprintf("##  MagicNumber = 0x%08X\n", SharedMemory.GetMagicNumber());
+
             myDllLoadInfosSent = aDllLoadInfosSent;
         }
     }
