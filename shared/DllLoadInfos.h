@@ -71,7 +71,7 @@ namespace Score
 
         auto PushFirst(const char* aDllName) -> void
         {
-            assert(myData.myInfoCount < ARRAYSIZE(myData->myDllInfos));
+            assert(myData.myInfoCount < ARRAYSIZE(myData.myDllInfos));
             memmove(&myData.myDllInfos[1], &myData.myDllInfos[0], sizeof(*myData.myDllInfos)*myData.myInfoCount);
 
             strncpy(myData.myDllInfos[0].myDllName, aDllName, ARRAYSIZE(myData.myDllInfos[0].myDllName));
