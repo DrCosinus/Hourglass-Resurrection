@@ -255,7 +255,7 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
 
             // generate a new public handle (because the game might have closed the old one with CloseHandle)
             HANDLE oldHandle = twi->handle;
-            threadWrappersOriginalHandleToId[twi->handle] = NULL;
+            threadWrappersOriginalHandleToId[twi->handle] = 0;
             DuplicateHandle(GetCurrentProcess(), twi->privateHandle, GetCurrentProcess(), &twi->handle, 0,FALSE,DUPLICATE_SAME_ACCESS);
             threadWrappersOriginalHandleToId[twi->handle] = twi->threadId;
 
@@ -315,7 +315,7 @@ HOOKFUNC HANDLE WINAPI MyCreateThread(
     threadWrappersOriginalHandleToId[handle] = threadId;
     twi->threadId = threadId;
 
-    twi->exitEvent = CreateEventA(NULL, TRUE, FALSE, NULL);
+    twi->exitEvent = CreateEventA(nullptr, TRUE, FALSE, nullptr);
 
     // name wrapper threads too
     {

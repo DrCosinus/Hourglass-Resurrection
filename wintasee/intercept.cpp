@@ -108,7 +108,7 @@ BOOL InterceptGlobalFunction(FARPROC dwAddressToIntercept, FARPROC dwReplaced, F
     }
 
     // flush the instruction cache to make sure the modified code is executed
-    FlushInstructionCache(GetCurrentProcess(), NULL, NULL); 
+    FlushInstructionCache(GetCurrentProcess(), nullptr, 0);
 
     return TRUE; 
 }
@@ -127,7 +127,7 @@ BOOL HookVTable(void* iface, int entry, FARPROC replace, FARPROC& oldfuncPointer
     oldfuncPointer = oldPtr;
     pVTable[entry] = (size_t)replace;
     VirtualProtect(&pVTable[entry], sizeof(size_t), dwOldProt, &dwOldProt);
-    FlushInstructionCache(GetCurrentProcess(), NULL, NULL); 
+    FlushInstructionCache(GetCurrentProcess(), nullptr, 0);
     debugprintf("HOOKING: %s: %d, 0x%X -> 0x%X\n", debugname, entry, (DWORD)oldfuncPointer, (DWORD)replace);
     return TRUE;
 }

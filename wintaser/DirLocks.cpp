@@ -36,7 +36,7 @@ bool LockDirectory(char* directory, LockTypes type)
     strcpy(name, directory);
     strcat(name, "hourglass.lock\0");
     // FILE_FLAG_DELETE_ON_CLOSE is really handy here as it means we don't have to manage the deletion process for the lock-files ourselves.
-    HANDLE rv = CreateFile(name, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, (FILE_ATTRIBUTE_HIDDEN | FILE_FLAG_DELETE_ON_CLOSE), NULL);
+    HANDLE rv = CreateFile(name, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, (FILE_ATTRIBUTE_HIDDEN | FILE_FLAG_DELETE_ON_CLOSE), nullptr);
     if(rv == INVALID_HANDLE_VALUE)
     {
         DirLockPrintLastError("DirLocking: CreateFile", GetLastError());

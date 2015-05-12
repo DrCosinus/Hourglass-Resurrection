@@ -23,7 +23,7 @@
     static int x__ = 0; \
     x__++; \
     x__++; \
-    if(x__==2){debugprintf("Function \""__FUNCTION__"\" got called before it was set up!"); _asm{int 3} MessageBox(NULL, "Failed to hook function \""__FUNCTION__"\". This should never happen.", "Error", MB_ICONERROR);} \
+    if(x__==2){debugprintf("Function \""__FUNCTION__"\" got called before it was set up!"); _asm{int 3} MessageBox(nullptr, "Failed to hook function \""__FUNCTION__"\". This should never happen.", "Error", MB_ICONERROR);} \
     x__++; \
     x__++;
 #define INTERNAL_TRAMPOLINE_DEF { TRAMPOLINE_CONTENTS return 0; }
@@ -149,7 +149,7 @@ do{ \
 
 #include "print.h"
 
-// return false if the given object is NULL or of the destination hook type TM, true otherwise
+// return false if the given object is nullptr or of the destination hook type TM, true otherwise
 template<typename TI, typename TM>
 bool type_needs_hooking(TI o)
 {
@@ -159,7 +159,7 @@ bool type_needs_hooking(TI o)
 #endif
     bool rv;
     __try {
-        rv = dynamic_cast<TM>(o) == NULL;
+        rv = dynamic_cast<TM>(o) == nullptr;
     } __except(EXCEPTION_EXECUTE_HANDLER) {
         rv = true;
     }
@@ -177,7 +177,7 @@ bool is_of_type(TI o)
     if(!o) return false;
     bool rv;
     __try {
-        rv = dynamic_cast<TM>(o) != NULL;
+        rv = dynamic_cast<TM>(o) != nullptr;
     } __except(EXCEPTION_EXECUTE_HANDLER) {
         rv = false;
     }
@@ -240,7 +240,7 @@ struct InterceptDescriptor
 #define MAKE_INTERCEPT2(enabled, dll, name, myname) {#dll".dll", #name, (FARPROC)My##myname, (FARPROC)Tramp##myname, enabled}
 #define MAKE_INTERCEPT3(enabled, dllWithExt, name, suffix) {#dllWithExt, #name, (FARPROC)My##name##_##suffix, (FARPROC)Tramp##name##_##suffix, enabled}
 //#define MAKE_INTERCEPT_DYNAMICTRAMP(enabled, dllWithExt, name) {#dllWithExt, #name, (FARPROC)(void*)ArrayMy##name, (FARPROC)(void*)ArrayTramp##name, (enabled>0)?3:-3, ArrayName##name}
-//#define MAKE_INTERCEPT_ALLDLLS(enabled, name) {NULL, #name, (FARPROC)(void*)ArrayMy##name, (FARPROC)(void*)ArrayTramp##name, (enabled>0)?4:-4, (const char*)(void*)ArrayName##name}
+//#define MAKE_INTERCEPT_ALLDLLS(enabled, name) {nullptr, #name, (FARPROC)(void*)ArrayMy##name, (FARPROC)(void*)ArrayTramp##name, (enabled>0)?4:-4, (const char*)(void*)ArrayName##name}
 
 
 void ApplyInterceptTable(const InterceptDescriptor* intercepts, int count);

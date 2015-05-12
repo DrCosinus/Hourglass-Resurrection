@@ -11,7 +11,7 @@
 using namespace std;
 
 IATModifier::IATModifier(const Process& process)
-    : process_(process), importDescrTblAddr_(NULL), importDescrTblSize_(0)
+    : process_(process), importDescrTblAddr_(nullptr), importDescrTblSize_(0)
 {
 }
 
@@ -51,7 +51,7 @@ void IATModifier::writeIAT(const std::string& dll, bool runFirst)
 void IATModifier::writeIAT(const vector<string>& dlls, bool runFirst)
 {
     if (dlls.empty()) throw IATModifierException("DLL path list must not be empty");
-    if (importDescrTblAddr_ == NULL) throw IATModifierException("Import descriptor must not be NULL");
+    if (importDescrTblAddr_ == nullptr) throw IATModifierException("Import descriptor must not be nullptr");
 
     // allocate memory for the new descriptor
     IMAGE_NT_HEADERS ntHeaders;
@@ -225,7 +225,7 @@ void* IATModifier::allocateMemAboveBase(void* baseAddress, size_t size)
     }
     catch (const MemoryQueryException&)
     {
-        return NULL;
+        return nullptr;
     }
 }
 

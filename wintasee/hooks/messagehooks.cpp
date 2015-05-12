@@ -15,7 +15,7 @@ static MessageActionFlags GetMessageActionFlags(UINT message, WPARAM wParam, LPA
 
 HOOKFUNC BOOL WINAPI MyPostMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam); // extern? (I mean, move to header)
 LRESULT DispatchMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/); // extern? (I mean, move to header)
-void PostMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, struct MessageQueue* pmq/*=NULL*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/); // extern? (I mean, move to header)
+void PostMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, struct MessageQueue* pmq/*=nullptr*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/); // extern? (I mean, move to header)
 
 // TODO: move to shared?
 static const char* GetWindowsMessageName(UINT message)
@@ -640,7 +640,7 @@ LRESULT CustomHandleWndProcMessage(HWND hWnd, UINT message, WPARAM wParam, LPARA
         //	}
 
         //	RedrawScreen();
-        //	ValidateRect(hWnd, NULL);
+        //	ValidateRect(hWnd, nullptr);
 
         //	return 1;
         //}
@@ -859,7 +859,7 @@ static void InternalizeMessageQueue()
     MessageQueue& mq = curtls.messageQueue;
 
     MSG msg;
-    while(PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE|PM_NOYIELD))
+    while(PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE|PM_NOYIELD))
     {
         if(CanMessageReachGame(&msg))
         {
@@ -911,7 +911,7 @@ void HandlePostedMessages()
 
 #endif
 
-void PostMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, struct MessageQueue* pmq/*=NULL*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/)
+void PostMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, struct MessageQueue* pmq/*=nullptr*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/)
 {
 #ifdef EMULATE_MESSAGE_QUEUES
     if(CanMessageReachGame(maf))
@@ -1456,7 +1456,7 @@ HOOKFUNC BOOL WINAPI MyPostThreadMessageA(DWORD idThread,UINT Msg,WPARAM wParam,
     MessageQueue& mq = tls.messageQueue;
     if(idThread == GetCurrentThreadId())
     {
-        PostMessageInternal(NULL, Msg, wParam, lParam, true, &mq, GetMessageActionFlags(Msg,wParam,lParam)&~MAF_BYPASSGAME);
+        PostMessageInternal(nullptr, Msg, wParam, lParam, true, &mq, GetMessageActionFlags(Msg,wParam,lParam)&~MAF_BYPASSGAME);
         return TRUE;
     }
     else
@@ -1496,7 +1496,7 @@ HOOKFUNC BOOL WINAPI MyPostThreadMessageW(DWORD idThread,UINT Msg,WPARAM wParam,
     MessageQueue& mq = tls.messageQueue;
     if(idThread == GetCurrentThreadId())
     {
-        PostMessageInternal(NULL, Msg, wParam, lParam, false, &mq, GetMessageActionFlags(Msg,wParam,lParam)&~MAF_BYPASSGAME);
+        PostMessageInternal(nullptr, Msg, wParam, lParam, false, &mq, GetMessageActionFlags(Msg,wParam,lParam)&~MAF_BYPASSGAME);
         return TRUE;
     }
     else
@@ -1517,7 +1517,7 @@ HOOKFUNC BOOL WINAPI MyPostThreadMessageW(DWORD idThread,UINT Msg,WPARAM wParam,
 HOOKFUNC VOID WINAPI MyPostQuitMessage(int nExitCode)
 {
     debuglog(LCF_PROCESS|LCF_ERROR, __FUNCTION__"(%d) called.", nExitCode);
-    MyPostMessageA(NULL, WM_QUIT, nExitCode, 0);
+    MyPostMessageA(nullptr, WM_QUIT, nExitCode, 0);
 }
 
 
@@ -2112,7 +2112,7 @@ void FakeBroadcastMessage(bool send, UINT Msg, WPARAM wParam, LPARAM lParam)
         }
         else
         {
-            PostMessageInternal(hwnd, Msg, wParam, lParam, true, NULL, MAF_PASSTHROUGH|MAF_RETURN_OS);
+            PostMessageInternal(hwnd, Msg, wParam, lParam, true, nullptr, MAF_PASSTHROUGH | MAF_RETURN_OS);
         }
     }
 }

@@ -59,7 +59,7 @@ HOOKFUNC HWND WINAPI MyCreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName,
     {
         MessageQueue& mq = curtls.messageQueue;
 //		if(mq.attachedWindows.empty())
-//			mq.attachedWindows.insert((HWND)NULL); // so PostMessage with a NULL HWND knows to post to the current thread
+//			mq.attachedWindows.insert((HWND)nullptr); // so PostMessage with a nullptr HWND knows to post to the current thread
         mq.attachedWindows.push_back(hwnd);
     }
 #endif
@@ -165,7 +165,7 @@ HOOKFUNC HWND WINAPI MyCreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName,
     {
         MessageQueue& mq = curtls.messageQueue;
 //		if(mq.attachedWindows.empty())
-//			mq.attachedWindows.insert((HWND)NULL); // so PostMessage with a NULL HWND knows to post to the current thread
+//			mq.attachedWindows.insert((HWND)nullptr); // so PostMessage with a nullptr HWND knows to post to the current thread
         mq.attachedWindows.push_back(hwnd);
     }
 #endif
@@ -254,9 +254,9 @@ HOOKFUNC HWND WINAPI MyCreateWindowExW(DWORD dwExStyle, LPCWSTR lpClassName,
         DispatchMessageInternal(hwnd, WM_CREATE, 0, (LPARAM)&create, false);
 
         // trying to get the stupid splash screen to work, not sure how to fake the paint event well enough for it
-        //InvalidateRect(hwnd, NULL, TRUE);
+        //InvalidateRect(hwnd, nullptr, TRUE);
         //PostMessageInternal(hwnd, WM_PAINT, 0, 0, false);
-        //InvalidateRect(hwnd, NULL, TRUE);
+        //InvalidateRect(hwnd, nullptr, TRUE);
         //DispatchMessageInternal(hwnd, WM_PAINT, 0, 0, false);
     }
 #endif
@@ -438,7 +438,7 @@ HOOKFUNC BOOL WINAPI MySetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int 
     }
     if(tasflags.windowActivateFlags & 2)
     {
-        if(hWndInsertAfter == HWND_NOTOPMOST || hWndInsertAfter == HWND_BOTTOM || hWndInsertAfter == HWND_TOP || hWndInsertAfter == NULL)
+        if (hWndInsertAfter == HWND_NOTOPMOST || hWndInsertAfter == HWND_BOTTOM || hWndInsertAfter == HWND_TOP || hWndInsertAfter == nullptr)
             hWndInsertAfter = HWND_TOPMOST;
     }
     else
@@ -505,7 +505,7 @@ HOOKFUNC BOOL WINAPI MyClientToScreen(HWND hWnd, LPPOINT lpPoint)
     // see coments in MyGetClientRect
     if(fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller(!tls.callerisuntrusted))
     {
-        return (lpPoint != NULL);
+        return (lpPoint != nullptr);
     }
     return ClientToScreen(hWnd, lpPoint);
 }
@@ -514,7 +514,7 @@ HOOKFUNC BOOL WINAPI MyScreenToClient(HWND hWnd, LPPOINT lpPoint)
     // see coments in MyGetClientRect
     if(fakeDisplayValid/* && IsWindowFakeFullscreen(hWnd)*/ && VerifyIsTrustedCaller(!tls.callerisuntrusted))
     {
-        return (lpPoint != NULL);
+        return (lpPoint != nullptr);
     }
     return ScreenToClient(hWnd, lpPoint);
 }

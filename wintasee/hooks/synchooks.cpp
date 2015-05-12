@@ -152,7 +152,7 @@ HOOKFUNC BOOL WINAPI MyCloseHandle(HANDLE hObject)
     //////handles.erase(std::remove(handles.begin(), handles.end(), hObject));
     ////for(unsigned int i = 0; i < handles.size(); i++)
     ////	if(handles[i] == hObject)
-    ////		handles[i] = NULL;
+    ////		handles[i] = nullptr;
     //std::vector<HANDLE>::iterator iter = std::find(handles.begin(), handles.end(), hObject);
     //if(iter != handles.end())
     //	handles.erase(iter);
@@ -189,7 +189,7 @@ HOOKFUNC BOOL WINAPI MyDuplicateHandle(HANDLE hSourceProcessHandle,
 ////		handles.erase(std::remove(handles.begin(), handles.end(), hSourceProcessHandle));
 //		for(unsigned int i = 0; i < handles.size(); i++)
 //			if(handles[i] == hSourceProcessHandle)
-//				handles[i] = NULL;
+//				handles[i] = nullptr;
     LeaveCriticalSection(&s_handleCS);
 
     return rv;

@@ -16,17 +16,17 @@ DEFINE_LOCAL_GUID(IID_IDirect3DSwapChain8,0x928C088B,0x76B9,0x4C6B,0xA5,0x36,0xA
 DEFINE_LOCAL_GUID(IID_IDirect3DSurface8,0xB96EEBCA,0xB326,0x4EA5,0x88,0x2F,0x2F,0xF5,0xBA,0xE0,0x21,0xDD);
 DEFINE_LOCAL_GUID(IID_IDirect3DTexture8,0xE4CDD575,0x2866,0x4F01,0xB1,0x2E,0x7E,0xEC,0xE1,0xEC,0x93,0x58);
 
-static IDirect3DDevice8* pBackBufCopyOwner = NULL;
-static IDirect3DSurface8* pBackBufCopy = NULL;
+static IDirect3DDevice8* pBackBufCopyOwner = nullptr;
+static IDirect3DSurface8* pBackBufCopy = nullptr;
 
-static IDirect3DDevice8* s_saved_d3d8Device = NULL;
-static IDirect3DSwapChain8* s_saved_d3d8SwapChain = NULL;
+static IDirect3DDevice8* s_saved_d3d8Device = nullptr;
+static IDirect3DSwapChain8* s_saved_d3d8SwapChain = nullptr;
 static RECT s_savedD3D8SrcRect = {};
 static RECT s_savedD3D8DstRect = {};
-static LPRECT s_savedD3D8pSrcRect = NULL;
-static LPRECT s_savedD3D8pDstRect = NULL;
-static HWND s_savedD3D8HWND = NULL;
-static HWND s_savedD3D8DefaultHWND = NULL;
+static LPRECT s_savedD3D8pSrcRect = nullptr;
+static LPRECT s_savedD3D8pDstRect = nullptr;
+static HWND s_savedD3D8HWND = nullptr;
+static HWND s_savedD3D8DefaultHWND = nullptr;
 static RECT s_savedD3D8ClientRect = {};
 
 std::map<IDirect3DSwapChain8*,IDirect3DDevice8*> d3d8SwapChainToDeviceMap;
@@ -76,16 +76,24 @@ static void ProcessPresentationParams8(D3DPRESENT_PARAMETERS* pPresentationParam
                 MakeWindowWindowed(gamehwnd, fakeDisplayWidth, fakeDisplayHeight);
 
             D3DDISPLAYMODE display_mode;
-            if(d3d)
-                d3dDevice = NULL;
-            if(!d3d && d3dDevice)
+            if (d3d)
+            {
+                d3dDevice = nullptr;
+            }
+            if (!d3d && d3dDevice)
+            {
                 d3dDevice->GetDirect3D(&d3d);
+            }
 
-            if(SUCCEEDED(d3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &display_mode)))
+            if (SUCCEEDED(d3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &display_mode)))
+            {
                 pPresentationParameters->BackBufferFormat = display_mode.Format;
+            }
 
             if(d3d && d3dDevice)
+            {
                 d3d->Release();
+            }
 
             pPresentationParameters->BackBufferCount = 1;
         }
@@ -135,8 +143,14 @@ struct MyDirect3DDevice8
         ULONG rv = Release(pThis);
         if(rv == 0)
         {
-            if(pBackBufCopyOwner == pThis) { pBackBufCopyOwner = NULL; }
-            if(s_saved_d3d8Device == pThis) { s_saved_d3d8Device = NULL; }
+            if (pBackBufCopyOwner == pThis)
+            {
+                pBackBufCopyOwner = nullptr;
+            }
+            if (s_saved_d3d8Device == pThis)
+            {
+                s_saved_d3d8Device = nullptr;
+            }
         }
         return rv;
     }
@@ -155,7 +169,7 @@ struct MyDirect3DDevice8
     static HRESULT STDMETHODCALLTYPE MyReset(IDirect3DDevice8* pThis, D3DPRESENT_PARAMETERS* pPresentationParameters)
     {
         d3ddebugprintf(__FUNCTION__ " called.\n");
-        ProcessPresentationParams8(pPresentationParameters, NULL, pThis);
+        ProcessPresentationParams8(pPresentationParameters, nullptr, pThis);
         d3d8BackBufActive = true;
         d3d8BackBufDirty = true;
         HRESULT rv = Reset(pThis, pPresentationParameters);
@@ -169,14 +183,14 @@ struct MyDirect3DDevice8
         if(!recordingAVIVideo)
         {
             // if not recording AVI, it's a regular frame boundary.
-            FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
+            FrameBoundary(nullptr, CAPTUREINFO::TYPE_NONE);
         }
         else
         {
             // if we are, it's still a regular frame boundary,
             // but we prepare extra info for the AVI capture around it.
             DDSURFACEDESC desc = { sizeof(DDSURFACEDESC) };
-            IDirect3DSurface8* pBackBuffer = NULL;
+            IDirect3DSurface8* pBackBuffer = nullptr;
 #if 0 // slow
             Lock(pThis, desc, pBackBuffer, pSourceRect);
             FrameBoundary(&desc, CAPTUREINFO_TYPE_DDSD);
@@ -189,7 +203,7 @@ struct MyDirect3DDevice8
             if(pBackBufCopyOwner != pThis /*&& pBackBufCopy*/)
             {
                 //pBackBufCopy->Release();
-                pBackBufCopy = NULL;
+                pBackBufCopy = nullptr;
             }
             IDirect3DSurface8* pSurface = pBackBufCopy;
             if(!pSurface)
@@ -207,20 +221,28 @@ struct MyDirect3DDevice8
                     pSurface = pBackBuffer;
                 }
             }
-            if(pSurface != pBackBuffer)
-                if(FAILED(CopyRects(pThis, pBackBuffer,pSourceRect,pSourceRect?1:0,pSurface,NULL)))
+            if (pSurface != pBackBuffer)
+            {
+                if (FAILED(CopyRects(pThis, pBackBuffer, pSourceRect, pSourceRect ? 1 : 0, pSurface, nullptr)))
+                {
                     pSurface = pBackBuffer;
-            if(desc.ddpfPixelFormat.dwRGBBitCount == 8)
+                }
+            }
+            if (desc.ddpfPixelFormat.dwRGBBitCount == 8)
+            {
                 pThis->GetPaletteEntries(0, &activePalette[0]);
+            }
             Lock(pThis, desc, pSurface, pSourceRect, false);
     #ifdef _DEBUG
             DWORD time2 = timeGetTime();
             debugprintf("AVI: pre-copying pixel data took %d ticks\n", (int)(time2-time1));
     #endif
-            FrameBoundary(&desc, CAPTUREINFO_TYPE_DDSD);
+            FrameBoundary(&desc, CAPTUREINFO::TYPE_DDSD);
             pSurface->UnlockRect();
-            if(pBackBuffer)
+            if (pBackBuffer)
+            {
                 pBackBuffer->Release();
+            }
 #endif
         }
     }
@@ -239,10 +261,10 @@ struct MyDirect3DDevice8
 
         if((d3d8BackBufActive || d3d8BackBufDirty) && !redrawingScreen)
         {
-            s_saved_d3d8SwapChain = NULL;
+            s_saved_d3d8SwapChain = nullptr;
             s_saved_d3d8Device = pThis;
-            s_savedD3D8pSrcRect = pSourceRect ? &s_savedD3D8SrcRect : NULL;
-            s_savedD3D8pDstRect = pDestRect ? &s_savedD3D8DstRect : NULL;
+            s_savedD3D8pSrcRect = pSourceRect ? &s_savedD3D8SrcRect : nullptr;
+            s_savedD3D8pDstRect = pDestRect ? &s_savedD3D8DstRect : nullptr;
             if(pSourceRect) s_savedD3D8SrcRect = *pSourceRect;
             if(pDestRect) s_savedD3D8DstRect = *pDestRect;
             s_savedD3D8HWND = hDestWindowOverride ? hDestWindowOverride : s_savedD3D8DefaultHWND;
@@ -260,7 +282,7 @@ struct MyDirect3DDevice8
     static HRESULT STDMETHODCALLTYPE MyCreateAdditionalSwapChain(IDirect3DDevice8* pThis, D3DPRESENT_PARAMETERS* pPresentationParameters,IDirect3DSwapChain8** pSwapChain)
     {
         d3ddebugprintf(__FUNCTION__ " called.\n");
-        ProcessPresentationParams8(pPresentationParameters, NULL, pThis);
+        ProcessPresentationParams8(pPresentationParameters, nullptr, pThis);
         HRESULT rv = CreateAdditionalSwapChain(pThis, pPresentationParameters, pSwapChain);
         if(SUCCEEDED(rv))
         {
@@ -293,11 +315,11 @@ struct MyDirect3DDevice8
     static HRESULT STDMETHODCALLTYPE MyGetRenderTarget(IDirect3DDevice8* pThis, IDirect3DSurface8** ppRenderTarget)
     {
         HRESULT rv = GetRenderTarget(pThis, ppRenderTarget);
-        d3ddebugprintf(__FUNCTION__ "(0x%X) called, returned 0x%X\n", ppRenderTarget, (SUCCEEDED(rv) && ppRenderTarget) ? *ppRenderTarget : NULL);
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called, returned 0x%X\n", ppRenderTarget, (SUCCEEDED(rv) && ppRenderTarget) ? *ppRenderTarget : nullptr);
         return rv;
     }
 
-    static void Lock(IDirect3DDevice8* pThis, DDSURFACEDESC& desc, IDirect3DSurface8*& pBackBuffer, CONST RECT* pSourceRect=NULL, bool getBackBuffer=true)
+    static void Lock(IDirect3DDevice8* pThis, DDSURFACEDESC& desc, IDirect3DSurface8*& pBackBuffer, CONST RECT* pSourceRect = nullptr, bool getBackBuffer = true)
     {
         d3ddebugprintf(__FUNCTION__ " called.\n");
         if(getBackBuffer)
@@ -446,7 +468,7 @@ struct MyDirect3DDevice8
             int numLevels = pTexture->GetLevelCount();
             for(int i = 0; i < numLevels; i++)
             {
-                IDirect3DSurface8* pSurface = NULL;
+                IDirect3DSurface8* pSurface = nullptr;
                 if(SUCCEEDED(pTexture->GetSurfaceLevel(i, &pSurface)))
                 {
                     HookCOMInterface(IID_IDirect3DSurface8, reinterpret_cast<LPVOID*>(&pSurface));
@@ -520,7 +542,7 @@ struct MyDirect3DSwapChain8
         ULONG rv = Release(pThis);
         if(rv == 0)
         {
-            if(s_saved_d3d8SwapChain == pThis) { s_saved_d3d8SwapChain = NULL; }
+            if (s_saved_d3d8SwapChain == pThis) { s_saved_d3d8SwapChain = nullptr; }
         }
         return rv;
     }
@@ -552,8 +574,8 @@ struct MyDirect3DSwapChain8
         {
             s_saved_d3d8SwapChain = pThis;
             s_saved_d3d8Device = pDevice;
-            s_savedD3D8pSrcRect = pSourceRect ? &s_savedD3D8SrcRect : NULL;
-            s_savedD3D8pDstRect = pDestRect ? &s_savedD3D8DstRect : NULL;
+            s_savedD3D8pSrcRect = pSourceRect ? &s_savedD3D8SrcRect : nullptr;
+            s_savedD3D8pDstRect = pDestRect ? &s_savedD3D8DstRect : nullptr;
             if(pSourceRect) s_savedD3D8SrcRect = *pSourceRect;
             if(pDestRect) s_savedD3D8DstRect = *pDestRect;
             s_savedD3D8HWND = hDestWindowOverride ? hDestWindowOverride : s_savedD3D8DefaultHWND;
@@ -613,7 +635,7 @@ struct MyDirect3DSurface8
 
                 void*& pixels = surf8.videoMemoryPixelBackup;
                 free(pixels);
-                pixels = NULL;
+                pixels = nullptr;
             }
         }
         return rv;
@@ -640,7 +662,7 @@ struct MyDirect3DSurface8
         surf8.videoMemoryBackupDirty = FALSE;
         void*& pixels = surf8.videoMemoryPixelBackup;
         free(pixels);
-        pixels = NULL;
+        pixels = nullptr;
 
         return hr;
     }
@@ -793,7 +815,7 @@ static void BackupVideoMemory8(IDirect3DSurface8* pThis)
     if(SUCCEEDED(pThis->GetDesc(&desc)))
     {
         D3DLOCKED_RECT lockedRect;
-        if(SUCCEEDED(pThis->LockRect(&lockedRect, NULL, D3DLOCK_NO_DIRTY_UPDATE|D3DLOCK_READONLY|D3DLOCK_NOSYSLOCK)))
+        if (SUCCEEDED(pThis->LockRect(&lockedRect, nullptr, D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_READONLY | D3DLOCK_NOSYSLOCK)))
         {
             int size = lockedRect.Pitch * desc.Height;
             void*& pixels = surf8.videoMemoryPixelBackup;
@@ -817,7 +839,7 @@ static void RestoreVideoMemory8(IDirect3DSurface8* pThis)
         if(SUCCEEDED(pThis->GetDesc(&desc)))
         {
             D3DLOCKED_RECT lockedRect;
-            if(SUCCEEDED(pThis->LockRect(&lockedRect, NULL, D3DLOCK_NOSYSLOCK)))
+            if (SUCCEEDED(pThis->LockRect(&lockedRect, nullptr, D3DLOCK_NOSYSLOCK)))
             {
                 int size = lockedRect.Pitch * desc.Height;
                 memcpy(lockedRect.pBits, pixels, size);
@@ -946,19 +968,18 @@ bool RedrawScreenD3D8()
         }
 
         HRESULT hr;
-        if(s_saved_d3d8SwapChain)
-            hr = s_saved_d3d8SwapChain->Present(s_savedD3D8pSrcRect,pDstRect,s_savedD3D8HWND,NULL);
+        if (s_saved_d3d8SwapChain)
+        {
+            hr = s_saved_d3d8SwapChain->Present(s_savedD3D8pSrcRect, pDstRect, s_savedD3D8HWND, nullptr);
+        }
         else
-            hr = s_saved_d3d8Device->Present(s_savedD3D8pSrcRect,pDstRect,s_savedD3D8HWND,NULL);
+        {
+            hr = s_saved_d3d8Device->Present(s_savedD3D8pSrcRect, pDstRect, s_savedD3D8HWND, nullptr);
+        }
         return true;
     }
     return false;
 }
-
-
-
-
-
 
 struct MyDirect3D8
 {
@@ -984,7 +1005,7 @@ struct MyDirect3D8
     static HRESULT STDMETHODCALLTYPE MyCreateDevice(IDirect3D8* pThis, UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocusWindow,DWORD BehaviorFlags,D3DPRESENT_PARAMETERS* pPresentationParameters,IDirect3DDevice8** ppReturnedDeviceInterface)
     {
         d3ddebugprintf(__FUNCTION__ " called.\n");
-        ProcessPresentationParams8(pPresentationParameters, pThis, NULL);
+        ProcessPresentationParams8(pPresentationParameters, pThis, nullptr);
         HRESULT rv = CreateDevice(pThis, Adapter,DeviceType,hFocusWindow,BehaviorFlags,pPresentationParameters,ppReturnedDeviceInterface);
         if(SUCCEEDED(rv))
             HookCOMInterface(IID_IDirect3DDevice8, (LPVOID*)ppReturnedDeviceInterface);

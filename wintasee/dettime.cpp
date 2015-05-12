@@ -260,7 +260,7 @@ int getCurrentFramestampLogical();
 //			// if sleep time exceeds threshold, output a sleep frame (AVI)
 //			if((int)sleepAccumTicks >= (int)sleepFrameTickThreshold)
 //			{
-//				//FrameBoundary(NULL, CAPTUREINFO_TYPE_PREV);
+//				//FrameBoundary(nullptr, CAPTUREINFO_TYPE_PREV);
 //				timedebugprintf("%d >= %d, sleeping\n", sleepAccumTicks, sleepFrameTickThreshold);
 //				totalSleepFrames++;
 //				AdvanceTimeAndMixAll(sleepFrameTickThreshold);

@@ -40,7 +40,7 @@ struct ThreadLocalStuff
     __declspec(noinline)
     static ThreadLocalStuff* DllManage(DWORD fdwReason)
     {
-        ThreadLocalStuff* stuff = NULL;
+        ThreadLocalStuff* stuff = nullptr;
         switch(fdwReason)
         {
             case DLL_PROCESS_ATTACH:
@@ -87,13 +87,13 @@ private:
         callingClientLoadLibrary = FALSE;
         treatDLLLoadsAsClient = 0;
         forceLocale = 0;
-        curThreadCreateName = NULL;
+        curThreadCreateName = nullptr;
 #ifdef EMULATE_MESSAGE_QUEUES
         messageQueue.queueStatus = /*QS_NONE*/0;
         messageQueue.queueStatusAtLastGet = /*QS_NONE*/0;
         messageQueue.messages.clear();
         messageQueue.attachedWindows.clear();
-        messageQueue.attachedWindows.push_back((HWND)NULL); // so PostMessage with a NULL HWND knows to post to the current thread
+        messageQueue.attachedWindows.push_back((HWND)nullptr); // so PostMessage with a nullptr HWND knows to post to the current thread
         messageQueue.quit = false;
         messageQueue.timer = 0;
         messageQueue.key = 0;

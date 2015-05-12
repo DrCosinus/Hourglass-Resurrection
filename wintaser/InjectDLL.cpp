@@ -55,7 +55,7 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
 
     dwPathLength *= sizeof(WCHAR);
 
-    if (hProcess == NULL)
+    if (hProcess == nullptr)
     {
         PrintLastError("CreateProcess", GetLastError());
         terminateRequest = true;
@@ -78,7 +78,7 @@ DWORD WINAPI InjectDLLThreadFunc(LPVOID lpParam)
     if(exitCode == 0)
     {
         terminateRequest = true;
-        if(hProcess != NULL)
+        if (hProcess != nullptr)
         {
             debugprintf("Injection failed...\n");
             CustomMessageBox("Injection failed...\nYou can (hopefully) find more information in the debug log .txt file.", "Error", MB_OK | MB_ICONERROR);
@@ -115,7 +115,7 @@ void InjectDll(HANDLE hProcess, DWORD dwProcessID, HANDLE hThread, DWORD dwThrea
     info->injectAllowedToFinish = FALSE;
     info->runDllLast = runDllLast;
 
-    CreateThread(NULL, 0, InjectDLLThreadFunc, info, 0, NULL);
+    CreateThread(nullptr, 0, InjectDLLThreadFunc, info, 0, nullptr);
 
     while(!info->injectIsAsyncReady)
     {

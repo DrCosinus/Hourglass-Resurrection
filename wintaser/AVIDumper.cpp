@@ -27,11 +27,11 @@ static int aviSplitCount = 0;
 static int aviSplitDiscardCount = 0;
 static int requestedAviSplitCount = 0;
 
-static void* lastFrameSoundInfo = 0;
-static void* paletteEntriesPointer = 0;
+static void* lastFrameSoundInfo = nullptr;
+static void* paletteEntriesPointer = nullptr;
 bool g_gammaRampEnabled = false;
 
-static HANDLE captureProcess = NULL;
+static HANDLE captureProcess = nullptr;
 
 char avifilename [MAX_PATH+1];
 
@@ -59,15 +59,15 @@ char avifilename [MAX_PATH+1];
 // without worrying about the original pointer needing to stay valid
 struct WaveFormat
 {
-    WaveFormat(const LPWAVEFORMATEX format=NULL) : m_format(NULL) { Init(format); }
-    WaveFormat(const WAVEFORMATEX& format) : m_format(NULL) { Init((LPWAVEFORMATEX)&format); }
-    WaveFormat(const WaveFormat& format) : m_format(NULL) { Init(format.m_format); }
+    WaveFormat(const LPWAVEFORMATEX format = nullptr) : m_format(nullptr) { Init(format); }
+    WaveFormat(const WAVEFORMATEX& format) : m_format(nullptr) { Init((LPWAVEFORMATEX)&format); }
+    WaveFormat(const WaveFormat& format) : m_format(nullptr) { Init(format.m_format); }
     WaveFormat& operator= (const WaveFormat& format) { Init(format.m_format); return *this; }
     ~WaveFormat() { free(m_format); }
     operator LPWAVEFORMATEX () { return m_format; }
     operator const LPWAVEFORMATEX () const { return m_format; }
     size_t GetSize() { return m_format ? sizeof(WAVEFORMATEX) + m_format->cbSize : 0; }
-    size_t GetMaxSize() { if(!m_format) return 0; size_t size = GetSize(); acmMetrics(NULL, ACM_METRIC_MAX_SIZE_FORMAT, &size); return size; }
+    size_t GetMaxSize() { if (!m_format) return 0; size_t size = GetSize(); acmMetrics(nullptr, ACM_METRIC_MAX_SIZE_FORMAT, &size); return size; }
     LPWAVEFORMATEX m_format;
 private:
     void Init(const LPWAVEFORMATEX format)
@@ -77,12 +77,12 @@ private:
         if(m_format)
         {
             free(m_format);
-            m_format = NULL;
+            m_format = nullptr;
         }
         if(format)
         {
             size_t size = sizeof(WAVEFORMATEX) + format->cbSize;
-            acmMetrics(NULL, ACM_METRIC_MAX_SIZE_FORMAT, &size); // to simplify in-place format changing
+            acmMetrics(nullptr, ACM_METRIC_MAX_SIZE_FORMAT, &size); // to simplify in-place format changing
             m_format = (LPWAVEFORMATEX)malloc(size);
             memcpy(m_format, format, size);
         }
@@ -93,8 +93,8 @@ private:
 class AudioConverterStream
 {
 public:
-    AudioConverterStream(WaveFormat sourceFormat, WaveFormat destFormat, WaveFormat** prevSourceFormats=NULL, int numPrevSourceFormats=0)
-        : outBuffer(NULL), outSize(0), outBufferAllocated(0), stream(NULL), isProxy(false), failed(false), subConverter(NULL), startOffset(0)
+    AudioConverterStream(WaveFormat sourceFormat, WaveFormat destFormat, WaveFormat** prevSourceFormats = nullptr, int numPrevSourceFormats = 0)
+        : outBuffer(nullptr), outSize(0), outBufferAllocated(0), stream(nullptr), isProxy(false), failed(false), subConverter(nullptr), startOffset(0)
     {
         if(sourceFormat.GetSize() == destFormat.GetSize() && !memcmp((LPWAVEFORMATEX)sourceFormat, (LPWAVEFORMATEX)destFormat, sourceFormat.GetSize()))
         {
@@ -103,7 +103,7 @@ public:
             return;
         }
 
-        MMRESULT mm = acmStreamOpen(&stream, NULL, sourceFormat, destFormat, NULL, 0, 0, ACM_STREAMOPENF_NONREALTIME);
+        MMRESULT mm = acmStreamOpen(&stream, nullptr, sourceFormat, destFormat, nullptr, 0, 0, ACM_STREAMOPENF_NONREALTIME);
         if(mm != MMSYSERR_NOERROR)
         {
             // not supported directly, so try letting ACM suggest an intermediate format
@@ -132,7 +132,7 @@ public:
                                 if(form) flags |= ACM_FORMATSUGGESTF_WFORMATTAG;
 
                                 intermediateFormat = destFormat;
-                                MMRESULT mmSuggest = acmFormatSuggest(NULL, sourceFormat, intermediateFormat, intermediateFormat.GetSize(), flags);
+                                MMRESULT mmSuggest = acmFormatSuggest(nullptr, sourceFormat, intermediateFormat, intermediateFormat.GetSize(), flags);
                                 if(mmSuggest == MMSYSERR_NOERROR)
                                 {
                                     // got a possibly-valid suggestion,
@@ -177,7 +177,7 @@ tryMoreSuggestions:
             }
 
             // we'll handle conversion to the intermediate format
-            mm = acmStreamOpen(&stream, NULL, sourceFormat, intermediateFormat, NULL, 0, 0, ACM_STREAMOPENF_NONREALTIME);
+            mm = acmStreamOpen(&stream, nullptr, sourceFormat, intermediateFormat, nullptr, 0, 0, ACM_STREAMOPENF_NONREALTIME);
             if(mm != MMSYSERR_NOERROR)
             {
                 if(!done)
@@ -202,7 +202,7 @@ tryMoreSuggestions:
             if(subConverter->failed)
             {
                 delete subConverter;
-                subConverter = NULL;
+                subConverter = nullptr;
 
                 if(!done)
                 {
@@ -318,7 +318,7 @@ private:
         }
     }
 };
-AudioConverterStream* audioConverterStream = NULL;
+AudioConverterStream* audioConverterStream = nullptr;
 
 //struct AviFrameArgs
 //{
@@ -331,8 +331,8 @@ class WaitableBool
 public:
     WaitableBool(bool initialState = false) : m_value(initialState)
     {
-        m_event = CreateEvent(NULL, TRUE, initialState, NULL);
-        m_eventInverse = CreateEvent(NULL, TRUE, !initialState, NULL);
+        m_event = CreateEvent(nullptr, TRUE, initialState, nullptr);
+        m_eventInverse = CreateEvent(nullptr, TRUE, !initialState, nullptr);
     }
     ~WaitableBool()
     {
@@ -446,9 +446,9 @@ struct AviFrameQueue
         for(int i = 0; i < numSlots; i++)
             m_slots[i].slotNum = i;
         threadDone = false;
-        thread = CreateThread(NULL, 0, AviFrameQueue<numSlots>::OutputVideoThreadFunc, (void*)this, CREATE_SUSPENDED, NULL);
+        thread = CreateThread(nullptr, 0, AviFrameQueue<numSlots>::OutputVideoThreadFunc, (void*)this, CREATE_SUSPENDED, nullptr);
         SetThreadPriority(thread, THREAD_PRIORITY_HIGHEST);
-        threadAudio = CreateThread(NULL, 0, AviFrameQueue<numSlots>::OutputAudioThreadFunc, (void*)this, CREATE_SUSPENDED, NULL);
+        threadAudio = CreateThread(nullptr, 0, AviFrameQueue<numSlots>::OutputAudioThreadFunc, (void*)this, CREATE_SUSPENDED, nullptr);
         SetThreadPriority(threadAudio, THREAD_PRIORITY_ABOVE_NORMAL);
         m_disableFills = false;
         ResumeThread(thread);
@@ -523,7 +523,7 @@ struct AviFrameQueue
 
         slot.hasProcessedVideo.WaitUntilFalse();
 
-        static unsigned char* inPixels = NULL;
+        static unsigned char* inPixels = nullptr;
         static int inPixelsAllocated = 0;
         ReserveBuffer(inPixels, inPixelsAllocated, remotePixelsSize);
 #ifdef _DEBUG
@@ -534,13 +534,13 @@ struct AviFrameQueue
         if(pitch >= 0)
         {
             // we got a pointer to the start of the first row of pixel data
-            ReadProcessMemory(captureProcess, remotePixels, inPixels, remotePixelsSize, NULL);
+            ReadProcessMemory(captureProcess, remotePixels, inPixels, remotePixelsSize, nullptr);
             curInPixels = inPixels;
         }
         else
         {
             // we got a pointer to the start of the last row of pixel data (see FrameBoundaryDIBitsToAVI)
-            ReadProcessMemory(captureProcess, (char*)remotePixels + pitch*(height-1), inPixels, remotePixelsSize, NULL);
+            ReadProcessMemory(captureProcess, (char*)remotePixels + pitch*(height - 1), inPixels, remotePixelsSize, nullptr);
             curInPixels = inPixels - pitch*(height-1);
         }
 
@@ -585,7 +585,7 @@ struct AviFrameQueue
         {
             // palettized case
             static PALETTEENTRY activePalette [256];
-            ReadProcessMemory(captureProcess, paletteEntriesPointer, &activePalette, sizeof(activePalette), NULL);
+            ReadProcessMemory(captureProcess, paletteEntriesPointer, &activePalette, sizeof(activePalette), nullptr);
             for(int yDst = height-1; yDst >= 0; yDst--)
             {
                 unsigned char* inPix = curInPixels + (yDst * pitch);
@@ -681,14 +681,14 @@ struct AviFrameQueue
             return;
 
         LastFrameSoundInfo soundInfo;
-        if(!ReadProcessMemory(captureProcess, lastFrameSoundInfo, &soundInfo, sizeof(LastFrameSoundInfo), NULL))
+        if (!ReadProcessMemory(captureProcess, lastFrameSoundInfo, &soundInfo, sizeof(LastFrameSoundInfo), nullptr))
             return;
 
         if(!soundInfo.format)
             return;
 
         WAVEFORMATEX format;
-        if(!ReadProcessMemory(captureProcess, soundInfo.format, &format, sizeof(WAVEFORMATEX), NULL))
+        if (!ReadProcessMemory(captureProcess, soundInfo.format, &format, sizeof(WAVEFORMATEX), nullptr))
             return;
 
 
@@ -702,7 +702,7 @@ struct AviFrameQueue
         slot.audioFrameSamples = soundInfo.size / format.nBlockAlign;
 
         ReserveBuffer(slot.audioBuffer, slot.audioBufferAllocated, soundInfo.size);
-        ReadProcessMemory(captureProcess, soundInfo.buffer, slot.audioBuffer, soundInfo.size, NULL);
+        ReadProcessMemory(captureProcess, soundInfo.buffer, slot.audioBuffer, soundInfo.size, nullptr);
         slot.inAudioSize = soundInfo.size;
 
         slot.inAudioSeconds = (double)soundInfo.size / format.nAvgBytesPerSec;
@@ -717,14 +717,14 @@ struct AviFrameQueue
             return;
 
         LastFrameSoundInfo soundInfo;
-        if(!ReadProcessMemory(captureProcess, lastFrameSoundInfo, &soundInfo, sizeof(LastFrameSoundInfo), NULL))
+        if (!ReadProcessMemory(captureProcess, lastFrameSoundInfo, &soundInfo, sizeof(LastFrameSoundInfo), nullptr))
             return;
 
         if(!soundInfo.format)
             return;
 
         WAVEFORMATEX format;
-        if(!ReadProcessMemory(captureProcess, soundInfo.format, &format, sizeof(WAVEFORMATEX), NULL))
+        if (!ReadProcessMemory(captureProcess, soundInfo.format, &format, sizeof(WAVEFORMATEX), nullptr))
             return;
 
         Slot& slot = m_slots[m_nextWriteAudio];
@@ -769,9 +769,9 @@ struct AviFrameQueue
         double inAudioSeconds; // hack
         int framecount; int slotNum; // for debugging
         Slot() : hasProcessedVideo(false), hasProcessedAudio(false),
-            aviPixels(NULL), aviPixelsAllocated(0),
-//			inPixels(NULL), inPixelsAllocated(0),
-            audioBuffer(NULL), audioBufferAllocated(0),
+            aviPixels(nullptr), aviPixelsAllocated(0),
+//            inPixels(nullptr), inPixelsAllocated(0),
+            audioBuffer(nullptr), audioBufferAllocated(0),
             audioFrameSamples(0), inAudioSize(0), inAudioSeconds(0)
         {
             framecount = -1;
@@ -786,11 +786,11 @@ struct AviFrameQueue
             //hasProcessedAudio.WaitUntilFalse();
             //hasProcessedVideo.WaitUntilFalse();
 //			free(inPixels);
-//			inPixels = NULL;
+//			inPixels = nullptr;
             free(aviPixels);
-            aviPixels = NULL;
+            aviPixels = nullptr;
             free(audioBuffer);
-            audioBuffer = NULL;
+            audioBuffer = nullptr;
 //			inPixelsAllocated = 0;
             aviPixelsAllocated = 0;
             audioBufferAllocated = 0;
@@ -817,8 +817,8 @@ struct AviFrameQueue
                         DWORD time1 = timeGetTime();
 #endif
 
-                        HRESULT hr = SafeAVIStreamWrite(aviCompressedStream, aviFrameCount, 1, aviPixels, videoFrameSize, 0, NULL, &bytesWritten);
-                        //debugprintf("0x%X = SafeAVIStreamWrite(0x%X, %d, 1, 0x%X, %d, 0, NULL, %d)\n", hr, aviCompressedStream, aviFrameCount, aviPixels, videoFrameSize, bytesWritten);
+                        HRESULT hr = SafeAVIStreamWrite(aviCompressedStream, aviFrameCount, 1, aviPixels, videoFrameSize, 0, nullptr, &bytesWritten);
+                        //debugprintf("0x%X = SafeAVIStreamWrite(0x%X, %d, 1, 0x%X, %d, 0, nullptr, %d)\n", hr, aviCompressedStream, aviFrameCount, aviPixels, videoFrameSize, bytesWritten);
 
 #ifdef _DEBUG
                         DWORD time2 = timeGetTime();
@@ -898,7 +898,7 @@ struct AviFrameQueue
                         if(!aviSoundStream)
                             return;
 
-                        HRESULT hr = SafeAVIStreamWrite(aviSoundStream, aviSoundSampleCount, audioFrameSamples, output.buffer, audioFrameSize, 0, NULL, &bytesWritten);
+                        HRESULT hr = SafeAVIStreamWrite(aviSoundStream, aviSoundSampleCount, audioFrameSamples, output.buffer, audioFrameSize, 0, nullptr, &bytesWritten);
                         if(FAILED(hr))
                         { 
                             debugprintf("AVIStreamWrite(audio) failed! (0x%X)\n", hr);
@@ -1002,11 +1002,11 @@ AviFrameQueue<4>* aviFrameQueue = new AviFrameQueue<4>();
 
 
 static bool aviLibraryOpened = false;
-static PAVIFILE aviFile = NULL;
-static PAVISTREAM aviStream = NULL;
-static PAVISTREAM aviSoundStream = NULL;
-static PAVISTREAM aviCompressedStream = NULL;
-//static PAVISTREAM aviCompressedSoundStream = NULL;
+static PAVIFILE aviFile = nullptr;
+static PAVISTREAM aviStream = nullptr;
+static PAVISTREAM aviSoundStream = nullptr;
+static PAVISTREAM aviCompressedStream = nullptr;
+//static PAVISTREAM aviCompressedSoundStream = nullptr;
 static int curAviWidth=0, curAviHeight=0, curAviFps=0;
 int aviFrameCount = 0, aviEmptyFrameCount = 0;
 static bool oldIsBasicallyEmpty = false;
@@ -1036,7 +1036,7 @@ void CloseAVI()
     AutoCritSect cs1(&s_fqaCS);
     AutoCritSect cs2(&s_fqvCS);
     delete aviFrameQueue;
-    aviFrameQueue = NULL;
+    aviFrameQueue = nullptr;
 
     Config::localTASflags.aviMode = 0;
     aviSplitCount = 0;
@@ -1053,28 +1053,28 @@ void CloseAVI()
     //lastFrameSoundInfo = 0;
     //g_gammaRampEnabled = false;
     //paletteEntriesPointer = 0;
-    //captureProcess = NULL;
+    //captureProcess = nullptr;
 
     AutoCritSect cs(&s_aviCS);
 
     if(aviStream)
         AVIStreamClose(aviStream);
-    aviStream = NULL;
+    aviStream = nullptr;
     
     if(aviCompressedStream)
         AVIStreamClose(aviCompressedStream);
-    aviCompressedStream = NULL;
+    aviCompressedStream = nullptr;
 
     if(aviSoundStream)
         AVIStreamClose(aviSoundStream);
-    aviSoundStream = NULL;
+    aviSoundStream = nullptr;
 
     if(aviFile)
         AVIFileClose(aviFile);
-    aviFile = NULL;
+    aviFile = nullptr;
 
     delete audioConverterStream;
-    audioConverterStream = NULL;
+    audioConverterStream = nullptr;
 
     if(aviLibraryOpened)
         AVIFileExit();
@@ -1179,7 +1179,7 @@ bool OpenAVIFile(int width, int height, int bpp, int fps)
     }
 
     _unlink(filename);
-    HRESULT hr = AVIFileOpen(&aviFile, filename, OF_WRITE|OF_CREATE, NULL);
+    HRESULT hr = AVIFileOpen(&aviFile, filename, OF_WRITE | OF_CREATE, nullptr);
     if(FAILED(hr))
     {
         char str [MAX_PATH + 64];
@@ -1225,14 +1225,14 @@ chooseAnotherFormat:
         AVICOMPRESSOPTIONS* pOptions = &options;
         if(!aviSplitCount || chooseIter > 1)
         {
-            if(!AVISaveOptions(/*hWnd*/NULL, ICMF_CHOOSE_KEYFRAME|ICMF_CHOOSE_DATARATE, 1, &aviStream, &pOptions))
+            if (!AVISaveOptions(/*hWnd*/nullptr, ICMF_CHOOSE_KEYFRAME | ICMF_CHOOSE_DATARATE, 1, &aviStream, &pOptions))
             {
                 CloseAVI();
                 return false;
             }
         }
 
-        hr = AVIMakeCompressedStream(&aviCompressedStream, aviStream, pOptions, NULL);
+        hr = AVIMakeCompressedStream(&aviCompressedStream, aviStream, pOptions, nullptr);
         if(FAILED(hr))
         { 
             debugprintf("AVIMakeCompressedStream failed! (0x%X)\n", hr);
@@ -1252,7 +1252,7 @@ chooseAnotherFormat:
             //CloseAVI();
             //return false;
             AVIStreamClose(aviCompressedStream);
-            aviCompressedStream = NULL;
+            aviCompressedStream = nullptr;
             goto chooseAnotherFormat;
         }
     }
@@ -1316,7 +1316,7 @@ bool ChooseAudioCodec(const LPWAVEFORMATEX defaultFormat)
 
     ACMFORMATCHOOSE choose = { sizeof(ACMFORMATCHOOSE) };
     choose.fdwStyle  = ACMFORMATCHOOSE_STYLEF_INITTOWFXSTRUCT;
-    choose.hwndOwner = NULL; //hWnd;
+    choose.hwndOwner = nullptr; //hWnd;
     choose.pwfx      = chooseFormat;
     choose.cbwfx     = chooseFormat.GetMaxSize();
     choose.pszTitle  = "Choose Audio Codec";
@@ -1337,14 +1337,14 @@ int OpenAVIAudioStream()
         AutoCritSect cs(&s_aviCS);
 
         LastFrameSoundInfo soundInfo;
-        if(!ReadProcessMemory(captureProcess, lastFrameSoundInfo, &soundInfo, sizeof(LastFrameSoundInfo), NULL))
+        if (!ReadProcessMemory(captureProcess, lastFrameSoundInfo, &soundInfo, sizeof(LastFrameSoundInfo), nullptr))
             return -1;
 
         if(!soundInfo.format)
             return 0;
 
         WAVEFORMATEX format;
-        if(!ReadProcessMemory(captureProcess, soundInfo.format, &format, sizeof(WAVEFORMATEX), NULL))
+        if (!ReadProcessMemory(captureProcess, soundInfo.format, &format, sizeof(WAVEFORMATEX), nullptr))
             return -1;
 
         // open the output file if it's not already open
@@ -1400,7 +1400,7 @@ int OpenAVIAudioStream()
                 debugprintf("AudioConverterStream() failed!\n");
                 NormalMessageBox("Couldn't find a valid conversion sequence.\nTry a different audio codec.\n", "Error", MB_OK|MB_ICONERROR);
                 delete audioConverterStream;
-                audioConverterStream = NULL;
+                audioConverterStream = nullptr;
             }
             else
             {
@@ -1479,26 +1479,26 @@ void WriteAVIAudio()
     aviFrameQueue->FillAudioFrame();
 
     //LastFrameSoundInfo soundInfo;
-    //if(!ReadProcessMemory(hGameProcess, remoteLastFrameSoundInfo, &soundInfo, sizeof(LastFrameSoundInfo), NULL))
+    //if(!ReadProcessMemory(hGameProcess, remoteLastFrameSoundInfo, &soundInfo, sizeof(LastFrameSoundInfo), nullptr))
     //	return;
 
     //if(!soundInfo.format)
     //	return;
 
     //WAVEFORMATEX format;
-    //if(!ReadProcessMemory(hGameProcess, soundInfo.format, &format, sizeof(WAVEFORMATEX), NULL))
+    //if(!ReadProcessMemory(hGameProcess, soundInfo.format, &format, sizeof(WAVEFORMATEX), nullptr))
     //	return;
 
     //int numSamples = soundInfo.size / format.nBlockAlign;
 
-    //static void* buffer = NULL;
+    //static void* buffer = nullptr;
     //static int bufferAllocated = 0;
     //if(bufferAllocated < (int)soundInfo.size)
     //{
     //	bufferAllocated = soundInfo.size;
     //	buffer = realloc(buffer, bufferAllocated);
     //}
-    //if(!ReadProcessMemory(hGameProcess, soundInfo.buffer, buffer, soundInfo.size, NULL))
+    //if(!ReadProcessMemory(hGameProcess, soundInfo.buffer, buffer, soundInfo.size, nullptr))
     //	return;
 
     //if(!audioConverterStream)
@@ -1507,7 +1507,7 @@ void WriteAVIAudio()
     //if(audioConverterStream->failed)
     //	return;
 
-    //HRESULT hr = AVIStreamWrite(aviSoundStream, aviSoundSampleCount, numSamples, output.buffer, output.size, 0, NULL, NULL);
+    //HRESULT hr = AVIStreamWrite(aviSoundStream, aviSoundSampleCount, numSamples, output.buffer, output.size, 0, nullptr, nullptr);
     //if(FAILED(hr))
     //	return;
 
@@ -1539,7 +1539,7 @@ void HandleAviSplitRequests()
     }
 }
 
-void ProcessCaptureFrameInfo(void* frameCaptureInfoRemoteAddr, int frameCaptureInfoType)
+void ProcessCaptureFrameInfo(void* frameCaptureInfoRemoteAddr, CAPTUREINFO frameCaptureInfoType)
 {
     //if(frameCaptureInfoType != CAPTUREINFO_TYPE_NONE && frameCaptureInfoType != CAPTUREINFO_TYPE_NONE_SUBSEQUENT)
     //	if(aviSoundStream && (aviMode & 1) && aviCompressedStream && aviFrameCount < 30)
@@ -1548,17 +1548,17 @@ void ProcessCaptureFrameInfo(void* frameCaptureInfoRemoteAddr, int frameCaptureI
 
     switch(frameCaptureInfoType)
     {
-    case CAPTUREINFO_TYPE_NONE:
-    case CAPTUREINFO_TYPE_NONE_SUBSEQUENT:
+    case CAPTUREINFO::TYPE_NONE:
+    case CAPTUREINFO::TYPE_NONE_SUBSEQUENT:
         break;
-    case CAPTUREINFO_TYPE_PREV:
+    case CAPTUREINFO::TYPE_PREV:
         RewriteAVIFrame();
         break;
-    case CAPTUREINFO_TYPE_DDSD:
+    case CAPTUREINFO::TYPE_DDSD:
         if((Config::localTASflags.aviMode & 1) && frameCaptureInfoRemoteAddr)
         {
             DDSURFACEDESC desc = {0};
-            ReadProcessMemory(captureProcess, frameCaptureInfoRemoteAddr, &desc, sizeof(desc), NULL);
+            ReadProcessMemory(captureProcess, frameCaptureInfoRemoteAddr, &desc, sizeof(desc), nullptr);
             WriteAVIFrame(desc.lpSurface, desc.dwWidth, desc.dwHeight, desc.lPitch, desc.ddpfPixelFormat.dwRGBBitCount,
                 desc.ddpfPixelFormat.dwRBitMask, desc.ddpfPixelFormat.dwGBitMask, desc.ddpfPixelFormat.dwBBitMask);
         }

@@ -81,7 +81,7 @@ Movie::Movie()
         //	"The movie will be saved to \"%s.wtf\" instead.\n", filename, filename);
         //strcat((char*)filename, ".wtf");
         //CustomMessageBox(str, "Movie Save Warning", MB_OK | MB_ICONWARNING);
-        //file = (filename && *filename) ? fopen(filename, "wb") : NULL;
+        //file = (filename && *filename) ? fopen(filename, "wb") : nullptr;
         //if(!file)
         //{
         //	debugprintf("FAILED TO SAVE MOVIE FILE.\n");
@@ -107,7 +107,7 @@ Movie::Movie()
     }
 
     const char* keyboardLayoutName = movie.keyboardLayoutName;
-    fwrite(keyboardLayoutName, 8, 1, file); // KL_NAMELENGTH == 9 and includes the NULL
+    fwrite(keyboardLayoutName, 8, 1, file); // KL_NAMELENGTH == 9 and includes the nullptr
 
     unsigned int fps = movie.fps;
     fwrite(&fps, 4, 1, file);
@@ -200,7 +200,7 @@ Movie::Movie()
     unsigned int authorLen;
     fread(&authorLen, 4, 1, file);
     char* author;
-    author = NULL;
+    author = nullptr;
     if(authorLen) // If this is non-zero, there is an author name in the movie.
     {
         if(authorLen > 63) // Sanity check, the author field cannot be more than 63 chars long.
@@ -217,7 +217,7 @@ Movie::Movie()
     }
     
     char keyboardLayoutName[KL_NAMELENGTH];// = movie.keyboardLayoutName;
-    fread(keyboardLayoutName, 8, 1, file); // KL_NAMELENGTH == 9 and includes the NULL
+    fread(keyboardLayoutName, 8, 1, file); // KL_NAMELENGTH == 9 and includes the nullptr
 
     unsigned int fps = 0;
     fread(&fps, 4, 1, file);
@@ -245,7 +245,7 @@ Movie::Movie()
     unsigned int commandlineLen;
     fread(&commandlineLen, 4, 1, file);
     char* commandline;
-    commandline = NULL;//= movie.commandline;
+    commandline = nullptr;//= movie.commandline;
     if(commandlineLen) // There's a command line in the movie file.
     {
         if(commandlineLen > (8192-1)-(MAX_PATH+1)) // We have exceeded the maximum allowed command line. Something's wrong.

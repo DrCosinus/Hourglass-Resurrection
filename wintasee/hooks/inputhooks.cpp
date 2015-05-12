@@ -111,7 +111,7 @@ struct BufferedInput
     HANDLE event;
     BufferedInputList& bufferList;
 
-    BufferedInput(BufferedInputList& buflist) : data(NULL), size(0), used(0), startOffset(0), overflowed(FALSE), event(NULL), bufferList(buflist)
+    BufferedInput(BufferedInputList& buflist) : data(nullptr), size(0), used(0), startOffset(0), overflowed(FALSE), event(nullptr), bufferList(buflist)
     {
         dinputdebugprintf(__FUNCTION__ "(0x%X) adding self to list.\n", this);
         bufferList.push_back(this);
@@ -335,7 +335,7 @@ public:
         {
             // This function requires that lpDIDevCaps exists and that it's dwSize member is initialized to either
             // sizeof(DIDEVCAPS_DX3) which is 24 bytes or sizeof(DIDEVCAPS) which is 44 bytes.
-            if(lpDIDevCaps == NULL) return E_POINTER;
+            if (lpDIDevCaps == nullptr) return E_POINTER;
             if(lpDIDevCaps->dwSize != 24 && lpDIDevCaps->dwSize != 44) return DIERR_INVALIDPARAM;
             lpDIDevCaps->dwFlags = (DIDC_ATTACHED | DIDC_EMULATED);
             lpDIDevCaps->dwDevType = 0x112;
@@ -627,8 +627,8 @@ public:
         if(m_type == GUID_SysMouse)
         {
             // This function requires that pdidoi is created by the game, and has it's dwSize member inited to the size of the struct,
-            // if the game passes a NULL pointer or a struct without the size member inited we cannot continue.
-            if(pdidoi == NULL) return E_POINTER;
+            // if the game passes a nullptr pointer or a struct without the size member inited we cannot continue.
+            if (pdidoi == nullptr) return E_POINTER;
             if(memcmp(pdidoi, 0, 4) == 0) return DIERR_INVALIDPARAM;
             switch(dwHow)
             {
@@ -1345,7 +1345,7 @@ debuglog(LCF_JOYPAD|LCF_UNTESTED, "in "__FUNCTION__", tls.curThreadCreateName = 
 
     MMRESULT rv = joyGetPosEx(uJoyID, pji);
 
-    tls.curThreadCreateName = NULL;
+    tls.curThreadCreateName = nullptr;
 
     return rv;
 //	return MMSYSERR_NODRIVER ;
@@ -1360,7 +1360,7 @@ return MMSYSERR_NODRIVER; // NYI
 
     MMRESULT rv = joyGetPos(uJoyID, pji);
 
-    tls.curThreadCreateName = NULL;
+    tls.curThreadCreateName = nullptr;
 
     return rv;
 }

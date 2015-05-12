@@ -20,7 +20,7 @@ static void SDLFrameBoundary(SDL_Surface* screen)
     if(!recordingAVIVideo || !screen)
     {
         // if not recording AVI, it's a regular frame boundary.
-        FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
+        FrameBoundary(nullptr, CAPTUREINFO::TYPE_NONE);
     }
     else
     {
@@ -39,7 +39,7 @@ static void SDLFrameBoundary(SDL_Surface* screen)
         if(desc.ddpfPixelFormat.dwRGBBitCount == 8 && screen->format->palette)
             memcpy(&activePalette[0], &screen->format->palette->entries[0], min(256, screen->format->palette->entryCount));
 
-        FrameBoundary(&desc, CAPTUREINFO_TYPE_DDSD);
+        FrameBoundary(&desc, CAPTUREINFO::TYPE_DDSD);
 
         SDL_UnlockSurface(screen); 
     }

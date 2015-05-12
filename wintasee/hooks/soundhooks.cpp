@@ -31,16 +31,16 @@ DEFINE_LOCAL_GUID(IID_IDirectSoundNotify,0xB0210783,0x89CD,0x11D0,0xAF,0x8,0x0,0
 
 
 static CRITICAL_SECTION s_myMixingOutputBufferCS;
-static IDirectSoundBuffer* s_myMixingOutputBuffer = NULL;
-static IDirectSoundBuffer* s_primaryBuffer = NULL;
+static IDirectSoundBuffer* s_myMixingOutputBuffer = nullptr;
+static IDirectSoundBuffer* s_primaryBuffer = nullptr;
 static bool s_primaryBufferFormatSet = false;
 //static LONG s_mixSuspendVol = 0;
 
-static unsigned char* contiguousMixOutBuf = NULL;
+static unsigned char* contiguousMixOutBuf = nullptr;
 static DWORD contiguousMixOutBufSize = 0;
 static DWORD contiguousMixOutBufAllocated = 0;
 static DWORD contiguousMixOutBufOffset = 0;
-static LPWAVEFORMATEX contiguousMixOutBufFormat = NULL;
+static LPWAVEFORMATEX contiguousMixOutBufFormat = nullptr;
 
 LastFrameSoundInfo lastFrameSoundInfo;
 
@@ -80,12 +80,12 @@ public:
         LeaveCriticalSection(&s_soundBufferListCS);
         debuglog(LCF_DSOUND, "%d emulated sound buffers\n", soundBuffers.size());
 
-        buffer = NULL;
+        buffer = nullptr;
         bufferSize = 0;
         allocated = 0;
-        lockBuf = NULL;
-        lockPtr1 = NULL;
-        lockPtr2 = NULL;
+        lockBuf = nullptr;
+        lockPtr1 = nullptr;
+        lockPtr2 = nullptr;
         lockBytes1 = 0;
         lockBytes2 = 0;
         numRemainingUnlocksBeforeLeavingLockBufResident = 8;
@@ -97,8 +97,8 @@ public:
         playCursor = 0;
         writeCursor = 0;
         capsFlags = DSBCAPS_LOCSOFTWARE;
-        waveformat = NULL;
-        notifies = NULL;
+        waveformat = nullptr;
+        notifies = nullptr;
         numNotifies = 0;
         InitializeCriticalSection(&m_bufferCS);
         InitializeCriticalSection(&m_lockBufferCS);
@@ -165,7 +165,7 @@ public:
             *ppvObj = (IUnknown*)(IDirectSoundBuffer*)this;
         else
         {
-            *ppvObj = NULL;
+            *ppvObj = nullptr;
             return E_NOINTERFACE;
         }
         AddRef();
@@ -361,8 +361,8 @@ public:
         else
             dwBytes = min(bufferSize, dwBytes);
 
-        lockPtr1 = NULL;
-        lockPtr2 = NULL;
+        lockPtr1 = nullptr;
+        lockPtr2 = nullptr;
         lockBytes1 = 0;
         lockBytes2 = 0;
 
@@ -375,7 +375,7 @@ public:
             if(pdwAudioBytes1)
                 *pdwAudioBytes1 = lockBytes1 = dwBytes;
             if(ppvAudioPtr2)
-                *ppvAudioPtr2 = NULL;
+                *ppvAudioPtr2 = nullptr;
             if(pdwAudioBytes2)
                 *pdwAudioBytes2 = 0;
         }
@@ -489,7 +489,7 @@ public:
         {
             numRemainingUnlocksBeforeLeavingLockBufResident--;
             free(lockBuf);
-            lockBuf = NULL;
+            lockBuf = nullptr;
         }
         ReplicateBufferIntoExtraAllocated();
         LeaveCriticalSection(&m_bufferCS);
@@ -532,7 +532,7 @@ public:
     STDMETHOD(SetNotificationPositions) (DWORD dwPositionNotifies, LPCDSBPOSITIONNOTIFY pcPositionNotifies)
     {
         dsounddebugprintf(__FUNCTION__ "(%d) called.\n", dwPositionNotifies);
-        if(dwPositionNotifies > DSBNOTIFICATIONS_MAX || pcPositionNotifies == NULL)
+        if (dwPositionNotifies > DSBNOTIFICATIONS_MAX || pcPositionNotifies == nullptr)
             return DSERR_INVALIDPARAM;
 
         free(notifies);
@@ -630,7 +630,7 @@ public:
             EnterCriticalSection(&s_myMixingOutputBufferCS);
 
             static WAVEFORMATEX format; // must be static so wintaser can read it reliably...
-            if(!(s_myMixingOutputBuffer && SUCCEEDED(s_myMixingOutputBuffer->GetFormat(&format, sizeof(WAVEFORMATEX), NULL))))
+            if (!(s_myMixingOutputBuffer && SUCCEEDED(s_myMixingOutputBuffer->GetFormat(&format, sizeof(WAVEFORMATEX), nullptr))))
             {
                 // well, maybe there's no DirectSound buffer,
                 // but we can still mix it for AVI output, so we'll pick a waveformat
@@ -666,8 +666,8 @@ public:
 
         if(doMix && s_myMixingOutputBuffer)
         {
-            void* ptr1=NULL; DWORD size1=0;
-            void* ptr2=NULL; DWORD size2=0;
+            void* ptr1 = nullptr; DWORD size1 = 0;
+            void* ptr2 = nullptr; DWORD size2 = 0;
 
             if(!tasflags.fastForward)
             {
@@ -1068,13 +1068,13 @@ public:
         debuglog(LCF_DSOUND, "%d sound buffers\n", soundBuffers.size());
         if(this == s_primaryBuffer)
         {
-            s_primaryBuffer = NULL;
+            s_primaryBuffer = nullptr;
             s_primaryBufferFormatSet = false;
         }
         EnterCriticalSection(&s_myMixingOutputBufferCS);
         if(this == s_myMixingOutputBuffer)
         {
-            s_myMixingOutputBuffer = NULL;
+            s_myMixingOutputBuffer = nullptr;
         }
         LeaveCriticalSection(&s_myMixingOutputBufferCS);
     }
@@ -1392,7 +1392,7 @@ public:
     //{
     //	debuglog(LCF_DSOUND, "Unhooked a MyDirectSoundBuffer.\n");
     //	*ppvObj = (void*)m_dsb;
-    //	m_dsb = NULL;
+    //	m_dsb = nullptr;
     //	delete this;
     //}
 
@@ -1440,7 +1440,7 @@ template <typename IDirectSoundN>
 class MyDirectSound : public IDirectSoundN
 {
 public:
-    MyDirectSound(IDirectSoundN* ds) : m_ds(ds), m_myMixingOutputBuffer(NULL), m_fallbackRefcount(1)
+    MyDirectSound(IDirectSoundN* ds) : m_ds(ds), m_myMixingOutputBuffer(nullptr), m_fallbackRefcount(1)
     {
         debuglog(LCF_DSOUND, "MyDirectSound created.\n");
         noDirectSoundOutputAvailable = !m_ds;
@@ -1448,7 +1448,7 @@ public:
         //if(m_freeDS)
         //{
         //	m_freeDS->Release();
-        //	m_freeDS = NULL;
+        //	m_freeDS = nullptr;
         //}
     }
 
@@ -1506,8 +1506,8 @@ public:
             if(m_myMixingOutputBuffer)
             {
                 //m_freeMixingOutputBuffer = m_myMixingOutputBuffer;
-                m_myMixingOutputBuffer->Release(); // this should set s_myMixingOutputBuffer = NULL in the destructor
-                m_myMixingOutputBuffer = NULL;
+                m_myMixingOutputBuffer->Release(); // this should set s_myMixingOutputBuffer = nullptr in the destructor
+                m_myMixingOutputBuffer = nullptr;
             }
         }
         ULONG count;
@@ -1529,7 +1529,7 @@ public:
             {
                 count = 0;
                 m_freeDS = m_ds;
-                m_ds = NULL;
+                m_ds = nullptr;
             }
             //count = 1;
         }
@@ -1761,13 +1761,13 @@ public:
         //if(m_freeMixingOutputBuffer)
         //{
         //	m_myMixingOutputBuffer = m_freeMixingOutputBuffer;
-        //	m_freeMixingOutputBuffer = NULL;
+        //	m_freeMixingOutputBuffer = nullptr;
         //	hr = -1;//S_OK;
         //	s_myMixingOutputBuffer = m_myMixingOutputBuffer;
         //}
         //else
         {
-            hr = !m_ds ? -1 : m_ds->CreateSoundBuffer(&desc, &m_myMixingOutputBuffer, NULL);
+            hr = !m_ds ? -1 : m_ds->CreateSoundBuffer(&desc, &m_myMixingOutputBuffer, nullptr);
         }
         if(SUCCEEDED(hr))
         {
@@ -1777,11 +1777,11 @@ public:
 
             // make sure buffer is initially empty (silence), just in case the documentation is telling the truth for once
             unsigned char* bufPtr1; DWORD bufSize1;
-            if(SUCCEEDED(m_myMixingOutputBuffer->Lock(0, desc.dwBufferBytes, (LPVOID*)&bufPtr1, &bufSize1, NULL, NULL, DSBLOCK_ENTIREBUFFER)))
+            if (SUCCEEDED(m_myMixingOutputBuffer->Lock(0, desc.dwBufferBytes, (LPVOID*)&bufPtr1, &bufSize1, nullptr, nullptr, DSBLOCK_ENTIREBUFFER)))
             {
                 if(bufPtr1)
                     memset(bufPtr1, (waveformat.wBitsPerSample <= 8) ? 0x80 : 0, bufSize1);
-                m_myMixingOutputBuffer->Unlock(bufPtr1, bufSize1, NULL, NULL);
+                m_myMixingOutputBuffer->Unlock(bufPtr1, bufSize1, nullptr, 0);
             }
 
             // start playing it (we'll stream sound into it)
@@ -1802,10 +1802,10 @@ private:
 };
 
 template<> HRESULT MyDirectSound<IDirectSound>::VerifyCertification(LPDWORD pdwCertified) IMPOSSIBLE_IMPL
-template<> IDirectSound* MyDirectSound<IDirectSound>::m_freeDS = NULL;
-template<> IDirectSound8* MyDirectSound<IDirectSound8>::m_freeDS = NULL;
-//template<> IDirectSoundBuffer* MyDirectSound<IDirectSound>::m_freeMixingOutputBuffer = NULL;
-//template<> IDirectSoundBuffer* MyDirectSound<IDirectSound8>::m_freeMixingOutputBuffer = NULL;
+template<> IDirectSound* MyDirectSound<IDirectSound>::m_freeDS = nullptr;
+template<> IDirectSound8* MyDirectSound<IDirectSound8>::m_freeDS = nullptr;
+//template<> IDirectSoundBuffer* MyDirectSound<IDirectSound>::m_freeMixingOutputBuffer = nullptr;
+//template<> IDirectSoundBuffer* MyDirectSound<IDirectSound8>::m_freeMixingOutputBuffer = nullptr;
 
 
 
@@ -2124,7 +2124,7 @@ public:
         
         refcount = 0;
         active = FALSE;
-        pRefClock = NULL;
+        pRefClock = nullptr;
         nextBusID = 1;
         busCount = 0;
 
@@ -2157,7 +2157,7 @@ public:
         else
         {
             debugprintf(__FUNCTION__ " for unknown riid: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", riid.Data1, riid.Data2, riid.Data3, riid.Data4[0], riid.Data4[1], riid.Data4[2], riid.Data4[3], riid.Data4[4], riid.Data4[5], riid.Data4[6], riid.Data4[7]);
-            *ppvObj = NULL;
+            *ppvObj = nullptr;
             return E_NOINTERFACE;
         }
         AddRef();
@@ -2223,7 +2223,7 @@ public:
             // pretend to have a primary buffer
             *ppDSBuffer = (LPDIRECTSOUNDBUFFER)(new EmulatedDirectSoundBuffer(true));
         }
-        (*ppDSBuffer)->Initialize(/*pEmulatedDirectSound*/NULL, pcDSBufferDesc);
+        (*ppDSBuffer)->Initialize(/*pEmulatedDirectSound*/nullptr, pcDSBufferDesc);
 
         busToBuf[nextBusID] = *ppDSBuffer;
         bufToBus[*ppDSBuffer] = nextBusID;
@@ -2380,7 +2380,7 @@ public:
 
 
 
-struct EmulatedDirectSoundSinkFactory* s_pEmulatedDirectSoundSinkFactory = NULL; // for now, we only need 1 of these
+struct EmulatedDirectSoundSinkFactory* s_pEmulatedDirectSoundSinkFactory = nullptr; // for now, we only need 1 of these
 
 struct EmulatedDirectSoundSinkFactory : public IDirectSoundSinkFactory
 {
@@ -2395,7 +2395,7 @@ public:
     {
         debuglog(LCF_DSOUND, __FUNCTION__ "(0x%X) called.\n", this);
         if(s_pEmulatedDirectSoundSinkFactory == this)
-            s_pEmulatedDirectSoundSinkFactory = NULL;
+            s_pEmulatedDirectSoundSinkFactory = nullptr;
     }
 
     // IUnknown methods
@@ -2410,7 +2410,7 @@ public:
             *ppvObj = (IUnknown*)this;
         else
         {
-            *ppvObj = NULL;
+            *ppvObj = nullptr;
             return E_NOINTERFACE;
         }
         AddRef();
@@ -2638,14 +2638,14 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate(LPCGUID pcGuidDevice, LPDIRECTSOUND 
     
 //			if(ppDS)
 //			{
-//				*ppDS = new MyDirectSound<IDirectSound>(NULL);
+//				*ppDS = new MyDirectSound<IDirectSound>(nullptr);
 //				return DS_OK;
 //			}
 
     //if(MyDirectSound<IDirectSound>::m_freeDS)
     //{
     //	*ppDS = MyDirectSound<IDirectSound>::m_freeDS;
-    //	MyDirectSound<IDirectSound>::m_freeDS = NULL;
+    //	MyDirectSound<IDirectSound>::m_freeDS = nullptr;
     //	return S_OK;
     //}
     //else
@@ -2671,7 +2671,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate(LPCGUID pcGuidDevice, LPDIRECTSOUND 
             if(ppDS)
             {
                 usingVirtualDirectSound = true;
-                *ppDS = new MyDirectSound<IDirectSound>(NULL);
+                *ppDS = new MyDirectSound<IDirectSound>(nullptr);
                 rv = DS_OK;
             }
         }
@@ -2686,14 +2686,14 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate8(LPCGUID pcGuidDevice, LPDIRECTSOUND
 
 //			if(ppDS)
 //			{
-//				*ppDS = new MyDirectSound<IDirectSound8>(NULL);
+//				*ppDS = new MyDirectSound<IDirectSound8>(nullptr);
 //				return DS_OK;
 //			}
 
     //if(MyDirectSound<IDirectSound8>::m_freeDS)
     //{
     //	*ppDS = MyDirectSound<IDirectSound8>::m_freeDS;
-    //	MyDirectSound<IDirectSound8>::m_freeDS = NULL;
+    //	MyDirectSound<IDirectSound8>::m_freeDS = nullptr;
     //	return S_OK;
     //}
     //else
@@ -2719,7 +2719,7 @@ HOOKFUNC HRESULT WINAPI MyDirectSoundCreate8(LPCGUID pcGuidDevice, LPDIRECTSOUND
             if(ppDS)
             {
                 usingVirtualDirectSound = true;
-                *ppDS = new MyDirectSound<IDirectSound8>(NULL);
+                *ppDS = new MyDirectSound<IDirectSound8>(nullptr);
                 rv = DS_OK;
             }
         }
@@ -2918,12 +2918,12 @@ void DoFrameBoundarySoundChecks()
     {
         // disabled as a temporary hack fix for games like Eternal Daughter still freezing
         //MyDirectSound<IDirectSound>::m_freeDS->Release();
-        MyDirectSound<IDirectSound>::m_freeDS = NULL;
+        MyDirectSound<IDirectSound>::m_freeDS = nullptr;
     }
     if(MyDirectSound<IDirectSound8>::m_freeDS)
     {
         MyDirectSound<IDirectSound8>::m_freeDS->Release();
-        MyDirectSound<IDirectSound8>::m_freeDS = NULL;
+        MyDirectSound<IDirectSound8>::m_freeDS = nullptr;
     }
 }
 
@@ -2938,12 +2938,12 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv)
     bool applicable = ((tasflags.emuMode & EMUMODE_VIRTUALDIRECTSOUND) || usingVirtualDirectSound);
     if(applicable && riid == IID_IDirectSound)
     {
-        *ppv = (IDirectSound*)(new MyDirectSound<IDirectSound>(NULL));
+        *ppv = (IDirectSound*)(new MyDirectSound<IDirectSound>(nullptr));
         return true;
     }
     else if(applicable && riid == IID_IDirectSound8)
     {
-        *ppv = (IDirectSound8*)(new MyDirectSound<IDirectSound8>(NULL));
+        *ppv = (IDirectSound8*)(new MyDirectSound<IDirectSound8>(nullptr));
         return true;
     }
     return false;

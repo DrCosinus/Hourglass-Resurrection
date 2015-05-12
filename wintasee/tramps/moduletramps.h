@@ -112,14 +112,14 @@ TRAMPFUNC VOID WINAPI ExitProcess(DWORD dwExitCode) TRAMPOLINE_DEF_VOID
 //#define X(y) Tramp##y##DllGetClassObject,
 //    CodeGen_X_List
 //#undef X
-//	NULL
+//	nullptr
 //};
 //const char* ArrayNameDllGetClassObject[] = 
 //{
 //#define X(y) "unknown dll",
 //    CodeGen_X_List
 //#undef X
-//	NULL
+//	nullptr
 //};
 
 

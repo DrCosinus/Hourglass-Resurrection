@@ -61,12 +61,12 @@ struct InfoForDebugger // GeneralInfoFromDll
 };
 
 
-enum
+enum class CAPTUREINFO
 {
-    CAPTUREINFO_TYPE_NONE, // nothing sent
-    CAPTUREINFO_TYPE_NONE_SUBSEQUENT, // nothing sent and it's the same frame/time as last time
-    CAPTUREINFO_TYPE_PREV, // reuse previous frame's image (new sleep frame)
-    CAPTUREINFO_TYPE_DDSD, // locked directdraw surface description
+    TYPE_NONE, // nothing sent
+    TYPE_NONE_SUBSEQUENT, // nothing sent and it's the same frame/time as last time
+    TYPE_PREV, // reuse previous frame's image (new sleep frame)
+    TYPE_DDSD, // locked directdraw surface description
 };
 
 struct LastFrameSoundInfo

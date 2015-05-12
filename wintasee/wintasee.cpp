@@ -182,29 +182,29 @@ bool redrawingScreen = false;
 
 bool RedrawScreen()
 {
-	verbosedebugprintf(__FUNCTION__ " called.\n");
-	redrawingScreen = true;
-	if(RedrawScreenD3D8())
-	{}
-	else if(RedrawScreenD3D9())
-	{}
-	else if(RedrawScreenDDraw()) // moved to after d3d8 to fix redraw in tumiki fighters
-	{}
-	else if(RedrawScreenGDI())
-	{}
-	//// NYI
-	//else if(gamehwnd)
-	//{
-	//	InvalidateRect(gamehwnd, NULL, TRUE);
-	//	UpdateWindow(gamehwnd);
-	//}
-	else
-	{
-		redrawingScreen = false;
-		return false;
-	}
-	redrawingScreen = false;
-	return true;
+    verbosedebugprintf(__FUNCTION__ " called.\n");
+    redrawingScreen = true;
+    if(RedrawScreenD3D8())
+    {}
+    else if(RedrawScreenD3D9())
+    {}
+    else if(RedrawScreenDDraw()) // moved to after d3d8 to fix redraw in tumiki fighters
+    {}
+    else if(RedrawScreenGDI())
+    {}
+    //// NYI
+    //else if(gamehwnd)
+    //{
+    //	InvalidateRect(gamehwnd, nullptr, TRUE);
+    //	UpdateWindow(gamehwnd);
+    //}
+    else
+    {
+        redrawingScreen = false;
+        return false;
+    }
+    redrawingScreen = false;
+    return true;
 }
 
 
@@ -271,52 +271,52 @@ DWORD ThreadLocalStuff::tlsIndex = 0;
 
 BOOL tls_IsPrimaryThread()
 {
-	ThreadLocalStuff& t = tls;
-	return s_frameThreadId ? t.isFrameThread : (gamehwnd ? t.createdFirstWindow : t.isFirstThread);
+    ThreadLocalStuff& t = tls;
+    return s_frameThreadId ? t.isFrameThread : (gamehwnd ? t.createdFirstWindow : t.isFirstThread);
 }
 
 BOOL tls_IsPrimaryThread2(ThreadLocalStuff* pCurTls)
 {
-	ThreadLocalStuff& t = *pCurTls;
-	return s_frameThreadId ? t.isFrameThread : (gamehwnd ? t.createdFirstWindow : t.isFirstThread);
+    ThreadLocalStuff& t = *pCurTls;
+    return s_frameThreadId ? t.isFrameThread : (gamehwnd ? t.createdFirstWindow : t.isFirstThread);
 }
 
 bool IsInRange(DWORD address, const TrustedRangeInfo& range)
 {
-	return (DWORD)((DWORD)address - range.start) < (DWORD)(range.end - range.start);
+    return (DWORD)((DWORD)address - range.start) < (DWORD)(range.end - range.start);
 }
 
 bool IsInCurrentDllAddressSpace(DWORD address)
 {
-	return IsInRange(address, trustedRangeInfos.infos[0]);
+    return IsInRange(address, trustedRangeInfos.infos[0]);
 }
 bool IsInNonCurrentYetTrustedAddressSpace(DWORD address)
 {
-	int count = trustedRangeInfos.numInfos;
-	for(int i = 1; i < min(count, trustedRangeInfos.numInfos); i++)
-		if(IsInRange(address, trustedRangeInfos.infos[i]))
-			return true;
-	return (address == 0);
+    int count = trustedRangeInfos.numInfos;
+    for(int i = 1; i < min(count, trustedRangeInfos.numInfos); i++)
+        if(IsInRange(address, trustedRangeInfos.infos[i]))
+            return true;
+    return (address == 0);
 }
 bool IsInAnyTrustedAddressSpace(DWORD address)
 {
-	int count = trustedRangeInfos.numInfos;
-	for(int i = 0; i < min(count, trustedRangeInfos.numInfos); i++)
-		if(IsInRange(address, trustedRangeInfos.infos[i]))
-			return true;
-	return (address == 0);
+    int count = trustedRangeInfos.numInfos;
+    for(int i = 0; i < min(count, trustedRangeInfos.numInfos); i++)
+        if(IsInRange(address, trustedRangeInfos.infos[i]))
+            return true;
+    return (address == 0);
 }
 
 __declspec(noinline) bool IsNearStackTop(DWORD address)
 {
-	DWORD top = (DWORD)&top;
-	DWORD under = address - top;
-	return under < 0x1000;
+    DWORD top = (DWORD)&top;
+    DWORD under = address - top;
+    return under < 0x1000;
 }
 bool IsNear(DWORD address, DWORD address2)
 {
-	int diff = address - address2;
-	return diff < 0x10000 && diff > -0x10000;
+    int diff = address - address2;
+    return diff < 0x10000 && diff > -0x10000;
 }
 
 //void debugsplatmem(DWORD address, const char* name)
@@ -377,16 +377,16 @@ bool IsNear(DWORD address, DWORD address2)
 // as hacky as it is, it probably fixes desync problems in a bunch of games.
 bool VerifyIsTrustedCaller(bool trusted)
 {
-	if(!trusted)
-		return false; // if we already know it's untrusted then there's no need to run the test.
+    if(!trusted)
+        return false; // if we already know it's untrusted then there's no need to run the test.
 
 //	debugprintf("VerifyIsTrustedCaller wants to do its own stack trace!");
 //	cmdprintf("SHORTTRACE: 3,50");
 
 
-	DWORD myEBP;
-	//DWORD myESP;
-	//DWORD myEIP;
+    DWORD myEBP;
+    //DWORD myESP;
+    //DWORD myEIP;
     __asm
     {
     //Label:
@@ -396,95 +396,95 @@ bool VerifyIsTrustedCaller(bool trusted)
       //mov [myEIP], eax;
     }
 
-	//debugprintf("myEBP=0x%X, myESP=0x%X, myEIP=0x%X\n", myEBP, myESP, myEIP);
+    //debugprintf("myEBP=0x%X, myESP=0x%X, myEIP=0x%X\n", myEBP, myESP, myEIP);
 
 //	debugsplatmem(myESP, "esp");
 //	debugsplatmem(myEIP, "eip");
 
-	DWORD frame=myEBP;
-	DWORD oldFrame=0;
-	DWORD addr;//=myEIP;
-	//__asm { mov frame, ebp }
-	for(int dr=129; --dr;) // can be infinite with seemingly no issues, but I limited the loop just in case
-	{
+    DWORD frame=myEBP;
+    DWORD oldFrame=0;
+    DWORD addr;//=myEIP;
+    //__asm { mov frame, ebp }
+    for(int dr=129; --dr;) // can be infinite with seemingly no issues, but I limited the loop just in case
+    {
 //		debugprintf("VerifyIsTrustedCaller: frame = 0x%08x, &frame=0x%X\n", frame, &frame);
 
 //		debugsplatmem(frame, "ebp");
 
-		if(!IsNearStackTop(frame))
-		{
-			// there was no stack frame pointer...
-			// we should explicitly use the /Oy- compiler option to avoid this
-			// (using "Omit Frame Pointers"="No" or #pragma optimize("y",off) isn't enough!)
-			// but it sometimes happens regardless (maybe the trampoline code's fault?)
-			// so anyway
-			// we try to find the next stack frame pointer and continue from there.
-			// I don't want to rely on code I'm not in control of to do the stack walk,
-			// (because determinism across different computers and OS versions is important,
-			// and because I want this function to run very quickly)
-			// but this is still probably not the most robust way of doing it...
+        if(!IsNearStackTop(frame))
+        {
+            // there was no stack frame pointer...
+            // we should explicitly use the /Oy- compiler option to avoid this
+            // (using "Omit Frame Pointers"="No" or #pragma optimize("y",off) isn't enough!)
+            // but it sometimes happens regardless (maybe the trampoline code's fault?)
+            // so anyway
+            // we try to find the next stack frame pointer and continue from there.
+            // I don't want to rely on code I'm not in control of to do the stack walk,
+            // (because determinism across different computers and OS versions is important,
+            // and because I want this function to run very quickly)
+            // but this is still probably not the most robust way of doing it...
 
-			frame = oldFrame + 4; // roll back
-			for(int i=17; --i;)
-			{
-				frame += 4;
-				//debugprintf("trying frame 0x%X", frame);
-				//if(IsNearStackTop(frame))
-				//	debugprintf("= 0x%X", *(DWORD*)frame);
-				//if(IsNearStackTop(frame) && IsNear(*(DWORD*)frame, addr))
-				if(IsNearStackTop(frame) && IsInAnyTrustedAddressSpace(*(DWORD*)frame))
-					break;
-				//debugprintf("failed");
-			}
-			frame -= 4;
+            frame = oldFrame + 4; // roll back
+            for(int i=17; --i;)
+            {
+                frame += 4;
+                //debugprintf("trying frame 0x%X", frame);
+                //if(IsNearStackTop(frame))
+                //	debugprintf("= 0x%X", *(DWORD*)frame);
+                //if(IsNearStackTop(frame) && IsNear(*(DWORD*)frame, addr))
+                if(IsNearStackTop(frame) && IsInAnyTrustedAddressSpace(*(DWORD*)frame))
+                    break;
+                //debugprintf("failed");
+            }
+            frame -= 4;
 
-			if(!IsNearStackTop(frame))
-			{
-				// TODO: load debughelp StackWalk in this situation?
-				// it seems to be better at getting valid addresses without stack frame pointers.
-				// then again if it's not going to work the same on everyone's computer, it's out.
-				// for now we just give up and assume it's trusted. (assuming the reverse would break much more stuff)
-				static int errcount = 1024; // let's spew out a few errors, but not endlessly
-				if(errcount)
-				{
-					errcount--;
-					debuglog(LCF_ERROR|LCF_DESYNC, "ERROR in VerifyIsTrustedCaller. make sure the DLL was compiled with the /Oy- option! 0x%X\n", frame);
-					//cmdprintf("SHORTTRACE: 3,50");
-				}
-				return true;
-			}
+            if(!IsNearStackTop(frame))
+            {
+                // TODO: load debughelp StackWalk in this situation?
+                // it seems to be better at getting valid addresses without stack frame pointers.
+                // then again if it's not going to work the same on everyone's computer, it's out.
+                // for now we just give up and assume it's trusted. (assuming the reverse would break much more stuff)
+                static int errcount = 1024; // let's spew out a few errors, but not endlessly
+                if(errcount)
+                {
+                    errcount--;
+                    debuglog(LCF_ERROR|LCF_DESYNC, "ERROR in VerifyIsTrustedCaller. make sure the DLL was compiled with the /Oy- option! 0x%X\n", frame);
+                    //cmdprintf("SHORTTRACE: 3,50");
+                }
+                return true;
+            }
 
 //			debugprintf("AFTER CORRECTION:");
 //			debugsplatmem(frame, "ebp");
 //	cmdprintf("SHORTTRACE: 3,50");
-		}
+        }
 
-		addr = ((DWORD*)frame)[1]; 
+        addr = ((DWORD*)frame)[1]; 
 
-		////debugprintf("ebp=0x%X\n", frame);
-		////debugprintf("ebp[0]=0x%X, ebp[4]=0x%X, ebp[8]=0x%X, ebp[12]=0x%X, ebp[-4]=0x%X, ebp[-8]=0x%X, ebp[-12]=0x%X\n", ((DWORD*)frame)[0], ((DWORD*)frame)[1], ((DWORD*)frame)[2], ((DWORD*)frame)[3], ((DWORD*)frame)[-1], ((DWORD*)frame)[-2], ((DWORD*)frame)[-3]);
-		////debugprintf("esp[0]=0x%X, esp[4]=0x%X, esp[8]=0x%X, esp[12]=0x%X, esp[-4]=0x%X, esp[-8]=0x%X, esp[-12]=0x%X\n", ((DWORD*)myESP)[0], ((DWORD*)myESP)[1], ((DWORD*)myESP)[2], ((DWORD*)myESP)[3], ((DWORD*)myESP)[-1], ((DWORD*)myESP)[-2], ((DWORD*)myESP)[-3]);
+        ////debugprintf("ebp=0x%X\n", frame);
+        ////debugprintf("ebp[0]=0x%X, ebp[4]=0x%X, ebp[8]=0x%X, ebp[12]=0x%X, ebp[-4]=0x%X, ebp[-8]=0x%X, ebp[-12]=0x%X\n", ((DWORD*)frame)[0], ((DWORD*)frame)[1], ((DWORD*)frame)[2], ((DWORD*)frame)[3], ((DWORD*)frame)[-1], ((DWORD*)frame)[-2], ((DWORD*)frame)[-3]);
+        ////debugprintf("esp[0]=0x%X, esp[4]=0x%X, esp[8]=0x%X, esp[12]=0x%X, esp[-4]=0x%X, esp[-8]=0x%X, esp[-12]=0x%X\n", ((DWORD*)myESP)[0], ((DWORD*)myESP)[1], ((DWORD*)myESP)[2], ((DWORD*)myESP)[3], ((DWORD*)myESP)[-1], ((DWORD*)myESP)[-2], ((DWORD*)myESP)[-3]);
 //		debugprintf("VerifyIsTrustedCaller: addr = 0x%08x, &addr=0x%X\n", addr, &addr);
 
-		if(IsInNonCurrentYetTrustedAddressSpace(addr))
-		{
-			//debugprintf("TRUSTED: 0x%08x\n", addr);
-			//cmdprintf("SHORTTRACE: 3,50");
-			return true;
-		}
-		else if(!IsInCurrentDllAddressSpace(addr))
-		{
-			//debugprintf("UNTRUSTED: 0x%08x\n", addr); 
-			//cmdprintf("SHORTTRACE: 3,50");
-			return false;
-		}
+        if(IsInNonCurrentYetTrustedAddressSpace(addr))
+        {
+            //debugprintf("TRUSTED: 0x%08x\n", addr);
+            //cmdprintf("SHORTTRACE: 3,50");
+            return true;
+        }
+        else if(!IsInCurrentDllAddressSpace(addr))
+        {
+            //debugprintf("UNTRUSTED: 0x%08x\n", addr); 
+            //cmdprintf("SHORTTRACE: 3,50");
+            return false;
+        }
 
-		oldFrame = frame;
-		frame = *((DWORD*)frame);
+        oldFrame = frame;
+        frame = *((DWORD*)frame);
 
-	}
+    }
 
-	return true;
+    return true;
 }
 
 
@@ -576,13 +576,13 @@ bool VerifyIsTrustedCaller(bool trusted)
 int framecountModSkipFreq = 0;
 bool ShouldSkipDrawing(bool destIsFrontBuffer, bool destIsBackBuffer)
 {
-	// frameskip
-	return 
-	( framecountModSkipFreq &&
-	   ( (destIsBackBuffer && (tasflags.fastForwardFlags & FFMODE_BACKSKIP) && !(tasflags.aviMode & 1))
-	   ||(destIsFrontBuffer && (tasflags.fastForwardFlags & FFMODE_FRONTSKIP)) 
-	   )
-	);
+    // frameskip
+    return 
+    ( framecountModSkipFreq &&
+       ( (destIsBackBuffer && (tasflags.fastForwardFlags & FFMODE_BACKSKIP) && !(tasflags.aviMode & 1))
+       ||(destIsFrontBuffer && (tasflags.fastForwardFlags & FFMODE_FRONTSKIP)) 
+       )
+    );
 }
 
 
@@ -606,17 +606,17 @@ void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height)
 {
 //	if(hwndSizeLocked.find(hwnd) == hwndSizeLocked.end())
 //		return;
-	RECT rect = {0,0,width,height};
-	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
-	SetWindowLong(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
-	//SetWindowPos(hwnd, 0, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, /*SWP_NOMOVE | */SWP_SHOWWINDOW);
-	SetWindowPos(hwnd, 0, 0, 0, rect.right - rect.left, rect.bottom - rect.top, /*SWP_NOMOVE | */SWP_SHOWWINDOW);
-	hwndSizeLocked[hwnd] = TRUE;
+    RECT rect = {0,0,width,height};
+    AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
+    SetWindowLong(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+    //SetWindowPos(hwnd, 0, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, /*SWP_NOMOVE | */SWP_SHOWWINDOW);
+    SetWindowPos(hwnd, 0, 0, 0, rect.right - rect.left, rect.bottom - rect.top, /*SWP_NOMOVE | */SWP_SHOWWINDOW);
+    hwndSizeLocked[hwnd] = TRUE;
 }
 
 bool IsWindowFakeFullscreen(HWND hwnd)
 {
-	return hwndSizeLocked.find(hwnd) != hwndSizeLocked.end();
+    return hwndSizeLocked.find(hwnd) != hwndSizeLocked.end();
 }
 
 
@@ -634,10 +634,10 @@ int getCurrentTimestamp3();
 
 void UpdateInfoForDebugger()
 {
-	infoForDebugger.frames = getCurrentFramestampLogical();
-	infoForDebugger.ticks = getCurrentTimestamp();
-	infoForDebugger.addedDelay = getCurrentTimestamp2();
-	infoForDebugger.lastNewTicks = getCurrentTimestamp3();
+    infoForDebugger.frames = getCurrentFramestampLogical();
+    infoForDebugger.ticks = getCurrentTimestamp();
+    infoForDebugger.addedDelay = getCurrentTimestamp2();
+    infoForDebugger.lastNewTicks = getCurrentTimestamp3();
 }
 
 
@@ -673,47 +673,47 @@ bool pauseHandlerSuspendedSound = false;
 
 void SaveOrLoad(int slot, bool save)
 {
-	verbosedebugprintf(__FUNCTION__ " called.\n");
-	tls.callerisuntrusted++;
-	if(save && tasflags.storeVideoMemoryInSavestates)
-	{
-		BackupVideoMemoryOfAllDDrawSurfaces();
-		BackupVideoMemoryOfAllD3D8Surfaces();
-		BackupVideoMemoryOfAllD3D9Surfaces();
-	}
-	StopAllSounds();
-	if(save)
-	{
-		cmdprintf("SAVE: %d", slot);
-		save = !tasflags.stateLoaded; // otherwise "save" will be wrong after loading
-	}
-	else
-	{
-		cmdprintf("LOAD: %d", slot);
-		// note: any code placed here will never run! execution continues in the above branch.
-	}
-	if(tasflags.stateLoaded > 0 && tasflags.storeVideoMemoryInSavestates)
-	{
-		RestoreVideoMemoryOfAllDDrawSurfaces();
-		RestoreVideoMemoryOfAllD3D8Surfaces();
-		RestoreVideoMemoryOfAllD3D9Surfaces();
-		RedrawScreen();
-	}
-	ResumePlayingSounds();
-	pauseHandlerContiguousCallCount = 0;
-	if(pauseHandlerSuspendedSound)
-	{
-		PostResumeSound();
-		pauseHandlerSuspendedSound = false;
-	}
-	tls.callerisuntrusted--;
+    verbosedebugprintf(__FUNCTION__ " called.\n");
+    tls.callerisuntrusted++;
+    if(save && tasflags.storeVideoMemoryInSavestates)
+    {
+        BackupVideoMemoryOfAllDDrawSurfaces();
+        BackupVideoMemoryOfAllD3D8Surfaces();
+        BackupVideoMemoryOfAllD3D9Surfaces();
+    }
+    StopAllSounds();
+    if(save)
+    {
+        cmdprintf("SAVE: %d", slot);
+        save = !tasflags.stateLoaded; // otherwise "save" will be wrong after loading
+    }
+    else
+    {
+        cmdprintf("LOAD: %d", slot);
+        // note: any code placed here will never run! execution continues in the above branch.
+    }
+    if(tasflags.stateLoaded > 0 && tasflags.storeVideoMemoryInSavestates)
+    {
+        RestoreVideoMemoryOfAllDDrawSurfaces();
+        RestoreVideoMemoryOfAllD3D8Surfaces();
+        RestoreVideoMemoryOfAllD3D9Surfaces();
+        RedrawScreen();
+    }
+    ResumePlayingSounds();
+    pauseHandlerContiguousCallCount = 0;
+    if(pauseHandlerSuspendedSound)
+    {
+        PostResumeSound();
+        pauseHandlerSuspendedSound = false;
+    }
+    tls.callerisuntrusted--;
 }
 
 
 void GetFrameInput()
 {
-	verbosedebugprintf(__FUNCTION__ " called.\n");
-	ProcessFrameInput();
+    verbosedebugprintf(__FUNCTION__ " called.\n");
+    ProcessFrameInput();
 }
 
 HOOKFUNC BOOL WINAPI MyTranslateMessage(CONST MSG *lpMsg); // extern
@@ -724,92 +724,92 @@ LRESULT CALLBACK MyWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 // pausehelper
 void HandlePausedEvents()
 {
-	//verbosedebugprintf(__FUNCTION__ " called. (%d, %d)\n", pauseHandlerContiguousCallCount, pauseHandlerSuspendedSound);
-	if(inPauseHandler)
-		return;
-	inPauseHandler = true;
-	tls.callerisuntrusted += 2;
+    //verbosedebugprintf(__FUNCTION__ " called. (%d, %d)\n", pauseHandlerContiguousCallCount, pauseHandlerSuspendedSound);
+    if(inPauseHandler)
+        return;
+    inPauseHandler = true;
+    tls.callerisuntrusted += 2;
 
-	framecountModSkipFreq = 0; // disable frameskip when fast-forward and frame advance are used simultaneously
+    framecountModSkipFreq = 0; // disable frameskip when fast-forward and frame advance are used simultaneously
 
-	if(tasflags.emuMode & EMUMODE_EMULATESOUND)
-	{
-		pauseHandlerContiguousCallCount++;
-		if(!pauseHandlerSuspendedSound)
-		{
-			if(pauseHandlerContiguousCallCount > 30)
-			{
-				verbosedebugprintf("suspended sound for pause\n");
-				PreSuspendSound();
-				pauseHandlerSuspendedSound = true;
-			}
-			else if(pauseHandlerContiguousCallCount == 1)
-			{
-				if(!tasflags.fastForward)
-					ForceAlignSound(false);
-			}
-		}
-	}
+    if(tasflags.emuMode & EMUMODE_EMULATESOUND)
+    {
+        pauseHandlerContiguousCallCount++;
+        if(!pauseHandlerSuspendedSound)
+        {
+            if(pauseHandlerContiguousCallCount > 30)
+            {
+                verbosedebugprintf("suspended sound for pause\n");
+                PreSuspendSound();
+                pauseHandlerSuspendedSound = true;
+            }
+            else if(pauseHandlerContiguousCallCount == 1)
+            {
+                if(!tasflags.fastForward)
+                    ForceAlignSound(false);
+            }
+        }
+    }
 
-	// TODO: is this completely desync-proof? the "disable pause helper" option is there in case it isn't, but...
+    // TODO: is this completely desync-proof? the "disable pause helper" option is there in case it isn't, but...
 
-	// only processing certain messages necessary for interaction with the paused game window,
-	// and don't let them reach game code
-	struct MsgFilterArgs {
-		UINT wMsgFilterMin;
-		UINT wMsgFilterMax;
-		UINT wRemoveMsg;
-	} msgFilterArgs [] = {
-		{0,0,PM_QS_PAINT},
-		{0,0,((/*QS_SENDMESSAGE |*/ QS_MOUSEMOVE) << 16)},
-		{WM_NCCALCSIZE,WM_NCACTIVATE,0},
-		{WM_NCMOUSEMOVE,WM_NCMBUTTONDBLCLK,0},
-	};
+    // only processing certain messages necessary for interaction with the paused game window,
+    // and don't let them reach game code
+    struct MsgFilterArgs {
+        UINT wMsgFilterMin;
+        UINT wMsgFilterMax;
+        UINT wRemoveMsg;
+    } msgFilterArgs [] = {
+        {0,0,PM_QS_PAINT},
+        {0,0,((/*QS_SENDMESSAGE |*/ QS_MOUSEMOVE) << 16)},
+        {WM_NCCALCSIZE,WM_NCACTIVATE,0},
+        {WM_NCMOUSEMOVE,WM_NCMBUTTONDBLCLK,0},
+    };
 
-	MSG msg;
+    MSG msg;
 
-	// using gamehwnd isn't reliable enough
-	std::map<HWND, WNDPROC>::iterator iter;
-	bool sentToAny = false;
-	for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
-	{
-		HWND hwnd = iter->first;
-		iter++;
-		DWORD style = (DWORD)GetWindowLong(hwnd, GWL_STYLE);
-		if(IsWindow(hwnd)
-		&& ((hwnd==gamehwnd && (style&WS_VISIBLE))
-		 || ((style & (WS_VISIBLE|WS_CAPTION)) == (WS_VISIBLE|WS_CAPTION))
-		 || ((style & (WS_VISIBLE|WS_POPUP)) == (WS_VISIBLE|WS_POPUP)))
-		 )
-		{
-			for(int i = 0; i < ARRAYSIZE(msgFilterArgs); i++)
-			{
-				if(PeekMessageA(&msg, hwnd, msgFilterArgs[i].wMsgFilterMin,msgFilterArgs[i].wMsgFilterMax, PM_REMOVE|PM_NOYIELD | msgFilterArgs[i].wRemoveMsg))
-				{
-					//DispatchMessageInternal(hwnd, msg.message, msg.wParam, msg.lParam, true, MAF_PASSTHROUGH|MAF_RETURN_OS);
-					MyWndProcA(hwnd, msg.message, msg.wParam, msg.lParam);
-				}
-			}
-		}
-	}
+    // using gamehwnd isn't reliable enough
+    std::map<HWND, WNDPROC>::iterator iter;
+    bool sentToAny = false;
+    for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
+    {
+        HWND hwnd = iter->first;
+        iter++;
+        DWORD style = (DWORD)GetWindowLong(hwnd, GWL_STYLE);
+        if(IsWindow(hwnd)
+        && ((hwnd==gamehwnd && (style&WS_VISIBLE))
+         || ((style & (WS_VISIBLE|WS_CAPTION)) == (WS_VISIBLE|WS_CAPTION))
+         || ((style & (WS_VISIBLE|WS_POPUP)) == (WS_VISIBLE|WS_POPUP)))
+         )
+        {
+            for(int i = 0; i < ARRAYSIZE(msgFilterArgs); i++)
+            {
+                if(PeekMessageA(&msg, hwnd, msgFilterArgs[i].wMsgFilterMin,msgFilterArgs[i].wMsgFilterMax, PM_REMOVE|PM_NOYIELD | msgFilterArgs[i].wRemoveMsg))
+                {
+                    //DispatchMessageInternal(hwnd, msg.message, msg.wParam, msg.lParam, true, MAF_PASSTHROUGH|MAF_RETURN_OS);
+                    MyWndProcA(hwnd, msg.message, msg.wParam, msg.lParam);
+                }
+            }
+        }
+    }
 
-	tls.callerisuntrusted -= 2;
-	inPauseHandler = false;
+    tls.callerisuntrusted -= 2;
+    inPauseHandler = false;
 }
 
 void HandleShutdown()
 {
-	PreSuspendSound();
-	BackDoorStopAll();
-	fflush(NULL);
-	// ExitProcess doesn't work for me. sets wrong exit code or completely fails to exit.
-	TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); // but this does work.
-	ExitProcess(SUCCESSFUL_EXITCODE); // but if it doesn't then maybe this will?
-	// old version, left here in case TerminateProcess and ExitProcess somehow noop
-	//// just send anything so the WaitForDebugEvent call returns
-	cmdprintf("ok");
-	//// it might ask more than once
-	while(true) { cmdprintf("ok ok"); Sleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
+    PreSuspendSound();
+    BackDoorStopAll();
+    fflush(nullptr);
+    // ExitProcess doesn't work for me. sets wrong exit code or completely fails to exit.
+    TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); // but this does work.
+    ExitProcess(SUCCESSFUL_EXITCODE); // but if it doesn't then maybe this will?
+    // old version, left here in case TerminateProcess and ExitProcess somehow noop
+    //// just send anything so the WaitForDebugEvent call returns
+    cmdprintf("ok");
+    //// it might ask more than once
+    while(true) { cmdprintf("ok ok"); Sleep(10); TerminateProcess(GetCurrentProcess(), SUCCESSFUL_EXITCODE); }
 }
 
 
@@ -825,13 +825,13 @@ void HandleShutdown()
 
 
 HOOKFUNC HANDLE WINAPI MyCreateThread(
-		LPSECURITY_ATTRIBUTES lpThreadAttributes,
-		SIZE_T dwStackSize,
-		LPTHREAD_START_ROUTINE lpStartAddress,
-		LPVOID lpParameter,
-		DWORD dwCreationFlags,
-		LPDWORD lpThreadId
-	); // extern
+        LPSECURITY_ATTRIBUTES lpThreadAttributes,
+        SIZE_T dwStackSize,
+        LPTHREAD_START_ROUTINE lpStartAddress,
+        LPVOID lpParameter,
+        DWORD dwCreationFlags,
+        LPDWORD lpThreadId
+    ); // extern
 HOOKFUNC VOID WINAPI MySleep(DWORD dwMilliseconds); // extern
 
 
@@ -868,354 +868,365 @@ DWORD threadCounter = 0;
 //	lastTime = timeGetTime();//time;
 //}
 
-
-
-
-
-
-
 static int lastSentFPS = 0;
 static int s_skipFreq = 8;
 
-
-void FrameBoundary(void* captureInfo, int captureInfoType)
+void FrameBoundary(void* captureInfo, CAPTUREINFO captureInfoType)
 {
-	int localFrameCount = framecount;
-	debuglog(LCF_FRAME|LCF_FREQUENT, __FUNCTION__ " called. (%d -> %d)\n", localFrameCount, localFrameCount+1);
-	//cmdprintf("SUSPENDALL: ");
+    int localFrameCount = framecount;
+    debuglog(LCF_FRAME|LCF_FREQUENT, __FUNCTION__ " called. (%d -> %d)\n", localFrameCount, localFrameCount+1);
+    //cmdprintf("SUSPENDALL: ");
 
-	int framerate = tasflags.framerate;
-	//bool wasInFrameBoundary = inFrameBoundary;
+    int framerate = tasflags.framerate;
+    //bool wasInFrameBoundary = inFrameBoundary;
 
-	if(!dllInitializationDone)
-		return;
+    if (!dllInitializationDone)
+    {
+        return;
+    }
 
 //	debugprintf("gamehwnd = 0x%X\n", gamehwnd);
 
-	if(!s_frameThreadId && captureInfoType != CAPTUREINFO_TYPE_PREV)
-	{
-		char name[64];
-		sprintf(name, "%d_" "FrameThread" "_at_%d", threadCounter++, detTimer.GetTicks());
-		SetThreadName(-1, name);
+    if(!s_frameThreadId && captureInfoType != CAPTUREINFO::TYPE_PREV)
+    {
+        char name[64];
+        sprintf(name, "%d_" "FrameThread" "_at_%d", threadCounter++, detTimer.GetTicks());
+        SetThreadName(-1, name);
 
-		s_frameThreadId = GetCurrentThreadId();
-		tls.isFrameThread = TRUE;
-	}
+        s_frameThreadId = GetCurrentThreadId();
+        tls.isFrameThread = TRUE;
+    }
 
 #ifndef EMULATE_MESSAGE_QUEUES
-	if(hasPostedMessages)
-		HandlePostedMessages();
+    if (hasPostedMessages)
+    {
+        HandlePostedMessages();
+    }
 #endif
 
-	ProcessTimers();
+    ProcessTimers();
+
+    // NOTE: the above code might recurse. we're not really in a frame boundary just yet.
+    // for this reason, localFrameCount should NOT be used except for things like debugging printouts.
+    if(inFrameBoundary)
+    {
+        debuglog(LCF_FRAME|LCF_UNTESTED, __FUNCTION__ " warning: attempting to handle recursion in FrameBoundary...\n");
+        detTimer.ExitFrameBoundary();
+    }
+    detTimer.EnterFrameBoundary(framerate);
+    inFrameBoundary = true;
 
 
-	// NOTE: the above code might recurse. we're not really in a frame boundary just yet.
-	// for this reason, localFrameCount should NOT be used except for things like debugging printouts.
-	if(inFrameBoundary)
-	{
-		debuglog(LCF_FRAME|LCF_UNTESTED, __FUNCTION__ " warning: attempting to handle recursion in FrameBoundary...\n");
-		detTimer.ExitFrameBoundary();
-	}
-	detTimer.EnterFrameBoundary(framerate);
-	inFrameBoundary = true;
-
-
-	//if(!wasInFrameBoundary)
-	//{
-	//	debuglog(LCF_FRAME|LCF_ERROR, __FUNCTION__ " skipping recursion...\n");
-	//	_asm{int 3}
-	//	return;
-	//}
-	////inFrameBoundary = true;
+    //if(!wasInFrameBoundary)
+    //{
+    //	debuglog(LCF_FRAME|LCF_ERROR, __FUNCTION__ " skipping recursion...\n");
+    //	_asm{int 3}
+    //	return;
+    //}
+    ////inFrameBoundary = true;
 
 
 
-	//LogRealTime("beforeEnterFrame");
+    //LogRealTime("beforeEnterFrame");
 //	detTimer.EnterFrameBoundary(framerate);
-	//LogRealTime("afterEnterFrame");
+    //LogRealTime("afterEnterFrame");
 
-	framecount++;
+    framecount++;
 
 
-	debuglog(LCF_FRAME, "frameLOG: f=%d, t=%d\n", getCurrentFramestamp(), getCurrentTimestamp());
+    debuglog(LCF_FRAME, "frameLOG: f=%d, t=%d\n", getCurrentFramestamp(), getCurrentTimestamp());
 //	cmdprintf("DEBUGPAUSE: %d", getCurrentFramestamp());
-	//debuglog(LCF_FREQUENT|LCF_DESYNC|LCF_TODO|-1, "frameLOG: f=%d, t=%d\n", getCurrentFramestamp(), getCurrentTimestamp());
-	//cmdprintf("SHORTTRACE: 3,50");
+    //debuglog(LCF_FREQUENT|LCF_DESYNC|LCF_TODO|-1, "frameLOG: f=%d, t=%d\n", getCurrentFramestamp(), getCurrentTimestamp());
+    //cmdprintf("SHORTTRACE: 3,50");
 
-	if(tasflags.fastForward)
-	{
-		framecountModSkipFreq++;
-		BOOL recordingAVIVideo = (tasflags.aviMode & 1);
-		int skipFreq = (tasflags.aviMode & 1) ? 5 : s_skipFreq;
-		if(framecountModSkipFreq >= skipFreq)
-			framecountModSkipFreq = 0;
-	}
-	else
-	{
-		framecountModSkipFreq = 0;
-	}
+    if(tasflags.fastForward)
+    {
+        framecountModSkipFreq++;
+        BOOL recordingAVIVideo = (tasflags.aviMode & 1);
+        int skipFreq = (tasflags.aviMode & 1) ? 5 : s_skipFreq;
+        if (framecountModSkipFreq >= skipFreq)
+        {
+            framecountModSkipFreq = 0;
+        }
+    }
+    else
+    {
+        framecountModSkipFreq = 0;
+    }
 
-	if(++ranFramesThisFPSInterval >= (tasflags.fastForward ? 600 : 300))
-	{
-		int time = timeGetTime();
+    if(++ranFramesThisFPSInterval >= (tasflags.fastForward ? 600 : 300))
+    {
+        int time = timeGetTime();
 
-		ranFramesThisFPSInterval = 0;
-		float fps = (float)((totalRanFrames-totalSleepFrames) - measureFrameCount) * 1000.0f / (time - measureFrameTime);
+        ranFramesThisFPSInterval = 0;
+        float fps = (float)((totalRanFrames-totalSleepFrames) - measureFrameCount) * 1000.0f / (time - measureFrameTime);
 
-		int totalRanTicks = detTimer.GetTicks();
-		float logicalfps = (float)((totalRanFrames-totalSleepFrames) - measureFrameCount) * 1000.0f / (totalRanTicks - measureTickCount); // this shows the logical (timer) frames-per-second instead of actual FPS
-		measureTickCount = totalRanTicks;
+        int totalRanTicks = detTimer.GetTicks();
+        float logicalfps = (float)((totalRanFrames-totalSleepFrames) - measureFrameCount) * 1000.0f / (totalRanTicks - measureTickCount); // this shows the logical (timer) frames-per-second instead of actual FPS
+        measureTickCount = totalRanTicks;
 
-		cmdprintf("FPS: %g %g", fps, logicalfps);
-		measureFrameTime = time;
-		measureFrameCount = totalRanFrames-totalSleepFrames;
-		lastSentFPS = (int)fps;
+        cmdprintf("FPS: %g %g", fps, logicalfps);
+        measureFrameTime = time;
+        measureFrameCount = totalRanFrames-totalSleepFrames;
+        lastSentFPS = (int)fps;
 
-		// this looks like a stupid way of calculating it but it's better to have
-		// bands of the same skip frequency instead of continous variation
-		// and these are emperically determined values that aren't very even at the low end
-		if(lastSentFPS > 4000)
-			s_skipFreq = 270; // warp speed!
-		else if(lastSentFPS > 3000)
-			s_skipFreq = 200;
-		else if(lastSentFPS > 2000)
-			s_skipFreq = 128;
-		else if(lastSentFPS > 1400)
-			s_skipFreq = 96;
-		else if(lastSentFPS > 900)
-			s_skipFreq = 64;
-		else if(lastSentFPS > 200)
-			s_skipFreq = 32;
-		else if(lastSentFPS > 100)
-			s_skipFreq = 16;
-		else
-			s_skipFreq = 8;
-	}
-	totalRanFrames++;
-	if(captureInfoType == CAPTUREINFO_TYPE_PREV)
-		totalSleepFrames++;
+        // this looks like a stupid way of calculating it but it's better to have
+        // bands of the same skip frequency instead of continous variation
+        // and these are emperically determined values that aren't very even at the low end
+        if(lastSentFPS > 4000)
+            s_skipFreq = 270; // warp speed!
+        else if(lastSentFPS > 3000)
+            s_skipFreq = 200;
+        else if(lastSentFPS > 2000)
+            s_skipFreq = 128;
+        else if(lastSentFPS > 1400)
+            s_skipFreq = 96;
+        else if(lastSentFPS > 900)
+            s_skipFreq = 64;
+        else if(lastSentFPS > 200)
+            s_skipFreq = 32;
+        else if(lastSentFPS > 100)
+            s_skipFreq = 16;
+        else
+            s_skipFreq = 8;
+    }
+    totalRanFrames++;
+    if (captureInfoType == CAPTUREINFO::TYPE_PREV)
+    {
+        totalSleepFrames++;
+    }
 
 
 //	static int x = 0;
 //	x++;
 
-	//if(x % 100 == 0)
-	//{
-	//	debugprintf(__FUNCTION__ " called %d times\n", x);
-	//}
+    //if(x % 100 == 0)
+    //{
+    //	debugprintf(__FUNCTION__ " called %d times\n", x);
+    //}
 
-	BOOL prevWindowActivateFlags = tasflags.windowActivateFlags;
+    BOOL prevWindowActivateFlags = tasflags.windowActivateFlags;
 
-	previnput = curinput;
+    previnput = curinput;
 
-	g_videoFramesPrepared++;
-	//debugprintf(__FUNCTION__ ": g_soundMixedTicks=%d, g_videoFramesPrepared=%d, ratio=%g\n", g_soundMixedTicks, g_videoFramesPrepared, (float)g_soundMixedTicks/g_videoFramesPrepared);
-	bool ranCommand;
-	do
-	{
-		UpdateInfoForDebugger();
+    g_videoFramesPrepared++;
+    //debugprintf(__FUNCTION__ ": g_soundMixedTicks=%d, g_videoFramesPrepared=%d, ratio=%g\n", g_soundMixedTicks, g_videoFramesPrepared, (float)g_soundMixedTicks/g_videoFramesPrepared);
+    bool ranCommand;
+    do
+    {
+        UpdateInfoForDebugger();
 
-		cmdprintf("FRAME: %d %p %d", totalRanFrames, captureInfo, captureInfoType);
+        cmdprintf("FRAME: %d %p %d", totalRanFrames, captureInfo, captureInfoType);
 
-		ranCommand = false;
+        ranCommand = false;
 
-		captureInfo = 0;
-		captureInfoType = CAPTUREINFO_TYPE_NONE_SUBSEQUENT;
+        captureInfo = nullptr;
+        captureInfoType = CAPTUREINFO::TYPE_NONE_SUBSEQUENT;
 
-		// now check for commands
-		if(*commandSlot)
-		{
+        // now check for commands
+        if(*commandSlot)
+        {
 #define MessagePrefixMatch(pre) (!strncmp(pstr, pre": ", sizeof(pre": ")-1) ? pstr += sizeof(pre": ")-1 : false)
-			const char* pstr = commandSlot;
-			if(MessagePrefixMatch("SAVE"))
-				SaveOrLoad(atoi(pstr), true), (ranCommand=true);
-			else if(MessagePrefixMatch("LOAD"))
-				SaveOrLoad(atoi(pstr), false), (ranCommand=true);
-			//else if(MessagePrefixMatch("FAST"))
-			//	SetFastForward(atoi(pstr)!=0), (ranCommand=true);
-			else if(MessagePrefixMatch("HANDLEEVENTS"))
-				HandlePausedEvents(), (ranCommand=true);
-			else if(MessagePrefixMatch("PREPARETODIE"))
-				HandleShutdown(), (ranCommand=true);
-			*commandSlot = 0;
+            const char* pstr = commandSlot;
+            if(MessagePrefixMatch("SAVE"))
+                SaveOrLoad(atoi(pstr), true), (ranCommand=true);
+            else if(MessagePrefixMatch("LOAD"))
+                SaveOrLoad(atoi(pstr), false), (ranCommand=true);
+            //else if(MessagePrefixMatch("FAST"))
+            //	SetFastForward(atoi(pstr)!=0), (ranCommand=true);
+            else if(MessagePrefixMatch("HANDLEEVENTS"))
+                HandlePausedEvents(), (ranCommand=true);
+            else if(MessagePrefixMatch("PREPARETODIE"))
+                HandleShutdown(), (ranCommand=true);
+            *commandSlot = 0;
 #undef MessagePrefixMatch
-		}
-	} while(ranCommand);
+        }
+    } while(ranCommand);
 
-	pauseHandlerContiguousCallCount = 0;
+    pauseHandlerContiguousCallCount = 0;
 
-	DoFrameBoundarySoundChecks();
+    DoFrameBoundarySoundChecks();
 
 
-	if(framecount > 1)
-	{
+    if(framecount > 1)
+    {
 //		if((prevWindowActivateFlags&1) != (tasflags.windowActivateFlags&1))
-		{
+        {
 //			hwndDeniedDeactivate.clear();
-		}
+        }
 
-		if((prevWindowActivateFlags&2) != (tasflags.windowActivateFlags&2))
-		{
-		// handle toggling "always on top" status when allow deactivate checkbox changes
-			std::map<HWND, WNDPROC>::iterator iter;
-			for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end(); iter++)
-			{
-				HWND hwnd = iter->first;
-				if(IsWindow(hwnd))
-				{
-					if(!(tasflags.windowActivateFlags & 2))
-						SetWindowPos(hwnd, HWND_NOTOPMOST, 0,0,0,0, SWP_NOMOVE|SWP_NOSIZE);
-					else
-					{
-						SetForegroundWindow(hwnd);
-						//SetActiveWindow(hwnd);
-						//SetFocus(hwnd);
-						SetWindowPos(hwnd, HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE|SWP_NOSIZE);
-					}
-				}
-			}
-		}
-	}
+        if((prevWindowActivateFlags&2) != (tasflags.windowActivateFlags&2))
+        {
+        // handle toggling "always on top" status when allow deactivate checkbox changes
+            std::map<HWND, WNDPROC>::iterator iter;
+            for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end(); iter++)
+            {
+                HWND hwnd = iter->first;
+                if(IsWindow(hwnd))
+                {
+                    if (!(tasflags.windowActivateFlags & 2))
+                    {
+                        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                    }
+                    else
+                    {
+                        SetForegroundWindow(hwnd);
+                        //SetActiveWindow(hwnd);
+                        //SetFocus(hwnd);
+                        SetWindowPos(hwnd, HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE|SWP_NOSIZE);
+                    }
+                }
+            }
+        }
+    }
 
 
-	GetFrameInput();
+    GetFrameInput();
 
 
-	// using gamehwnd isn't reliable enough
-	std::map<HWND, WNDPROC>::iterator iter;
-	bool sentToAny = false;
-	for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
-	{
-		HWND hwnd = iter->first;
-		iter++;
-		DWORD style = (DWORD)GetWindowLong(hwnd, GWL_STYLE);
-		if(IsWindow(hwnd)
-		&& ((hwnd==gamehwnd && (style&WS_VISIBLE))
-		 || ((style & (WS_VISIBLE|WS_CAPTION)) == (WS_VISIBLE|WS_CAPTION))
-		 || ((style & (WS_VISIBLE|WS_POPUP)) == (WS_VISIBLE|WS_POPUP))
-		 || (!sentToAny && iter == hwndToOrigHandler.end()))
-		 )
-		{
-			sentToAny = true;
+    // using gamehwnd isn't reliable enough
+    std::map<HWND, WNDPROC>::iterator iter;
+    bool sentToAny = false;
+    for(iter = hwndToOrigHandler.begin(); iter != hwndToOrigHandler.end();)
+    {
+        HWND hwnd = iter->first;
+        iter++;
+        DWORD style = (DWORD)GetWindowLong(hwnd, GWL_STYLE);
+        if(IsWindow(hwnd)
+        && ((hwnd==gamehwnd && (style&WS_VISIBLE))
+         || ((style & (WS_VISIBLE|WS_CAPTION)) == (WS_VISIBLE|WS_CAPTION))
+         || ((style & (WS_VISIBLE|WS_POPUP)) == (WS_VISIBLE|WS_POPUP))
+         || (!sentToAny && iter == hwndToOrigHandler.end()))
+         )
+        {
+            sentToAny = true;
 
-			/* Send keyboard messages */
-			HKL keyboardLayout = GetKeyboardLayout(GetCurrentThreadId());
+            /* Send keyboard messages */
+            HKL keyboardLayout = GetKeyboardLayout(GetCurrentThreadId());
 
-			BYTE keyboardState[256];
-			HOOKFUNC BOOL WINAPI MyGetKeyboardState(PBYTE lpKeyState);
-			MyGetKeyboardState(keyboardState);
+            BYTE keyboardState[256];
+            HOOKFUNC BOOL WINAPI MyGetKeyboardState(PBYTE lpKeyState);
+            MyGetKeyboardState(keyboardState);
 
-			for(int i = 0; i < 256; i++)
-			{
-				int cur = curinput.keys[i];
-				int prev = previnput.keys[i];
-				if(cur && !prev)
-				{
-					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "DOWN: 0x%X\n", i);
+            for(int i = 0; i < 256; i++)
+            {
+                int cur = curinput.keys[i];
+                int prev = previnput.keys[i];
+                if(cur && !prev)
+                {
+                    debuglog(LCF_KEYBOARD|LCF_FREQUENT, "DOWN: 0x%X\n", i);
 #ifdef EMULATE_MESSAGE_QUEUES
-					PostMessageInternal(hwnd, WM_KEYDOWN, i, 0);
+                    PostMessageInternal(hwnd, WM_KEYDOWN, i, 0);
 #else
-					//SendMessage(hwnd, toggleWhitelistMessage(WM_KEYDOWN), i, 0);
-					MyWndProcA(hwnd, toggleWhitelistMessage(WM_KEYDOWN), i, 0);
+                    //SendMessage(hwnd, toggleWhitelistMessage(WM_KEYDOWN), i, 0);
+                    MyWndProcA(hwnd, toggleWhitelistMessage(WM_KEYDOWN), i, 0);
 #endif
 
-					// also send a WM_CHAR event in case some games need it (HACK, should do this in TranslateMessage)
-					CHAR outbuf [4];
-					//int DIK = MapVirtualKeyEx(i, /*MAPVK_VK_TO_VSC*/0, keyboardLayout) & 0xFF;
-					int results = ToAsciiEx(i, 0, keyboardState, (WORD*)outbuf, 0, keyboardLayout);
-					for(int res = 0; res < results; res++)
-					{
-						int c = outbuf[res];
-						debuglog(LCF_KEYBOARD|LCF_FREQUENT, "CHAR: %c (0x%X)\n", (char)c, c);
+                    // also send a WM_CHAR event in case some games need it (HACK, should do this in TranslateMessage)
+                    CHAR outbuf [4];
+                    //int DIK = MapVirtualKeyEx(i, /*MAPVK_VK_TO_VSC*/0, keyboardLayout) & 0xFF;
+                    int results = ToAsciiEx(i, 0, keyboardState, (WORD*)outbuf, 0, keyboardLayout);
+                    for(int res = 0; res < results; res++)
+                    {
+                        int c = outbuf[res];
+                        debuglog(LCF_KEYBOARD|LCF_FREQUENT, "CHAR: %c (0x%X)\n", (char)c, c);
 #ifdef EMULATE_MESSAGE_QUEUES
-						PostMessageInternal(hwnd, WM_CHAR, c, 0);
+                        PostMessageInternal(hwnd, WM_CHAR, c, 0);
 #else
-						//SendMessage(hwnd, toggleWhitelistMessage(WM_CHAR), c, 0);
-						MyWndProcA(hwnd, toggleWhitelistMessage(WM_CHAR), c, 0);
+                        //SendMessage(hwnd, toggleWhitelistMessage(WM_CHAR), c, 0);
+                        MyWndProcA(hwnd, toggleWhitelistMessage(WM_CHAR), c, 0);
 #endif
-					}
-				}
-				else if(!cur && prev)
-				{
-					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "UP: 0x%X\n", i);
+                    }
+                }
+                else if(!cur && prev)
+                {
+                    debuglog(LCF_KEYBOARD|LCF_FREQUENT, "UP: 0x%X\n", i);
 #ifdef EMULATE_MESSAGE_QUEUES
-					PostMessageInternal(hwnd, WM_KEYUP, i, 0);
+                    PostMessageInternal(hwnd, WM_KEYUP, i, 0);
 #else
-					//SendMessage(hwnd, toggleWhitelistMessage(WM_KEYUP), i, 0);
-					MyWndProcA(hwnd, toggleWhitelistMessage(WM_KEYUP), i, 0);
+                    //SendMessage(hwnd, toggleWhitelistMessage(WM_KEYUP), i, 0);
+                    MyWndProcA(hwnd, toggleWhitelistMessage(WM_KEYUP), i, 0);
 #endif
-				}
-			}
+                }
+            }
 
-			/* Send mouse messages */
+            /* Send mouse messages */
 
-			// Build the wParam (contains other buttons status + keyboard modifiers).
-			WPARAM flag = 0;
-			WPARAM mouseFlags[3] = {MK_LBUTTON, MK_RBUTTON, MK_MBUTTON};
-			for (int i = 0; i < 3; i++){
-				if (curinput.mouse.di.rgbButtons[i])
-					flag |= mouseFlags[i];
-			}
-			if (curinput.keys[VK_CONTROL])
-				flag |= MK_CONTROL;
-			if (curinput.keys[VK_SHIFT])
-				flag |= MK_SHIFT;
+            // Build the wParam (contains other buttons status + keyboard modifiers).
+            WPARAM flag = 0;
+            WPARAM mouseFlags[3] = {MK_LBUTTON, MK_RBUTTON, MK_MBUTTON};
+            for (int i = 0; i < 3; i++)
+            {
+                if (curinput.mouse.di.rgbButtons[i])
+                {
+                    flag |= mouseFlags[i];
+                }
+            }
+            if (curinput.keys[VK_CONTROL])
+            {
+                flag |= MK_CONTROL;
+            }
+            if (curinput.keys[VK_SHIFT])
+            {
+                flag |= MK_SHIFT;
+            }
 
-			// Build the lParam (contains cursor coordinates relative to the window).
-			LPARAM coords = (curinput.mouse.coords.y << 16) | (curinput.mouse.coords.x); // Not sure it's good when coords are negative...
+            // Build the lParam (contains cursor coordinates relative to the window).
+            LPARAM coords = (curinput.mouse.coords.y << 16) | (curinput.mouse.coords.x); // Not sure it's good when coords are negative...
 
-			// Send the MOUSEMOVE message if needed.
-			if ((curinput.mouse.di.lX != 0) || (curinput.mouse.di.lY != 0)){
-				debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE MOVE\n");
-				//debugprintf("My MOUSE message is 0x%X with wParam = %d and lParam = %d\n",WM_MOUSEMOVE, flag, coords);
-				//debugprintf("Coords are x=%d and y=%d\n",GET_X_LPARAM(coords), GET_Y_LPARAM(coords));
+            // Send the MOUSEMOVE message if needed.
+            if ((curinput.mouse.di.lX != 0) || (curinput.mouse.di.lY != 0))
+            {
+                debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE MOVE\n");
+                //debugprintf("My MOUSE message is 0x%X with wParam = %d and lParam = %d\n",WM_MOUSEMOVE, flag, coords);
+                //debugprintf("Coords are x=%d and y=%d\n",GET_X_LPARAM(coords), GET_Y_LPARAM(coords));
 #ifdef EMULATE_MESSAGE_QUEUES
-				PostMessageInternal(hwnd, WM_MOUSEMOVE, flag, coords);
+                PostMessageInternal(hwnd, WM_MOUSEMOVE, flag, coords);
 #else
-				MyWndProcA(hwnd, toggleWhitelistMessage(WM_MOUSEMOVE), flag, coords); // TODO: fill lParam and wParam
+                MyWndProcA(hwnd, toggleWhitelistMessage(WM_MOUSEMOVE), flag, coords); // TODO: fill lParam and wParam
 #endif
-			}
+            }
 
-			// Send the BUTTONUP/DOWN messages.
-			WORD mouseButtonsUp[3] = {WM_LBUTTONUP, WM_RBUTTONUP, WM_MBUTTONUP};
-			WORD mouseButtonsDown[3] = {WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_MBUTTONDOWN};
+            // Send the BUTTONUP/DOWN messages.
+            WORD mouseButtonsUp[3] = {WM_LBUTTONUP, WM_RBUTTONUP, WM_MBUTTONUP};
+            WORD mouseButtonsDown[3] = {WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_MBUTTONDOWN};
 
-			for (int i = 0; i < 3; i++){
-				int cur = curinput.mouse.di.rgbButtons[i];
-				int prev = previnput.mouse.di.rgbButtons[i];
-				if(cur && !prev)
-				{
-					debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE BUTTON DOWN: 0x%X\n", i);
+            for (int i = 0; i < 3; i++)
+            {
+                int cur = curinput.mouse.di.rgbButtons[i];
+                int prev = previnput.mouse.di.rgbButtons[i];
+                if(cur && !prev)
+                {
+                    debuglog(LCF_MOUSE|LCF_FREQUENT, "MOUSE BUTTON DOWN: 0x%X\n", i);
 #ifdef EMULATE_MESSAGE_QUEUES
-					PostMessageInternal(hwnd, mouseButtonsDown[i], flag, coords);
+                    PostMessageInternal(hwnd, mouseButtonsDown[i], flag, coords);
 #else
-					MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsDown[i]), flag, coords);
+                    MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsDown[i]), flag, coords);
 #endif
-				}
-				else if(!cur && prev)
-				{
-					debuglog(LCF_KEYBOARD|LCF_FREQUENT, "MOUSE BUTTON UP: 0x%X\n", i);
+                }
+                else if(!cur && prev)
+                {
+                    debuglog(LCF_KEYBOARD|LCF_FREQUENT, "MOUSE BUTTON UP: 0x%X\n", i);
 #ifdef EMULATE_MESSAGE_QUEUES
-					PostMessageInternal(hwnd, mouseButtonsUp[i], flag, coords);
+                    PostMessageInternal(hwnd, mouseButtonsUp[i], flag, coords);
 #else
-					MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsUp[i]), flag, coords);
+                    MyWndProcA(hwnd, toggleWhitelistMessage(mouseButtonsUp[i]), flag, coords);
 #endif
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
 
 //	LogRealTime("beforeExitFrame");
-	detTimer.ExitFrameBoundary();
-	inFrameBoundary = false;
+    detTimer.ExitFrameBoundary();
+    inFrameBoundary = false;
 //	LogRealTime("afterExitFrame");
 //	debugprintf("\n");
-	//cmdprintf("RESUMEALL: ");
+    //cmdprintf("RESUMEALL: ");
 
-	g_midFrameAsyncKeyRequests = 0;
+    g_midFrameAsyncKeyRequests = 0;
 
-	debuglog(LCF_FRAME|LCF_FREQUENT, __FUNCTION__ " returned. (%d -> %d)\n", localFrameCount, framecount);
+    debuglog(LCF_FRAME|LCF_FREQUENT, __FUNCTION__ " returned. (%d -> %d)\n", localFrameCount, framecount);
 }
 
 
@@ -1259,78 +1270,78 @@ void FrameBoundary(void* captureInfo, int captureInfoType)
 
 struct MyClassFactory : IClassFactory
 {
-	//static BOOL Hook(IClassFactory* obj)
-	//{
-	//	BOOL rv = FALSE;
-	//	rv |= VTHOOKFUNC(IClassFactory, CreateInstance);
-	//	//rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
-	//	return rv;
-	//}
-	//
-	//static HRESULT(STDMETHODCALLTYPE *CreateInstance)(IClassFactory* pThis, IUnknown* pUnkOuter, REFIID riid, void** ppvObject);
-	//static HRESULT STDMETHODCALLTYPE MyCreateInstance(IClassFactory* pThis, IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
-	//{
-	//	debuglog(LCF_HOOK|LCF_MODULE, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
-	//	HRESULT rv = CreateInstance(pThis, pUnkOuter, riid, ppvObject);
-	//	if(SUCCEEDED(rv))
-	//		HookCOMInterface(riid, ppvObject, true);
-	//	return rv;
-	//}
+    //static BOOL Hook(IClassFactory* obj)
+    //{
+    //	BOOL rv = FALSE;
+    //	rv |= VTHOOKFUNC(IClassFactory, CreateInstance);
+    //	//rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
+    //	return rv;
+    //}
+    //
+    //static HRESULT(STDMETHODCALLTYPE *CreateInstance)(IClassFactory* pThis, IUnknown* pUnkOuter, REFIID riid, void** ppvObject);
+    //static HRESULT STDMETHODCALLTYPE MyCreateInstance(IClassFactory* pThis, IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
+    //{
+    //	debuglog(LCF_HOOK|LCF_MODULE, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
+    //	HRESULT rv = CreateInstance(pThis, pUnkOuter, riid, ppvObject);
+    //	if(SUCCEEDED(rv))
+    //		HookCOMInterface(riid, ppvObject, true);
+    //	return rv;
+    //}
 
 
-	MyClassFactory(IClassFactory* cf) : m_cf(cf)
-	{
+    MyClassFactory(IClassFactory* cf) : m_cf(cf)
+    {
 //		debugprintf(__FUNCTION__ " called.\n");
 //		cmdprintf("SHORTTRACE: 3,50");
-	}
+    }
 
 
-	// IUnknown methods
+    // IUnknown methods
 
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObj)
-	{
-		//debugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
-		HRESULT rv = m_cf->QueryInterface(riid, ppvObj);
-		if(SUCCEEDED(rv))
-			HookCOMInterface(riid, ppvObj);
-		return rv;
-	}
+    {
+        //debugprintf(__FUNCTION__ "(0x%X) called.\n", riid.Data1);
+        HRESULT rv = m_cf->QueryInterface(riid, ppvObj);
+        if(SUCCEEDED(rv))
+            HookCOMInterface(riid, ppvObj);
+        return rv;
+    }
 
     ULONG STDMETHODCALLTYPE AddRef()
-	{
-		//debugprintf(__FUNCTION__ " called.\n");
-		return m_cf->AddRef();
-	}
+    {
+        //debugprintf(__FUNCTION__ " called.\n");
+        return m_cf->AddRef();
+    }
 
     ULONG STDMETHODCALLTYPE Release()
-	{
-		//debugprintf(__FUNCTION__ " called.\n");
-		ULONG count = m_cf->Release();
-		if(0 == count)
-			delete this;
+    {
+        //debugprintf(__FUNCTION__ " called.\n");
+        ULONG count = m_cf->Release();
+        if(0 == count)
+            delete this;
 
-		return count;
-	}
+        return count;
+    }
 
     // IClassFactory methods
 
-	STDMETHOD(CreateInstance)(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
-	{
-		debuglog(LCF_HOOK|LCF_MODULE, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
-		HRESULT rv = m_cf->CreateInstance(pUnkOuter, riid, ppvObject);
-		if(SUCCEEDED(rv))
-			HookCOMInterface(riid, ppvObject, true);
-		return rv;
-	}
+    STDMETHOD(CreateInstance)(IUnknown* pUnkOuter, REFIID riid, void** ppvObject)
+    {
+        debuglog(LCF_HOOK|LCF_MODULE, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
+        HRESULT rv = m_cf->CreateInstance(pUnkOuter, riid, ppvObject);
+        if(SUCCEEDED(rv))
+            HookCOMInterface(riid, ppvObject, true);
+        return rv;
+    }
 
-	STDMETHOD(LockServer)(BOOL fLock)
-	{
-		return m_cf->LockServer(fLock);
-	}
+    STDMETHOD(LockServer)(BOOL fLock)
+    {
+        return m_cf->LockServer(fLock);
+    }
 
 private:
 
-	IClassFactory* m_cf;
+    IClassFactory* m_cf;
 };
 //HRESULT (STDMETHODCALLTYPE* MyClassFactory::CreateInstance)(IClassFactory* pThis, IUnknown* pUnkOuter, REFIID riid, void** ppvObject) = 0;
 ////HRESULT (STDMETHODCALLTYPE* MyClassFactory::QueryInterface)(IClassFactory* pThis, REFIID riid, void** ppvObj) = 0;
@@ -1340,52 +1351,52 @@ private:
 
 void HookCOMInterface(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 {
-	if(!ppvOut)
-		return;
+    if(!ppvOut)
+        return;
 
-	debuglog(LCF_HOOK, __FUNCTION__ "(0x%X)\n", riid.Data1);
+    debuglog(LCF_HOOK, __FUNCTION__ "(0x%X)\n", riid.Data1);
 
-	switch(riid.Data1)
-	{
-		//VTHOOKRIID3(IClassFactory,MyClassFactory);
-		HOOKRIID3(IClassFactory,MyClassFactory);
+    switch(riid.Data1)
+    {
+        //VTHOOKRIID3(IClassFactory,MyClassFactory);
+        HOOKRIID3(IClassFactory,MyClassFactory);
 
-		default:
-			if(!HookCOMInterfaceDDraw(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceD3D7(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceD3D8(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceD3D9(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceInput(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
-				debuglog(LCF_HOOK, __FUNCTION__ " for unknown riid: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", riid.Data1, riid.Data2, riid.Data3, riid.Data4[0], riid.Data4[1], riid.Data4[2], riid.Data4[3], riid.Data4[4], riid.Data4[5], riid.Data4[6], riid.Data4[7]);
-			break;
-	}
+        default:
+            if(!HookCOMInterfaceDDraw(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceD3D7(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceD3D8(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceD3D9(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceInput(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
+                debuglog(LCF_HOOK, __FUNCTION__ " for unknown riid: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", riid.Data1, riid.Data2, riid.Data3, riid.Data4[0], riid.Data4[1], riid.Data4[2], riid.Data4[3], riid.Data4[4], riid.Data4[5], riid.Data4[6], riid.Data4[7]);
+            break;
+    }
 }
 
 void HookCOMInterfaceEx(REFIID riid, LPVOID* ppvOut, REFGUID parameter, bool uncheckedFastNew)
 {
-	if(!ppvOut)
-		return;
+    if(!ppvOut)
+        return;
 
-	debuglog(LCF_HOOK, __FUNCTION__ "(0x%X)\n", riid.Data1);
+    debuglog(LCF_HOOK, __FUNCTION__ "(0x%X)\n", riid.Data1);
 
-	switch(riid.Data1)
-	{
-		//VTHOOKRIID3(IClassFactory,MyClassFactory);
-		HOOKRIID3(IClassFactory,MyClassFactory);
+    switch(riid.Data1)
+    {
+        //VTHOOKRIID3(IClassFactory,MyClassFactory);
+        HOOKRIID3(IClassFactory,MyClassFactory);
 
-		default:
-			if(!HookCOMInterfaceDDraw(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceD3D7(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceD3D8(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceD3D9(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
-			&& !HookCOMInterfaceInputEx(riid, ppvOut, parameter, uncheckedFastNew)
-			&& !HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
-				debuglog(LCF_HOOK, __FUNCTION__ " for unknown riid: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", riid.Data1, riid.Data2, riid.Data3, riid.Data4[0], riid.Data4[1], riid.Data4[2], riid.Data4[3], riid.Data4[4], riid.Data4[5], riid.Data4[6], riid.Data4[7]);
-			break;
-	}
+        default:
+            if(!HookCOMInterfaceDDraw(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceD3D7(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceD3D8(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceD3D9(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceSound(riid, ppvOut, uncheckedFastNew)
+            && !HookCOMInterfaceInputEx(riid, ppvOut, parameter, uncheckedFastNew)
+            && !HookCOMInterfaceTime(riid, ppvOut, uncheckedFastNew))
+                debuglog(LCF_HOOK, __FUNCTION__ " for unknown riid: %08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X\n", riid.Data1, riid.Data2, riid.Data3, riid.Data4[0], riid.Data4[1], riid.Data4[2], riid.Data4[3], riid.Data4[4], riid.Data4[5], riid.Data4[6], riid.Data4[7]);
+            break;
+    }
 }
 
 
@@ -1537,209 +1548,209 @@ bool IsWindows7()     { return tasflags.osVersionMajor == 6 && tasflags.osVersio
 // PostDllMain is the code we run after DllMain to finish up initialization without restrictions.
 DWORD WINAPI PostDllMain(LPVOID lpParam)
 {
-	dllInitializationDone = true;
-	debugprintf(__FUNCTION__ " called.\n");
+    dllInitializationDone = true;
+    debugprintf(__FUNCTION__ " called.\n");
 
-	detTimer.OnSystemTimerRecalibrated();
+    detTimer.OnSystemTimerRecalibrated();
 
-	ThreadLocalStuff& curtls = tls;
-	curtls.callerisuntrusted++; // avoid advancing timer here
+    ThreadLocalStuff& curtls = tls;
+    curtls.callerisuntrusted++; // avoid advancing timer here
 
-	// see MyKiUserCallbackDispatcher... to avoid hardcoding OS-specific constants, we take the chance to measure one of them here.
-	extern bool watchForCLLApiNum;
-	extern int cllApiNum;
-	watchForCLLApiNum = true; // a few functions like GetSystemMetrics and LoadKeyboardLayout are very likely to call ClientLoadLibrary
-	cllApiNum = -1;
-	curtls.treatDLLLoadsAsClient++;
-	GetSystemMetrics(42);
-	curtls.treatDLLLoadsAsClient--; // disable here because we'd prefer LoadKeyboardLayout to actually succeed.  
-	curtls.callingClientLoadLibrary = FALSE;
+    // see MyKiUserCallbackDispatcher... to avoid hardcoding OS-specific constants, we take the chance to measure one of them here.
+    extern bool watchForCLLApiNum;
+    extern int cllApiNum;
+    watchForCLLApiNum = true; // a few functions like GetSystemMetrics and LoadKeyboardLayout are very likely to call ClientLoadLibrary
+    cllApiNum = -1;
+    curtls.treatDLLLoadsAsClient++;
+    GetSystemMetrics(42);
+    curtls.treatDLLLoadsAsClient--; // disable here because we'd prefer LoadKeyboardLayout to actually succeed.  
+    curtls.callingClientLoadLibrary = FALSE;
 
-	// moved from DllMain since it was causing a loader lock problem
-	//LoadKeyboardLayoutA(keyboardLayoutName, KLF_ACTIVATE | KLF_REORDER | KLF_SETFORPROCESS);
-	// activate disabled because it interferes with directinput in other apps (e.g. hourglass hotkeys)
-	HKL loadLayoutRv = LoadKeyboardLayoutA(keyboardLayoutName, 0);
-	g_hklOverride = loadLayoutRv;
-	//if(!loadLayoutRv) // because LoadKeyboardLayout sometimes lies about succeeding and returns the default layout, let's always go into the fallback branch to ensure consistency
-	{
-		sscanf(keyboardLayoutName, "%08X", &g_hklOverride);
-		if(!((DWORD)g_hklOverride & 0xFFFF0000))
-			(DWORD&)g_hklOverride |= ((DWORD)g_hklOverride << 16);
-	}
-	debugprintf("keyboardLayout = %s, hkl = %08X -> %08X", keyboardLayoutName, loadLayoutRv, g_hklOverride);
-	curtls.callingClientLoadLibrary = FALSE;
+    // moved from DllMain since it was causing a loader lock problem
+    //LoadKeyboardLayoutA(keyboardLayoutName, KLF_ACTIVATE | KLF_REORDER | KLF_SETFORPROCESS);
+    // activate disabled because it interferes with directinput in other apps (e.g. hourglass hotkeys)
+    HKL loadLayoutRv = LoadKeyboardLayoutA(keyboardLayoutName, 0);
+    g_hklOverride = loadLayoutRv;
+    //if(!loadLayoutRv) // because LoadKeyboardLayout sometimes lies about succeeding and returns the default layout, let's always go into the fallback branch to ensure consistency
+    {
+        sscanf(keyboardLayoutName, "%08X", &g_hklOverride);
+        if(!((DWORD)g_hklOverride & 0xFFFF0000))
+            (DWORD&)g_hklOverride |= ((DWORD)g_hklOverride << 16);
+    }
+    debugprintf("keyboardLayout = %s, hkl = %08X -> %08X", keyboardLayoutName, loadLayoutRv, g_hklOverride);
+    curtls.callingClientLoadLibrary = FALSE;
 
-	if(tasflags.appLocale)
-	{
-		SetThreadLocale(tasflags.appLocale);
-		SetThreadUILanguage(tasflags.appLocale);
-	}
+    if(tasflags.appLocale)
+    {
+        SetThreadLocale(tasflags.appLocale);
+        SetThreadUILanguage(tasflags.appLocale);
+    }
 
-	if(watchForCLLApiNum || cllApiNum == -1)
-	{
-		// didn't find it, somehow
-		watchForCLLApiNum = false;
-		cllApiNum = (IsWindows7() ? 65 : 66);
-		debugprintf("using ClientLoadLibrary ApiNumber = %d. OS = %d.%d\n", cllApiNum, tasflags.osVersionMajor, tasflags.osVersionMinor);
-	}
-	else
-	{
-		debugprintf("found ClientLoadLibrary ApiNumber = %d. OS = %d.%d\n", cllApiNum, tasflags.osVersionMajor, tasflags.osVersionMinor);
-	}
-	curtls.callingClientLoadLibrary = FALSE;
+    if(watchForCLLApiNum || cllApiNum == -1)
+    {
+        // didn't find it, somehow
+        watchForCLLApiNum = false;
+        cllApiNum = (IsWindows7() ? 65 : 66);
+        debugprintf("using ClientLoadLibrary ApiNumber = %d. OS = %d.%d\n", cllApiNum, tasflags.osVersionMajor, tasflags.osVersionMinor);
+    }
+    else
+    {
+        debugprintf("found ClientLoadLibrary ApiNumber = %d. OS = %d.%d\n", cllApiNum, tasflags.osVersionMajor, tasflags.osVersionMinor);
+    }
+    curtls.callingClientLoadLibrary = FALSE;
 
-	curtls.callerisuntrusted--;
+    curtls.callerisuntrusted--;
 
-	curtls.isFirstThread = true;
+    curtls.isFirstThread = true;
 
-	cmdprintf("POSTDLLMAINDONE: 0");
-	debugprintf(__FUNCTION__ " returned.\n");
+    cmdprintf("POSTDLLMAINDONE: 0");
+    debugprintf(__FUNCTION__ " returned.\n");
 
-	return 0;
+    return 0;
 }
 
 
 BOOL APIENTRY DllMain( HMODULE hModule, 
                        DWORD  fdwReason, 
                        LPVOID lpReserved
-					 )
+                     )
 {
-	ThreadLocalStuff::DllManage(fdwReason);
+    ThreadLocalStuff::DllManage(fdwReason);
 
-	switch (fdwReason)
-	{
-	case DLL_PROCESS_ATTACH:
-		tasflags.debugPrintMode = 2;
-		tasflags.timescale = 1;
-		tasflags.timescaleDivisor = 1;
+    switch (fdwReason)
+    {
+    case DLL_PROCESS_ATTACH:
+        tasflags.debugPrintMode = 2;
+        tasflags.timescale = 1;
+        tasflags.timescaleDivisor = 1;
 
-		debugprintf("DllMain started, injection must have worked.\n");
-		hCurrentProcess = GetCurrentProcess();
-		DisableThreadLibraryCalls(hModule);
+        debugprintf("DllMain started, injection must have worked.\n");
+        hCurrentProcess = GetCurrentProcess();
+        DisableThreadLibraryCalls(hModule);
 
-		if(!s_frameThreadId)
-			SetThreadName(-1, "DllMain");
+        if(!s_frameThreadId)
+            SetThreadName(-1, "DllMain");
 
-		SyncDllMainInit();
-		TimerDllMainInit();
-		MessageDllMainInit();
-		SoundDllMainInit();
+        SyncDllMainInit();
+        TimerDllMainInit();
+        MessageDllMainInit();
+        SoundDllMainInit();
 
-		cmdprintf("SRCDLLVERSION: %d", VERSION); // must send before the DLLVERSION
-		cmdprintf("DLLVERSION: %d.%d, %s", 0, __LINE__, __DATE__);
+        cmdprintf("SRCDLLVERSION: %d", VERSION); // must send before the DLLVERSION
+        cmdprintf("DLLVERSION: %d.%d, %s", 0, __LINE__, __DATE__);
 
-		// tell it where to put commands
-		cmdprintf("HERESMYCARD: %Iu", commandSlot);
+        // tell it where to put commands
+        cmdprintf("HERESMYCARD: %Iu", commandSlot);
 
-		// tell it where to read/write full inputs status
-		cmdprintf("INPUTSBUF: %Iu", &curinput);
+        // tell it where to read/write full inputs status
+        cmdprintf("INPUTSBUF: %Iu", &curinput);
 
-		// tell it where to write trusted address range info
-		cmdprintf("TRUSTEDRANGEINFOBUF: %Iu", &trustedRangeInfos);
+        // tell it where to write trusted address range info
+        cmdprintf("TRUSTEDRANGEINFOBUF: %Iu", &trustedRangeInfos);
 
-		// tell it where to write other flags (current only movie playback flag)
-		cmdprintf("TASFLAGSBUF: %Iu", &tasflags);
+        // tell it where to write other flags (current only movie playback flag)
+        cmdprintf("TASFLAGSBUF: %Iu", &tasflags);
 
-		// tell it where we put sound capture information
-		cmdprintf("SOUNDINFO: %Iu", &lastFrameSoundInfo);
+        // tell it where we put sound capture information
+        cmdprintf("SOUNDINFO: %Iu", &lastFrameSoundInfo);
 
-		// tell it where we put other information (statistics for the debugger, etc)
-		cmdprintf("GENERALINFO: %Iu", &infoForDebugger);
-		cmdprintf("PALETTEENTRIES: %Iu", &activePalette);
+        // tell it where we put other information (statistics for the debugger, etc)
+        cmdprintf("GENERALINFO: %Iu", &infoForDebugger);
+        cmdprintf("PALETTEENTRIES: %Iu", &activePalette);
 
-		// for the external viewport (a test/debugging thing that's probably currently disabled)
-		cmdprintf("EXTHWNDBUF: %Iu", &extHWnd);
+        // for the external viewport (a test/debugging thing that's probably currently disabled)
+        cmdprintf("EXTHWNDBUF: %Iu", &extHWnd);
 
 
-		//cmdprintf("GETDLLLIST: %Iu", dllLeaveAloneList);
+        //cmdprintf("GETDLLLIST: %Iu", dllLeaveAloneList);
 
-		//SetPriorityClass(hCurrentProcess, HIGH_PRIORITY_CLASS);
+        //SetPriorityClass(hCurrentProcess, HIGH_PRIORITY_CLASS);
 
-		//{
-		//	GetModuleFileNameA((HMODULE)hModule, currentModuleFilename, MAX_PATH);
-		//	strcpy(dlltempDir, currentModuleFilename);
-		//	char* dot = strrchr(dlltempDir, '.');
-		//	char* slash = strrchr(dlltempDir, '\\');
-		//	if(slash<dot)
-		//		*dot = 0;
-		//	strcat(dlltempDir, "\\dlltemp");
-		//	CreateDirectoryA(dlltempDir, NULL);
-		//	debugprintf(dlltempDir);
-		//}
+        //{
+        //	GetModuleFileNameA((HMODULE)hModule, currentModuleFilename, MAX_PATH);
+        //	strcpy(dlltempDir, currentModuleFilename);
+        //	char* dot = strrchr(dlltempDir, '.');
+        //	char* slash = strrchr(dlltempDir, '\\');
+        //	if(slash<dot)
+        //		*dot = 0;
+        //	strcat(dlltempDir, "\\dlltemp");
+        //	CreateDirectoryA(dlltempDir, nullptr);
+        //	debugprintf(dlltempDir);
+        //}
 
-		//ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
-		ApplyTimeIntercepts();
-		ApplyTimerIntercepts();
-		ApplyModuleIntercepts();
-		ApplyThreadIntercepts();
-		ApplyMessageIntercepts();
-		ApplyWindowIntercepts();
-		ApplyInputIntercepts();
-		ApplyGDIIntercepts();
-		ApplyDDrawIntercepts();
-		ApplyD3DIntercepts();
-		ApplyD3D8Intercepts();
-		ApplyD3D9Intercepts();
-		ApplyOGLIntercepts();
-		ApplySDLIntercepts();
-		ApplySoundIntercepts();
-		ApplyWaitIntercepts();
-		ApplySyncIntercepts();
-		ApplyFileIntercepts();
-		ApplyRegistryIntercepts();
-		ApplyXinputIntercepts();
+        //ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+        ApplyTimeIntercepts();
+        ApplyTimerIntercepts();
+        ApplyModuleIntercepts();
+        ApplyThreadIntercepts();
+        ApplyMessageIntercepts();
+        ApplyWindowIntercepts();
+        ApplyInputIntercepts();
+        ApplyGDIIntercepts();
+        ApplyDDrawIntercepts();
+        ApplyD3DIntercepts();
+        ApplyD3D8Intercepts();
+        ApplyD3D9Intercepts();
+        ApplyOGLIntercepts();
+        ApplySDLIntercepts();
+        ApplySoundIntercepts();
+        ApplyWaitIntercepts();
+        ApplySyncIntercepts();
+        ApplyFileIntercepts();
+        ApplyRegistryIntercepts();
+        ApplyXinputIntercepts();
 
-		notramps = false;
+        notramps = false;
 
-		// tell it which keyboard layout is active,
-		// let it replace it with one stored in a movie if it wants,
-		// then load the possibly-new keyboard layout
-		GetKeyboardLayoutNameA(keyboardLayoutName);
-		cmdprintf("KEYBLAYOUT: %Iu", keyboardLayoutName);
-		// moved to PostDllMain since it was causing a loader lock problem
-		//LoadKeyboardLayout(keyboardLayoutName, KLF_ACTIVATE | KLF_REORDER | KLF_SETFORPROCESS);
+        // tell it which keyboard layout is active,
+        // let it replace it with one stored in a movie if it wants,
+        // then load the possibly-new keyboard layout
+        GetKeyboardLayoutNameA(keyboardLayoutName);
+        cmdprintf("KEYBLAYOUT: %Iu", keyboardLayoutName);
+        // moved to PostDllMain since it was causing a loader lock problem
+        //LoadKeyboardLayout(keyboardLayoutName, KLF_ACTIVATE | KLF_REORDER | KLF_SETFORPROCESS);
 
-		if(tasflags.appLocale)
-		{
-			SetConsoleCP(LocaleToCodePage(tasflags.appLocale));
-			SetConsoleOutputCP(LocaleToCodePage(tasflags.appLocale));
-			SetThreadLocale(tasflags.appLocale);
-			SetThreadUILanguage(tasflags.appLocale);
-			// disabled because it breaks fonts in pcb, undocumented anyway
-			//if(HMODULE kernel32 = LoadLibrary("kernel32.dll"))
-			//	if(SetCPGlobalType SetCPGlobal = (SetCPGlobalType)GetProcAddress(kernel32, "SetCPGlobal"))
-			//		SetCPGlobal(LocaleToCodePage(tasflags.appLocale));
-		}
+        if(tasflags.appLocale)
+        {
+            SetConsoleCP(LocaleToCodePage(tasflags.appLocale));
+            SetConsoleOutputCP(LocaleToCodePage(tasflags.appLocale));
+            SetThreadLocale(tasflags.appLocale);
+            SetThreadUILanguage(tasflags.appLocale);
+            // disabled because it breaks fonts in pcb, undocumented anyway
+            //if(HMODULE kernel32 = LoadLibrary("kernel32.dll"))
+            //	if(SetCPGlobalType SetCPGlobal = (SetCPGlobalType)GetProcAddress(kernel32, "SetCPGlobal"))
+            //		SetCPGlobal(LocaleToCodePage(tasflags.appLocale));
+        }
 
-		debugprintf("version = %d, movie version = %d, OS = %d.%d.\n", VERSION, tasflags.movieVersion, tasflags.osVersionMajor, tasflags.osVersionMinor);
+        debugprintf("version = %d, movie version = %d, OS = %d.%d.\n", VERSION, tasflags.movieVersion, tasflags.osVersionMajor, tasflags.osVersionMinor);
 
-		// in case PostDllMain doesn't get called right away (although we really need it to...)
-		if(tasflags.osVersionMajor <= 6)
-		{
-			extern int cllApiNum;
-			cllApiNum = (IsWindows7() ? 65 : 66);
-		}
+        // in case PostDllMain doesn't get called right away (although we really need it to...)
+        if(tasflags.osVersionMajor <= 6)
+        {
+            extern int cllApiNum;
+            cllApiNum = (IsWindows7() ? 65 : 66);
+        }
 
-		detTimer.Initialize(tasflags.initialTime);
-		nonDetTimer.Initialize(tasflags.initialTime);
+        detTimer.Initialize(tasflags.initialTime);
+        nonDetTimer.Initialize(tasflags.initialTime);
 
-		{
-			DWORD threadId = 0;
-			HANDLE hThread = CreateThread(NULL, 0, PostDllMain, NULL, 0, &threadId); // note that Windows won't let this thread start executing until after DllMain returns
-			SetThreadPriority(hThread, THREAD_PRIORITY_TIME_CRITICAL); // in case suspending the main thread doesn't work
-			SetThreadPriorityBoost(hThread, TRUE);
-			SetThreadName(threadId, "PostDllMain");
-		}
-		if(!s_frameThreadId)
-			SetThreadName(-1, "Main");
-		break;
-	case DLL_THREAD_ATTACH:
-	case DLL_THREAD_DETACH:
-	case DLL_PROCESS_DETACH:
-		break;
-	}
+        {
+            DWORD threadId = 0;
+            HANDLE hThread = CreateThread(nullptr, 0, PostDllMain, nullptr, 0, &threadId); // note that Windows won't let this thread start executing until after DllMain returns
+            SetThreadPriority(hThread, THREAD_PRIORITY_TIME_CRITICAL); // in case suspending the main thread doesn't work
+            SetThreadPriorityBoost(hThread, TRUE);
+            SetThreadName(threadId, "PostDllMain");
+        }
+        if(!s_frameThreadId)
+            SetThreadName(-1, "Main");
+        break;
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+    case DLL_PROCESS_DETACH:
+        break;
+    }
 
-	debugprintf("DllMain returned. (fdwReason = 0x%X)\n", fdwReason);
+    debugprintf("DllMain returned. (fdwReason = 0x%X)\n", fdwReason);
 
     return TRUE;
 }
@@ -1749,6 +1760,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 // if we're using IAT patching.
 __declspec(dllexport) int fnwintased(void)
 {
-	return 42;
+    return 42;
 }
 

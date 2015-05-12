@@ -75,6 +75,7 @@ static void FrameBoundaryDIBitsToAVI(const void* bits, const BITMAPINFO& bmi)
         break;
     case BI_BITFIELDS:
         // probably RGB565
+#pragma message("DrCos: What?")
         desc.ddpfPixelFormat.dwRBitMask = 0[(DWORD*)bmi.bmiColors];
         desc.ddpfPixelFormat.dwGBitMask = 1[(DWORD*)bmi.bmiColors];
         desc.ddpfPixelFormat.dwBBitMask = 2[(DWORD*)bmi.bmiColors];
@@ -86,12 +87,12 @@ static void FrameBoundaryDIBitsToAVI(const void* bits, const BITMAPINFO& bmi)
 
     if(valid)
     {
-        FrameBoundary(&desc, CAPTUREINFO_TYPE_DDSD);
+        FrameBoundary(&desc, CAPTUREINFO::TYPE_DDSD);
     }
     else
     {
         debuglog(LCF_GDI|LCF_ERROR, __FUNCTION__": unhandled bit count %d with biCompression=%d\n", bmi.bmiHeader.biBitCount, bmi.bmiHeader.biCompression);
-        FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
+        FrameBoundary(nullptr, CAPTUREINFO::TYPE_NONE);
     }
 }
 
@@ -117,7 +118,7 @@ static void FrameBoundaryHDCtoAVI(HDC hdc,int xSrc,int ySrc,int xRes,int yRes)
     BITMAPINFO& bmi = *(BITMAPINFO*)&fbmi;
     GetDIBits(hdc, bitmap, 0, 0, 0, &bmi, DIB_RGB_COLORS);
 
-    static char* bits = NULL;
+    static char* bits = nullptr;
     static unsigned int bitsAllocated = 0;
     if(bitsAllocated < bmi.bmiHeader.biSizeImage)
     {
@@ -266,7 +267,7 @@ HOOKFUNC BOOL WINAPI MyStretchBlt(
     {
         tls.peekedMessage = FALSE;
         if(!(tasflags.aviMode & 1))
-            FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
+            FrameBoundary(nullptr, CAPTUREINFO::TYPE_NONE);
         else
             FrameBoundaryHDCtoAVI(hdcSrc,nXOriginSrc,nYOriginSrc,nWidthSrc,nHeightSrc);
         s_hdcSrcSaved = hdcSrc;
@@ -359,7 +360,7 @@ HOOKFUNC BOOL WINAPI MyBitBlt(
     {
         tls.peekedMessage = FALSE;
         if(!(tasflags.aviMode & 1))
-            FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
+            FrameBoundary(nullptr, CAPTUREINFO::TYPE_NONE);
         else
             FrameBoundaryHDCtoAVI(hdcSrc,nXSrc,nYSrc,nWidth,nHeight);
         s_hdcSrcSaved = hdcSrc;
@@ -396,10 +397,14 @@ HOOKFUNC int WINAPI MySetDIBitsToDevice(HDC hdc, int xDest, int yDest, DWORD w, 
             if(rv != 0 && rv != GDI_ERROR && (/*s_gdiPhaseDetector.AdvanceAndCheckCycleBoundary(MAKELONG(xDest,yDest))
                 ||*/ tls.peekedMessage) && VerifyIsTrustedCaller(!tls.callerisuntrusted))
             {
-                if(!(tasflags.aviMode & 1))
-                    FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
+                if (!(tasflags.aviMode & 1))
+                {
+                    FrameBoundary(nullptr, CAPTUREINFO::TYPE_NONE);
+                }
                 else
-                    FrameBoundaryDIBitsToAVI(lpvBits,*lpbmi);
+                {
+                    FrameBoundaryDIBitsToAVI(lpvBits, *lpbmi);
+                }
                 tls.peekedMessage = FALSE;
             }
         }
@@ -419,7 +424,7 @@ HOOKFUNC int WINAPI MyStretchDIBits(HDC hdc, int xDest, int yDest, int DestWidth
                 ||*/ tls.peekedMessage) && VerifyIsTrustedCaller(!tls.callerisuntrusted))
             {
                 if(!(tasflags.aviMode & 1))
-                    FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
+                    FrameBoundary(nullptr, CAPTUREINFO::TYPE_NONE);
                 else
                     FrameBoundaryDIBitsToAVI(lpBits,*lpbmi);
                 tls.peekedMessage = FALSE;
@@ -532,10 +537,10 @@ bool DoesFontExistW(CONST LOGFONTW *lplf)
 {
     if(!*lplf->lfFaceName)
         return false;
-    HDC hdc = GetDC(NULL); // "If this value is NULL, GetDC retrieves the DC for the entire screen."
+    HDC hdc = GetDC(nullptr); // "If this value is nullptr, GetDC retrieves the DC for the entire screen."
     DWORD rv = 0;
     EnumFontFamiliesExW(hdc, (LPLOGFONTW)lplf, &DoesFontExistWCallback, (LPARAM)&rv, 0);
-    ReleaseDC(NULL, hdc);
+    ReleaseDC(nullptr, hdc);
     return rv != 0;
 }
 

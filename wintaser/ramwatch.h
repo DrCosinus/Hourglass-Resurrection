@@ -22,7 +22,7 @@ struct AddressWatcher
 	unsigned int Address; // hardware address
 	char Size;
 	char Type;
-	char* comment; // NULL means no comment, non-NULL means allocated comment
+	char* comment; // nullptr means no comment, non-nullptr means allocated comment
 	bool WrongEndian;
 	RSVal CurValue;
 };
@@ -34,6 +34,6 @@ extern char Watch_Dir[1024];
 
 bool InsertWatch(const AddressWatcher& Watch, char *Comment);
 void RemoveWatch(const AddressWatcher& Watch, int ignoreIndex=-1);
-bool InsertWatch(const AddressWatcher& Watch, HWND parent=NULL); // asks user for comment
+bool InsertWatch(const AddressWatcher& Watch, HWND parent = nullptr); // asks user for comment
 void Update_RAM_Watch();
 bool Load_Watches(bool clear, const char* filename);

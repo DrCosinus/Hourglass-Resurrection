@@ -8,7 +8,7 @@
 #include "Config.h"
 //#define ANONYMIZE_PRINT_NUMS // for simplifying diffs (debugging)
 
-FILE* debuglogfile = NULL;
+FILE* debuglogfile = nullptr;
 
 CRITICAL_SECTION g_debugPrintCS;
 
@@ -77,8 +77,8 @@ void PrintLastError(LPTSTR lpszFunction, DWORD dw)
 
     LPVOID lpMsgBuf;
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&lpMsgBuf, 0, NULL );
+        nullptr, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR)&lpMsgBuf, 0, nullptr);
 
     debugprintf("%s failed, error %d: %s", lpszFunction, dw, lpMsgBuf);
 }

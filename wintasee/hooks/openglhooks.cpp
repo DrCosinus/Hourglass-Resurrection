@@ -359,10 +359,8 @@ struct OpenGLServerState // see glEnableState docs
 static OpenGLServerState oglServerState;
 static std::vector<OpenGLServerState> oglServerStateStack;
 
-
-
-static IDirect3D8* ogld3d8 = NULL;
-static IDirect3DDevice8* ogld3d8Device = NULL;
+static IDirect3D8* ogld3d8 = nullptr;
+static IDirect3DDevice8* ogld3d8Device = nullptr;
 static HDC oglCurrentHDC = (HDC)INVALID_HANDLE_VALUE;
 
 
@@ -771,7 +769,7 @@ public:
 #else
             free(buffer);
 #endif
-            buffer = NULL;
+            buffer = nullptr;
         }
     }
 };
@@ -818,7 +816,7 @@ struct OpenGLTexture
         if(d3dTexture)
         {
             d3dTexture->Release();
-            d3dTexture = NULL;
+            d3dTexture = nullptr;
         }
     }
     void Clear()
@@ -830,7 +828,7 @@ struct OpenGLTexture
         internalFormat = 0;
         ClearData();
     }
-    OpenGLTexture() : d3dTexture(NULL)
+    OpenGLTexture() : d3dTexture(nullptr)
     {
         Clear();
     }
@@ -896,7 +894,7 @@ static const int GL_RGB565 = 0x8D62;
 
 static void InitGLState()
 {
-    oglAllowExecuteCommands = (ogld3d8Device != NULL);
+    oglAllowExecuteCommands = (ogld3d8Device != nullptr);
     oglError = GL_NO_ERROR;
     oglBeganMode = GL_UNSTARTED;
     oglMatrixID = GL_MODELVIEW;
@@ -959,7 +957,7 @@ static void InitDevice(bool fullscreen, HWND hwnd, int width=0, int height=0)
     if(ogld3d8Device)
     {
         ogld3d8Device->Release();
-        ogld3d8Device = NULL;
+        ogld3d8Device = nullptr;
     }
     D3DDISPLAYMODE displayMode;
     ogld3d8->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
@@ -1034,7 +1032,7 @@ static void InitDevice(bool fullscreen, HWND hwnd, int width=0, int height=0)
 
 HOOKFUNC IDirect3D8* WINAPI MyDirect3DCreate8(UINT SDKVersion);
 
-static void InitOGLD3D(HWND hwnd=NULL)
+static void InitOGLD3D(HWND hwnd = nullptr)
 {
     LoadLibrary("d3d8.dll"); // make sure d3d8 functions are available (hooking magic takes care of the rest, so there's no need to call GetProcAddress here)
     ogld3d8 = MyDirect3DCreate8(D3D_SDK_VERSION);
@@ -1174,7 +1172,7 @@ HOOKFUNC void GLAPI MyglEnd()
                 oglClientState.arrayState.colorArrayStride = offset;
                 oglClientState.arrayState.normalArrayStride = offset;
                 oglClientState.arrayState.vertexArrayStride = offset;
-                OglDrawToD3D(oglBeganMode,oglImmediateVertices.size(), 0, 0,NULL, true,oglMakingDisplayList!=0);
+                OglDrawToD3D(oglBeganMode, oglImmediateVertices.size(), 0, 0, nullptr, true, oglMakingDisplayList != 0);
 
 
                 oglClientState.arrayState = prevArrayState;
@@ -1218,7 +1216,7 @@ HOOKFUNC GLubyte* GLAPI MyglGetString(GLenum name)
 //		return (GLubyte*)"";
     }
 
-    return (GLubyte*)NULL;
+    return (GLubyte*)nullptr;
 }
 
 HOOKFUNC void GLAPI MyglHint(GLenum target, GLenum mode)
@@ -1495,7 +1493,7 @@ HOOKFUNC void GLAPI MyglClear (GLbitfield mask)
             flags |= D3DCLEAR_STENCIL;
         if(mask & GL_COLOR_BUFFER_BIT)
             flags |= D3DCLEAR_TARGET;
-        ogld3d8Device->Clear(0, NULL, flags, oglServerState.colorBuffer.clearColor, oglServerState.colorBuffer.clearZ, oglServerState.colorBuffer.clearStencil);
+        ogld3d8Device->Clear(0, nullptr, flags, oglServerState.colorBuffer.clearColor, oglServerState.colorBuffer.clearZ, oglServerState.colorBuffer.clearStencil);
     }
     OGLPUSHDISPLAYLISTENTRY_1ARG(idglClear, glbitfield,mask);
 }
@@ -2167,7 +2165,7 @@ HOOKFUNC void GLAPI MyglDisable (GLenum cap)
             break;
         case GL_TEXTURE_2D:
             oglServerState.enable.texture2d = false;
-            ogld3d8Device->SetTexture(0, NULL); // FIXME temp hack
+            ogld3d8Device->SetTexture(0, nullptr); // FIXME temp hack
             break;
         }
     }
@@ -2967,7 +2965,7 @@ HOOKFUNC void GLAPI MyglNewList (GLuint list, GLenum mode)
         oglDisplayLists.resize(1);
     oglDisplayLists[0].entries.clear(); // intentionally don't call Clear on each entry, since it should have been copied already
     oglMakingDisplayList = list;
-    oglAllowExecuteCommands = (mode == GL_COMPILE_AND_EXECUTE) && (ogld3d8Device != NULL);
+    oglAllowExecuteCommands = (mode == GL_COMPILE_AND_EXECUTE) && (ogld3d8Device != nullptr);
 }
 
 HOOKFUNC void GLAPI MyglEndList (void)
@@ -2981,7 +2979,7 @@ HOOKFUNC void GLAPI MyglEndList (void)
     oglDisplayLists[oglMakingDisplayList] = oglDisplayLists[0];
     oglDisplayLists[oglMakingDisplayList].valid = true;
     oglMakingDisplayList = 0;
-    oglAllowExecuteCommands = (ogld3d8Device != NULL);
+    oglAllowExecuteCommands = (ogld3d8Device != nullptr);
 }
 
 HOOKFUNC void GLAPI MyglNormal3b (GLbyte nx, GLbyte ny, GLbyte nz)
@@ -4433,7 +4431,7 @@ static void oglTexImageND(int texture, GLenum target, GLint level, GLint interna
     if(target == GL_PROXY_TEXTURE_1D || target == GL_PROXY_TEXTURE_2D)
         return;
     D3DLOCKED_RECT lock;
-    if(SUCCEEDED(tex.d3dTexture->LockRect(0,&lock,NULL,0)))
+    if (SUCCEEDED(tex.d3dTexture->LockRect(0, &lock, nullptr, 0)))
     {
         //if(0) // FIXME TEMP TESTING
         //{
@@ -6184,12 +6182,12 @@ HOOKFUNC BOOL WINAPI MywglDeleteContext(HGLRC context)
         if(ogld3d8Device)
         {
             ogld3d8Device->Release();
-            ogld3d8Device = NULL;
+            ogld3d8Device = nullptr;
         }
         if(ogld3d8)
         {
             ogld3d8->Release();
-            ogld3d8 = NULL;
+            ogld3d8 = nullptr;
         }
         oglCurrentHDC = (HDC)INVALID_HANDLE_VALUE;
         oglAllowExecuteCommands = false;
@@ -6230,7 +6228,7 @@ HOOKFUNC PROC WINAPI MywglGetDefaultProcAddress(LPCSTR name)
 {
     debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ "(\"%s\") called.\n", name);
     //return wglGetDefaultProcAddress(name);
-    return NULL; // extensions are NYI
+    return nullptr; // extensions are NYI
 }
 
 HOOKFUNC int WINAPI MywglGetLayerPaletteEntries(HDC hdc, int i1, int i2, int i3, COLORREF* cr) 
@@ -6250,7 +6248,7 @@ HOOKFUNC PROC WINAPI MywglGetProcAddress(LPCSTR name)
 {
     debuglog(LCF_TODO|LCF_OGL, __FUNCTION__ "(\"%s\") called.\n", name);
     //return wglGetProcAddress(name);
-    return NULL; // extensions are NYI
+    return nullptr; // extensions are NYI
 }
 
 HOOKFUNC BOOL WINAPI MywglMakeCurrent(HDC hdc, HGLRC context) 
@@ -6282,7 +6280,7 @@ HOOKFUNC BOOL WINAPI MywglMakeCurrent(HDC hdc, HGLRC context)
         if(ogld3d8Device)
         {
             ogld3d8Device->Release();
-            ogld3d8Device = NULL;
+            ogld3d8Device = nullptr;
         }
         oglAllowExecuteCommands = false;
         oglMakingDisplayList = 0;
@@ -6694,7 +6692,7 @@ bool PresentOGLD3D()
         return false;
     debuglog(LCF_OGL|LCF_FRAME, __FUNCTION__ " called.\n");
     ogld3d8Device->EndScene();
-    ogld3d8Device->Present(NULL, NULL, NULL, NULL);
+    ogld3d8Device->Present(nullptr, nullptr, nullptr, nullptr);
     ogld3d8Device->BeginScene();
     return true;
 }

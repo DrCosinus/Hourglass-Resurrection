@@ -16,16 +16,16 @@ DEFINE_LOCAL_GUID(IID_IDirect3DSwapChain9,0x794950F2,0xADFC,0x458A,0x90,0x5E,0x1
 DEFINE_LOCAL_GUID(IID_IDirect3DSurface9,0x0CFBAF3A,0x9FF6,0x429A,0x99,0xB3,0xA2,0x79,0x6A,0xF8,0xB8,0x9B);
 DEFINE_LOCAL_GUID(IID_IDirect3DTexture9,0x85C31227,0x3DE5,0x4F00,0x9B,0x3A,0xF1,0x1A,0xC3,0x8C,0x18,0xB5);
 
-static IDirect3DDevice9* pBackBufCopyOwner = NULL;
-static IDirect3DSurface9* pBackBufCopy = NULL;
-static IDirect3DDevice9* s_saved_d3d9Device = NULL;
-static IDirect3DSwapChain9* s_saved_d3d9SwapChain = NULL;
+static IDirect3DDevice9* pBackBufCopyOwner = nullptr;
+static IDirect3DSurface9* pBackBufCopy = nullptr;
+static IDirect3DDevice9* s_saved_d3d9Device = nullptr;
+static IDirect3DSwapChain9* s_saved_d3d9SwapChain = nullptr;
 static RECT s_savedD3D9SrcRect = {};
 static RECT s_savedD3D9DstRect = {};
-static LPRECT s_savedD3D9pSrcRect = NULL;
-static LPRECT s_savedD3D9pDstRect = NULL;
-static HWND s_savedD3D9HWND = NULL;
-static HWND s_savedD3D9DefaultHWND = NULL;
+static LPRECT s_savedD3D9pSrcRect = nullptr;
+static LPRECT s_savedD3D9pDstRect = nullptr;
+static HWND s_savedD3D9HWND = nullptr;
+static HWND s_savedD3D9DefaultHWND = nullptr;
 static RECT s_savedD3D9ClientRect = {};
 
 std::map<IDirect3DSwapChain9*,IDirect3DDevice9*> d3d9SwapChainToDeviceMap;
@@ -73,16 +73,24 @@ static void ProcessPresentationParams9(D3DPRESENT_PARAMETERS* pPresentationParam
                 MakeWindowWindowed(gamehwnd, fakeDisplayWidth, fakeDisplayHeight);
 
             D3DDISPLAYMODE display_mode;
-            if(d3d)
-                d3dDevice = NULL;
-            if(!d3d && d3dDevice)
+            if (d3d)
+            {
+                d3dDevice = nullptr;
+            }
+            if (!d3d && d3dDevice)
+            {
                 d3dDevice->GetDirect3D(&d3d);
+            }
 
-            if(SUCCEEDED(d3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &display_mode)))
+            if (SUCCEEDED(d3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &display_mode)))
+            {
                 pPresentationParameters->BackBufferFormat = display_mode.Format;
+            }
 
-            if(d3d && d3dDevice)
+            if (d3d && d3dDevice)
+            {
                 d3d->Release();
+            }
 
             pPresentationParameters->BackBufferCount = 1;
         }
@@ -133,8 +141,8 @@ struct MyDirect3DDevice9
         ULONG rv = Release(pThis);
         if(rv == 0)
         {
-            if(pBackBufCopyOwner == pThis) { pBackBufCopyOwner = NULL; }
-            if(s_saved_d3d9Device == pThis) { s_saved_d3d9Device = NULL; }
+            if (pBackBufCopyOwner == pThis) { pBackBufCopyOwner = nullptr; }
+            if (s_saved_d3d9Device == pThis) { s_saved_d3d9Device = nullptr; }
         }
         return rv;
     }
@@ -153,7 +161,7 @@ struct MyDirect3DDevice9
     static HRESULT STDMETHODCALLTYPE MyReset(IDirect3DDevice9* pThis, D3DPRESENT_PARAMETERS* pPresentationParameters)
     {
         d3ddebugprintf(__FUNCTION__ " called.\n");
-        ProcessPresentationParams9(pPresentationParameters, NULL, pThis);
+        ProcessPresentationParams9(pPresentationParameters, nullptr, pThis);
         d3d9BackBufActive = true;
         d3d9BackBufDirty = true;
         HRESULT rv = Reset(pThis, pPresentationParameters);
@@ -167,14 +175,14 @@ struct MyDirect3DDevice9
         if(!recordingAVIVideo)
         {
             // if not recording AVI, it's a regular frame boundary.
-            FrameBoundary(NULL, CAPTUREINFO_TYPE_NONE);
+            FrameBoundary(nullptr, CAPTUREINFO::TYPE_NONE);
         }
         else
         {
             // if we are, it's still a regular frame boundary,
             // but we prepare extra info for the AVI capture around it.
             DDSURFACEDESC desc = { sizeof(DDSURFACEDESC) };
-            IDirect3DSurface9* pBackBuffer = NULL;
+            IDirect3DSurface9* pBackBuffer = nullptr;
 #if 0 // slow
             Lock(pThis, desc, pBackBuffer);
             FrameBoundary(&desc, CAPTUREINFO_TYPE_DDSD);
@@ -187,7 +195,7 @@ struct MyDirect3DDevice9
             if(pBackBufCopyOwner != pThis /*&& pBackBufCopy*/)
             {
                 //pBackBufCopy->Release();
-                pBackBufCopy = NULL;
+                pBackBufCopy = nullptr;
             }
 
             IDirect3DSurface9* pSurface = pBackBufCopy;
@@ -195,7 +203,7 @@ struct MyDirect3DDevice9
             {
                 D3DSURFACE_DESC d3ddesc;
                 pBackBuffer->GetDesc(&d3ddesc);
-                if(SUCCEEDED(pThis->CreateOffscreenPlainSurface(d3ddesc.Width, d3ddesc.Height, d3ddesc.Format, D3DPOOL_SYSTEMMEM, &pBackBufCopy, NULL)))
+                if (SUCCEEDED(pThis->CreateOffscreenPlainSurface(d3ddesc.Width, d3ddesc.Height, d3ddesc.Format, D3DPOOL_SYSTEMMEM, &pBackBufCopy, nullptr)))
                 {
                     pSurface = pBackBufCopy;
                     pBackBufCopyOwner = pThis;
@@ -216,7 +224,7 @@ struct MyDirect3DDevice9
             DWORD time2 = timeGetTime();
             debugprintf("AVI: pre-copying pixel data took %d ticks\n", (int)(time2-time1));
     #endif
-            FrameBoundary(&desc, CAPTUREINFO_TYPE_DDSD);
+            FrameBoundary(&desc, CAPTUREINFO::TYPE_DDSD);
             pSurface->UnlockRect();
             if(pBackBuffer)
                 pBackBuffer->Release();
@@ -238,10 +246,10 @@ struct MyDirect3DDevice9
 
         if((d3d9BackBufActive || d3d9BackBufDirty) && !redrawingScreen)
         {
-            s_saved_d3d9SwapChain = NULL;
+            s_saved_d3d9SwapChain = nullptr;
             s_saved_d3d9Device = pThis;
-            s_savedD3D9pSrcRect = pSourceRect ? &s_savedD3D9SrcRect : NULL;
-            s_savedD3D9pDstRect = pDestRect ? &s_savedD3D9DstRect : NULL;
+            s_savedD3D9pSrcRect = pSourceRect ? &s_savedD3D9SrcRect : nullptr;
+            s_savedD3D9pDstRect = pDestRect ? &s_savedD3D9DstRect : nullptr;
             if(pSourceRect) s_savedD3D9SrcRect = *pSourceRect;
             if(pDestRect) s_savedD3D9DstRect = *pDestRect;
             s_savedD3D9HWND = hDestWindowOverride ? hDestWindowOverride : s_savedD3D9DefaultHWND;
@@ -269,7 +277,7 @@ struct MyDirect3DDevice9
     static HRESULT STDMETHODCALLTYPE MyCreateAdditionalSwapChain(IDirect3DDevice9* pThis, D3DPRESENT_PARAMETERS* pPresentationParameters,IDirect3DSwapChain9** pSwapChain)
     {
         d3ddebugprintf(__FUNCTION__ " called.\n");
-        ProcessPresentationParams9(pPresentationParameters, NULL, pThis);
+        ProcessPresentationParams9(pPresentationParameters, nullptr, pThis);
         HRESULT rv = CreateAdditionalSwapChain(pThis, pPresentationParameters, pSwapChain);
         if(SUCCEEDED(rv))
             HookCOMInterface(IID_IDirect3DSwapChain9, (LPVOID*)pSwapChain);
@@ -298,7 +306,7 @@ struct MyDirect3DDevice9
     static HRESULT STDMETHODCALLTYPE MyGetRenderTarget(IDirect3DDevice9* pThis, DWORD RenderTargetIndex, IDirect3DSurface9** ppRenderTarget)
     {
         HRESULT rv = GetRenderTarget(pThis, RenderTargetIndex, ppRenderTarget);
-        d3ddebugprintf(__FUNCTION__ "(%d) called, returned 0x%X\n", RenderTargetIndex, (SUCCEEDED(rv) && ppRenderTarget) ? *ppRenderTarget : NULL);
+        d3ddebugprintf(__FUNCTION__ "(%d) called, returned 0x%X\n", RenderTargetIndex, (SUCCEEDED(rv) && ppRenderTarget) ? *ppRenderTarget : nullptr);
         return rv;
     }
 
@@ -427,7 +435,7 @@ struct MyDirect3DDevice9
             int numLevels = pTexture->GetLevelCount();
             for(int i = 0; i < numLevels; i++)
             {
-                IDirect3DSurface9* pSurface = NULL;
+                IDirect3DSurface9* pSurface = nullptr;
                 if(SUCCEEDED(pTexture->GetSurfaceLevel(i, &pSurface)))
                 {
                     HookCOMInterface(IID_IDirect3DSurface9, reinterpret_cast<LPVOID*>(&pSurface));
@@ -502,7 +510,7 @@ struct MyDirect3DSwapChain9
         ULONG rv = Release(pThis);
         if(rv == 0)
         {
-            if(s_saved_d3d9SwapChain == pThis) { s_saved_d3d9SwapChain = NULL; }
+            if (s_saved_d3d9SwapChain == pThis) { s_saved_d3d9SwapChain = nullptr; }
         }
         return rv;
     }
@@ -533,8 +541,8 @@ struct MyDirect3DSwapChain9
         {
             s_saved_d3d9SwapChain = pThis;
             s_saved_d3d9Device = pDevice;
-            s_savedD3D9pSrcRect = pSourceRect ? &s_savedD3D9SrcRect : NULL;
-            s_savedD3D9pDstRect = pDestRect ? &s_savedD3D9DstRect : NULL;
+            s_savedD3D9pSrcRect = pSourceRect ? &s_savedD3D9SrcRect : nullptr;
+            s_savedD3D9pDstRect = pDestRect ? &s_savedD3D9DstRect : nullptr;
             if(pSourceRect) s_savedD3D9SrcRect = *pSourceRect;
             if(pDestRect) s_savedD3D9DstRect = *pDestRect;
             s_savedD3D9HWND = hDestWindowOverride ? hDestWindowOverride : s_savedD3D9DefaultHWND;
@@ -595,7 +603,7 @@ struct MyDirect3DSurface9
 
                 void*& pixels = surf9.videoMemoryPixelBackup;
                 free(pixels);
-                pixels = NULL;
+                pixels = nullptr;
             }
         }
         return rv;
@@ -622,7 +630,7 @@ struct MyDirect3DSurface9
         surf9.videoMemoryBackupDirty = FALSE;
         void*& pixels = surf9.videoMemoryPixelBackup;
         free(pixels);
-        pixels = NULL;
+        pixels = nullptr;
 
         return hr;
     }
@@ -775,7 +783,7 @@ static void BackupVideoMemory9(IDirect3DSurface9* pThis)
     if(SUCCEEDED(pThis->GetDesc(&desc)))
     {
         D3DLOCKED_RECT lockedRect;
-        if(SUCCEEDED(pThis->LockRect(&lockedRect, NULL, D3DLOCK_NO_DIRTY_UPDATE|D3DLOCK_READONLY|D3DLOCK_NOSYSLOCK)))
+        if (SUCCEEDED(pThis->LockRect(&lockedRect, nullptr, D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_READONLY | D3DLOCK_NOSYSLOCK)))
         {
             int size = lockedRect.Pitch * desc.Height;
             void*& pixels = surf9.videoMemoryPixelBackup;
@@ -799,7 +807,7 @@ static void RestoreVideoMemory9(IDirect3DSurface9* pThis)
         if(SUCCEEDED(pThis->GetDesc(&desc)))
         {
             D3DLOCKED_RECT lockedRect;
-            if(SUCCEEDED(pThis->LockRect(&lockedRect, NULL, D3DLOCK_NOSYSLOCK)))
+            if (SUCCEEDED(pThis->LockRect(&lockedRect, nullptr, D3DLOCK_NOSYSLOCK)))
             {
                 int size = lockedRect.Pitch * desc.Height;
                 memcpy(lockedRect.pBits, pixels, size);
@@ -941,9 +949,9 @@ bool RedrawScreenD3D9()
 
         HRESULT hr;
         if(s_saved_d3d9SwapChain)
-            hr = s_saved_d3d9SwapChain->Present(s_savedD3D9pSrcRect,pDstRect,s_savedD3D9HWND,NULL,0);
+            hr = s_saved_d3d9SwapChain->Present(s_savedD3D9pSrcRect, pDstRect, s_savedD3D9HWND, nullptr, 0);
         else
-            hr = s_saved_d3d9Device->Present(s_savedD3D9pSrcRect,pDstRect,s_savedD3D9HWND,NULL);
+            hr = s_saved_d3d9Device->Present(s_savedD3D9pSrcRect, pDstRect, s_savedD3D9HWND, nullptr);
         return true;
     }
     return false;
@@ -978,7 +986,7 @@ struct MyDirect3D9
     static HRESULT STDMETHODCALLTYPE MyCreateDevice(IDirect3D9* pThis, UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocusWindow,DWORD BehaviorFlags,D3DPRESENT_PARAMETERS* pPresentationParameters,IDirect3DDevice9** ppReturnedDeviceInterface)
     {
         d3ddebugprintf(__FUNCTION__ " called.\n");
-        ProcessPresentationParams9(pPresentationParameters, pThis, NULL);
+        ProcessPresentationParams9(pPresentationParameters, pThis, nullptr);
         HRESULT rv = CreateDevice(pThis, Adapter,DeviceType,hFocusWindow,BehaviorFlags,pPresentationParameters,ppReturnedDeviceInterface);
         if(SUCCEEDED(rv))
             HookCOMInterface(IID_IDirect3DDevice9, (LPVOID*)ppReturnedDeviceInterface);

@@ -491,7 +491,7 @@ public:
 //			int prevtu = ticks;
 
             // note: this decrements addedDelay by (basically) how much it advances ticks
-            FrameBoundary(NULL, CAPTUREINFO_TYPE_PREV);
+            FrameBoundary(nullptr, CAPTUREINFO::TYPE_PREV);
 
 //			ticksAddedSinceLastFrame += ticks - prevtu;
         }

@@ -9,7 +9,7 @@
 
 void TickMultiMediaTimers(DWORD time=0); // extern? (I mean, move to header)
 LRESULT DispatchMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/); // extern? (I mean, move to header)
-void PostMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, struct MessageQueue* pmq/*=NULL*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/); // extern? (I mean, move to header)
+void PostMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, struct MessageQueue* pmq/*=nullptr*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/); // extern? (I mean, move to header)
 HOOKFUNC VOID WINAPI MySleep(DWORD dwMilliseconds); // extern? (I mean, move to header)
 
 struct SetTimerData
@@ -189,7 +189,7 @@ int fakestarttime = detTimer.GetTicks();
                 //SendMessageA(key.hWnd, toggleWhitelistMessage(WM_TIMER), key.nIDEvent, (LPARAM)value.lpTimerFunc);
 //#ifdef EMULATE_MESSAGE_QUEUES
                 //MyPostMessageA(key.hWnd, toggleWhitelistMessage(WM_TIMER), key.nIDEvent, (LPARAM)value.lpTimerFunc);
-                PostMessageInternal(key.hWnd, WM_TIMER, key.nIDEvent, (LPARAM)value.lpTimerFunc, true, NULL, MAF_PASSTHROUGH|MAF_RETURN_OS);
+                PostMessageInternal(key.hWnd, WM_TIMER, key.nIDEvent, (LPARAM)value.lpTimerFunc, true, nullptr, MAF_PASSTHROUGH|MAF_RETURN_OS);
 //#else
 //				  PostMessageA(key.hWnd, toggleWhitelistMessage(WM_TIMER), key.nIDEvent, (LPARAM)value.lpTimerFunc);
 //#endif
@@ -223,7 +223,7 @@ UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC
             // Find the right timer
             if (it->nIDEvent == data.nIDEvent)
             {
-                if (data.hWnd == NULL) // Does it replace the most recent timer with this ID? Or is it some other heriarchy? Assuming first created.
+                if (data.hWnd == nullptr) // Does it replace the most recent timer with this ID? Or is it some other heriarchy? Assuming first created.
                 {
                     found = true;
                     data.hWnd = it->hWnd;
@@ -241,7 +241,7 @@ UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC
 
         if (found == false) // New timer.
         {
-            if (data.hWnd == NULL) // If hWnd is NOT NULL and timer isn't found, then we use the provided ID for the new timer.
+            if (data.hWnd == nullptr) // If hWnd is NOT nullptr and timer isn't found, then we use the provided ID for the new timer.
             {
                 data.hWnd = gamehwnd; // Fix hWnd like this?
                 data.nIDEvent = CreateNewTimerID();
@@ -250,11 +250,11 @@ UINT_PTR AddSetTimerTimer(HWND hWnd, UINT_PTR nIDEvent, DWORD uElapse, TIMERPROC
             s_pendingSetTimers.insert(data);
         }
     }
-    else // No ID provided, assuming new timer creation ... TODO: Error if hWnd is not NULL?
+    else // No ID provided, assuming new timer creation ... TODO: Error if hWnd is not nullptr?
     {
         data.nIDEvent = CreateNewTimerID();
 
-        if (data.hWnd == NULL) // NULL hWnds are bad?
+        if (data.hWnd == nullptr) // nullptr hWnds are bad?
             data.hWnd = gamehwnd;
 
         // Necessary? Seems not, nothing changes here so... Remove out-comment if everything broke
@@ -285,7 +285,7 @@ struct TimerThreadInfo
     TimerThreadInfo* next;
     TimerThreadInfo(UINT uDelay, UINT uResolution, UINT fuEvent, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT uTimerID)
         : delay(uDelay), res(uResolution), event(fuEvent), callback(lpTimeProc), user(dwUser), uid(uTimerID),
-        killRequest(false), dead(false), handle(NULL), overshot(0), prevTime(0), prev(NULL), next(NULL)
+        killRequest(false), dead(false), handle(nullptr), overshot(0), prevTime(0), prev(nullptr), next(nullptr)
     {
     }
 } timerHead(0,0,0,0,0,0);
@@ -386,13 +386,13 @@ LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent)
     ttiTail->next = threadInfo;
     ttiTail = threadInfo;
     timerListSize++;
-    threadInfo->handle = MyCreateThread(NULL, 0, MyTimerThread, threadInfo, 0, NULL);
+    threadInfo->handle = MyCreateThread(nullptr, 0, MyTimerThread, threadInfo, 0, nullptr);
     SetThreadPriority(threadInfo->handle, THREAD_PRIORITY_BELOW_NORMAL);
     if(!threadInfo->handle)
     {
-        threadInfo->prev->next = NULL;
+        threadInfo->prev->next = nullptr;
         delete threadInfo;
-        return NULL;
+        return nullptr;
     }
     verbosedebugprintf(__FUNCTION__ "(0x%X)\n", threadInfo->uid);
     return threadInfo->uid;
@@ -518,13 +518,13 @@ HOOKFUNC MMRESULT WINAPI MytimeSetEvent(UINT uDelay, UINT uResolution, LPTIMECAL
     ttiTail->next = threadInfo;
     ttiTail = threadInfo;
     timerListSize++;
-    //threadInfo->handle = MyCreateThread(NULL, 0, MyTimerThread, threadInfo, 0, NULL);
+    //threadInfo->handle = MyCreateThread(nullptr, 0, MyTimerThread, threadInfo, 0, nullptr);
     //SetThreadPriority(threadInfo->handle, THREAD_PRIORITY_BELOW_NORMAL);
     //if(!threadInfo->handle)
     //{
-    //	threadInfo->prev->next = NULL;
+    //	threadInfo->prev->next = nullptr;
     //	delete threadInfo;
-    //	return NULL;
+    //	return nullptr;
     //}
     debuglog(LCF_TIMERS, __FUNCTION__ " created TimerThreadInfo with uid 0x%X.\n", threadInfo->uid);
     return threadInfo->uid;

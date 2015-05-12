@@ -21,7 +21,7 @@ Process::Process(DWORD processID, HANDLE hProcess) :
     // and the hProcess that CreateProcess gives us has full access rights already granted.
     //if(!hProcess_)
     //	hProcess_ = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, processID);
-    if (hProcess_ == NULL)
+    if (hProcess_ == nullptr)
     {
         DWORD lastErr = GetLastError();
         stringstream ss;
@@ -68,13 +68,13 @@ LPVOID Process::allocMem(DWORD size) const
 
 LPVOID Process::allocMem(DWORD size, DWORD allocationType) const
 {
-    return allocMem(size, NULL, allocationType);
+    return allocMem(size, nullptr, allocationType);
 }
 
 LPVOID Process::allocMem(DWORD size, LPVOID desiredAddress, DWORD allocationType) const
 {
     LPVOID addr = VirtualAllocEx(hProcess_, desiredAddress, size, allocationType, PAGE_EXECUTE_READWRITE);
-    if (addr == NULL) throw MemoryAllocationException("Failed to allocate memory");
+    if (addr == nullptr) throw MemoryAllocationException("Failed to allocate memory");
     return addr;
 }
 

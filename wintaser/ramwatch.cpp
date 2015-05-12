@@ -22,7 +22,7 @@
 
 static HMENU ramwatchmenu;
 static HMENU rwrecentmenu;
-static HACCEL RamWatchAccels = NULL;
+static HACCEL RamWatchAccels = nullptr;
 char rw_recent_files[MAX_RECENT_WATCHES][1024];
 //char Watch_Dir[1024]="";
 const unsigned int RW_MENU_FIRST_RECENT_FILE = 600;
@@ -121,8 +121,8 @@ LRESULT CALLBACK PromptWatchNameProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
             dx2 = (r2.right - r2.left) / 2;
             dy2 = (r2.bottom - r2.top) / 2;
 
-            //SetWindowPos(hDlg, NULL, max(0, r.left + (dx1 - dx2)), max(0, r.top + (dy1 - dy2)), NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
-            SetWindowPos(hDlg, NULL, r.left, r.top, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+            //SetWindowPos(hDlg, nullptr, max(0, r.left + (dx1 - dx2)), max(0, r.top + (dy1 - dy2)), 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+            SetWindowPos(hDlg, nullptr, r.left, r.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
             strcpy(Str_Tmp_RW,"Enter a name for this RAM address.");
             SendDlgItemMessage(hDlg,IDC_PROMPT_TEXT,WM_SETTEXT,0,(LPARAM)Str_Tmp_RW);
             strcpy(Str_Tmp_RW,"");
@@ -426,7 +426,7 @@ void OpenRWRecentFile(int memwRFileNumber)
         sscanf(Str_Tmp_RW,"%*05X%*c%08X%*c%c%*c%c%*c%d",&(Temp.Address),&(Temp.Size),&(Temp.Type),&(Temp.WrongEndian));
         Temp.WrongEndian = 0;
         char* Comment = strrchr(Str_Tmp_RW,DELIM) + 1;
-        if(Comment == (char*)NULL + 1)
+        if (Comment == (char*)nullptr + 1)
             continue;
         char* newline = strrchr(Comment,'\n');
         if(newline)
@@ -539,7 +539,7 @@ bool Save_Watches()
 bool QuickSaveWatches()
 {
 if(RWfileChanged==false) return true; //If file has not changed, no need to save changes
-if(currentWatch[0] == NULL) //If there is no currently loaded file, run to Save as and then return
+if(currentWatch[0] == '\0') //If there is no currently loaded file, run to Save as and then return
     {
         return Save_Watches();
     }
@@ -607,7 +607,7 @@ bool Load_Watches(bool clear, const char* filename)
         sscanf(Str_Tmp_RW,"%*05X%*c%08X%*c%c%*c%c%*c%d",&(Temp.Address),&(Temp.Size),&(Temp.Type),&(Temp.WrongEndian));
         Temp.WrongEndian = 0;
         char* Comment = strrchr(Str_Tmp_RW,DELIM) + 1;
-        if(Comment == (char*)NULL + 1)
+        if (Comment == (char*)nullptr + 1)
             continue;
         char* newline = strrchr(Comment,'\n');
         if(newline)
@@ -643,13 +643,13 @@ bool ResetWatches()
     for (;WatchCount>=0;WatchCount--)
     {
         free(rswatches[WatchCount].comment);
-        rswatches[WatchCount].comment = NULL;
+        rswatches[WatchCount].comment = nullptr;
     }
     WatchCount++;
     if(RamWatchHWnd)
         ListView_SetItemCount(GetDlgItem(RamWatchHWnd,IDC_WATCHLIST),WatchCount);
     RWfileChanged = false;
-    currentWatch[0] = NULL;
+    currentWatch[0] = '\0';
     return true;
 }
 
@@ -658,7 +658,7 @@ void RemoveWatch(int watchIndex)
     if((unsigned int)watchIndex >= (unsigned int)WatchCount)
         return;
     free(rswatches[watchIndex].comment);
-    rswatches[watchIndex].comment = NULL;
+    rswatches[watchIndex].comment = nullptr;
     for (int i = watchIndex; i <= WatchCount; i++)
         rswatches[i] = rswatches[i+1];
     WatchCount--;
@@ -717,12 +717,12 @@ LRESULT CALLBACK EditWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
             dx2 = (r2.right - r2.left) / 2;
             dy2 = (r2.bottom - r2.top) / 2;
 
-            //SetWindowPos(hDlg, NULL, max(0, r.left + (dx1 - dx2)), max(0, r.top + (dy1 - dy2)), NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
-            SetWindowPos(hDlg, NULL, r.left, r.top, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+            //SetWindowPos(hDlg, nullptr, max(0, r.left + (dx1 - dx2)), max(0, r.top + (dy1 - dy2)), 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+            SetWindowPos(hDlg, nullptr, r.left, r.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
             index = (int)lParam;
             sprintf(Str_Tmp_RW,"%08X",rswatches[index].Address);
             SetDlgItemText(hDlg,IDC_EDIT_COMPAREADDRESS,Str_Tmp_RW);
-            if(rswatches[index].comment != NULL)
+            if (rswatches[index].comment != nullptr)
                 SetDlgItemText(hDlg,IDC_PROMPT_EDIT,rswatches[index].comment);
             s = rswatches[index].Size;
             t = rswatches[index].Type;
@@ -941,7 +941,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                     r.top = ramw_y;		  //This also ignores cases of windows -32000 error codes
             }
             //-------------------------------------------------------------------------------------
-            SetWindowPos(hDlg, NULL, r.left, r.top, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+            SetWindowPos(hDlg, nullptr, r.left, r.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
             
             ramwatchmenu=GetMenu(hDlg);
             rwrecentmenu=CreateMenu();
@@ -1130,7 +1130,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                 }
                 case IDOK:
                 case IDCANCEL:
-                    RamWatchHWnd = NULL;
+                    RamWatchHWnd = nullptr;
                     DragAcceptFiles(hDlg, FALSE);
                     EndDialog(hDlg, true);
                     return true;
@@ -1153,7 +1153,7 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
         }	break;
 
         case WM_CLOSE:
-            RamWatchHWnd = NULL;
+            RamWatchHWnd = nullptr;
             DragAcceptFiles(hDlg, FALSE);
             EndDialog(hDlg, true);
             return true;

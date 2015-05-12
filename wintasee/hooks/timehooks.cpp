@@ -129,7 +129,7 @@ struct MyReferenceClock : IReferenceClock
         UINT startTime = *((UINT*)hSemaphore);
         if((LONGLONG)startTime * 10000 - GetTimeInternal() < 0)
             return; // not yet
-        ReleaseSemaphore(hSemaphore, 1, NULL);
+        ReleaseSemaphore(hSemaphore, 1, nullptr);
     }
 
     static HRESULT(STDMETHODCALLTYPE *AdviseTime)           (IReferenceClock* pThis, REFERENCE_TIME rtBaseTime, REFERENCE_TIME rtStreamTime, HANDLE hEvent, LPDWORD pdwAdviseCookie);
@@ -144,7 +144,7 @@ struct MyReferenceClock : IReferenceClock
             return E_POINTER;
         time -= GetTimeInternal();
         time /= 10000;
-        *pdwAdviseCookie = (DWORD)MytimeSetEvent((UINT)time, 0, (LPTIMECALLBACK)hEvent, NULL, TIME_ONESHOT | TIME_CALLBACK_EVENT_SET);
+        *pdwAdviseCookie = (DWORD)MytimeSetEvent((UINT)time, 0, (LPTIMECALLBACK)hEvent, 0, TIME_ONESHOT | TIME_CALLBACK_EVENT_SET);
         if(!*pdwAdviseCookie)
             return E_OUTOFMEMORY;
         return S_OK;

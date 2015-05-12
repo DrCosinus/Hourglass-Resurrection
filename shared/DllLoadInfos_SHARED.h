@@ -21,7 +21,7 @@ namespace Score
         protected:
             // For now, I assume that CreateFileMapping and MapViewOfFile will not fail.
             Object(const char* aFileMappingName)
-                : myHandle(CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(T), aFileMappingName))
+                : myHandle(CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(T), aFileMappingName))
                 , myDataPtr(reinterpret_cast<T*>(MapViewOfFile(myHandle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(T))))
                 , myData(*myDataPtr)
             {

@@ -316,12 +316,12 @@ extern HWND HotkeyHWnd;
 
 InputCapture::InputCapture()
 {
-    lpDIDMouse = NULL;
-    lpDIDKeyboard = NULL;
-    lpDI = NULL;
+    lpDIDMouse = nullptr;
+    lpDIDKeyboard = nullptr;
+    lpDI = nullptr;
 
-    hotkeysbox = NULL;
-    gameinputbox = NULL;
+    hotkeysbox = nullptr;
+    gameinputbox = nullptr;
 
     // Since these are static, we want to only init them once, even though we allow more than once instance of the class.
     if(eventMapping.empty())
@@ -338,19 +338,19 @@ InputCapture::InputCapture()
 
 InputCapture::InputCapture(char* filename) // Construct by loading from file.
 {
-    lpDIDMouse = NULL;
-    lpDIDKeyboard = NULL;
-    lpDI = NULL;
+    lpDIDMouse = nullptr;
+    lpDIDKeyboard = nullptr;
+    lpDI = nullptr;
 
-    hotkeysbox = NULL;
-    gameinputbox = NULL;
+    hotkeysbox = nullptr;
+    gameinputbox = nullptr;
 
-    if(filename != NULL && filename[0] != '\0')
+    if (filename && *filename)
     {
         LoadMapping(filename);
     }
 
-    // In case the file only contains one map, or if filename was NULL, we fill out the maps with the defaults. Wise?
+    // In case the file only contains one map, or if filename was nullptr, we fill out the maps with the defaults. Wise?
     if(eventMapping.empty())
     {
         BuildDefaultEventMapping();
@@ -462,7 +462,7 @@ void InputCapture::GetMouseState(DIMOUSESTATE* mouse){
 bool InputCapture::InitInputs(HINSTANCE hInst, HWND hWnd){
 
     // Init the main DI interface.
-    HRESULT rval = DirectInput8Create(hInst, DIRECTINPUT_VERSION, IID_IDirectInput8, (VOID**)&lpDI, NULL);
+    HRESULT rval = DirectInput8Create(hInst, DIRECTINPUT_VERSION, IID_IDirectInput8, (VOID**)&lpDI, nullptr);
     if(rval != DI_OK)
     {
         MessageBox(hWnd, "DirectInput failed... You must have at least DirectX 5", "Error", MB_OK);
@@ -486,7 +486,7 @@ bool InputCapture::InitInputs(HINSTANCE hInst, HWND hWnd){
 }
 
 HRESULT InputCapture::InitDIKeyboard(HWND hWnd){
-    HRESULT rval = lpDI->CreateDevice(GUID_SysKeyboard, &lpDIDKeyboard, NULL);
+    HRESULT rval = lpDI->CreateDevice(GUID_SysKeyboard, &lpDIDKeyboard, nullptr);
     if(rval != DI_OK) return rval;
 
     rval = lpDIDKeyboard->SetCooperativeLevel(hWnd, DISCL_NONEXCLUSIVE | (/*BackgroundInput*/true?DISCL_BACKGROUND:DISCL_FOREGROUND));
@@ -508,12 +508,12 @@ HRESULT InputCapture::InitDIKeyboard(HWND hWnd){
 
 // Init a DI mouse if possible
 HRESULT InputCapture::InitDIMouse(HWND hWnd, bool exclusive){
-    HRESULT rval = lpDI->CreateDevice(GUID_SysMouse, &lpDIDMouse, NULL);
+    HRESULT rval = lpDI->CreateDevice(GUID_SysMouse, &lpDIDMouse, nullptr);
     if(rval != DI_OK) return rval;
 
     // FIXME: This is not good!
     if (exclusive)
-        //rval = lpDIDMouse->SetCooperativeLevel(NULL, DISCL_NONEXCLUSIVE|DISCL_BACKGROUND);
+        //rval = lpDIDMouse->SetCooperativeLevel(nullptr, DISCL_NONEXCLUSIVE|DISCL_BACKGROUND);
         rval = lpDIDMouse->SetCooperativeLevel(hWnd, DISCL_NONEXCLUSIVE|DISCL_BACKGROUND);
     else
         rval = lpDIDMouse->SetCooperativeLevel(hWnd, DISCL_NONEXCLUSIVE|DISCL_FOREGROUND);
@@ -531,16 +531,16 @@ void InputCapture::ReleaseInputs(){
     if(lpDI){
         if(lpDIDMouse){
             lpDIDMouse->Release();
-            lpDIDMouse = NULL;
+            lpDIDMouse = nullptr;
         }
 
         if(lpDIDKeyboard){
             lpDIDKeyboard->Release();
-            lpDIDKeyboard = NULL;
+            lpDIDKeyboard = nullptr;
         }
 
         lpDI->Release();
-        lpDI = NULL;
+        lpDI = nullptr;
     }
 }
 
@@ -593,9 +593,9 @@ void InputCapture::ProcessInputs(CurrentInput* currentI, HWND hWnd){
 
     DIMOUSESTATE mouseState;
     // If a mouse is attached, get it's state.
-    if(lpDIDMouse != NULL)
+    if (lpDIDMouse != nullptr)
     {
-        if (hWnd == NULL){ // Very bad hack. We must not gather mouse inputs if we only deal with events
+        if (hWnd == nullptr){ // Very bad hack. We must not gather mouse inputs if we only deal with events
             GetMouseState(&mouseState);
 
             // We can directly copy the axis states as it is not mappable.
@@ -719,7 +719,7 @@ void InputCapture::NextInput(SingleInput* si, bool allowModifiers){
     GetKeyboardState(previousKeys);
 
     // Get the previous mouse state.
-    if(lpDIDMouse != NULL)
+    if (lpDIDMouse != nullptr)
         GetMouseState(&previousMouse);
 
     Sleep(1);
@@ -728,7 +728,7 @@ void InputCapture::NextInput(SingleInput* si, bool allowModifiers){
 
         // Get the current keyboard and mouse state.
         GetKeyboardState(currentKeys);
-        if(lpDIDMouse != NULL)
+        if (lpDIDMouse != nullptr)
             GetMouseState(&currentMouse);
 
         char modifier = BuildModifier(currentKeys);
@@ -915,11 +915,11 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
     //RECT r;
     //RECT r2;
     //int dx1, dy1, dx2, dy2;
-    static InputCapture* inputC = NULL;
+    static InputCapture* inputC = nullptr;
     static bool unsavedChanges = false;
     static bool hotkeysNoLongerDefault = false;
     static bool gameinputNoLongerDefault = false;
-    //static HWND Tex0 = NULL;
+    //static HWND Tex0 = nullptr;
     //extern HWND hWnd; // Same comment!
 
     EnableWindow(GetDlgItem(hDlg, IDC_CONF_SAVE), unsavedChanges ? TRUE : FALSE);
@@ -938,7 +938,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
             //dx2 = (r2.right - r2.left) / 2;
             //dy2 = (r2.bottom - r2.top) / 2;
 
-            //SetWindowPos(hDlg, NULL, max(0, r.left + (dx1 - dx2)), max(0, r.top + (dy1 - dy2)), NULL, NULL, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+            //SetWindowPos(hDlg, nullptr, max(0, r.left + (dx1 - dx2)), max(0, r.top + (dy1 - dy2)), nullptr, nullptr, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 
             //Tex0 = GetDlgItem(hDlg, IDC_STATIC_TEXT0);
 
@@ -946,8 +946,8 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
             inputC = new InputCapture();
             // GetModuleHandle returns the HMODULE of the calling process (Hourglass.exe), for this case the HMODULE is the same as the HINSTANCE. 
             // IF this fails we can probably use GetWindowLong instead.
-            HINSTANCE hInstProcess = (HINSTANCE)GetModuleHandle(NULL);
-            if(hInstProcess == NULL)
+            HINSTANCE hInstProcess = (HINSTANCE)GetModuleHandle(nullptr);
+            if (hInstProcess == nullptr)
             {
                 PrintLastError("InputConfig: GetModuleHandle", GetLastError());
                 return FALSE;
@@ -1025,7 +1025,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
                         char line[256];
                         inputC->FormatEventMapping(buf[0], line);
 
-                        SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[0], NULL);
+                        SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[0], 0);
                         SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
 
                         hotkeysNoLongerDefault = true;
@@ -1037,7 +1037,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
                         char line[256];
                         inputC->FormatInputMapping(buf[0], line);
 
-                        SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[0], NULL);
+                        SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[0], 0);
                         SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[0], (LPARAM)line);
 
                         gameinputNoLongerDefault = true;
@@ -1057,7 +1057,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
                         char line[256];
                         inputC->FormatEventMapping(buf[i], line);
 
-                        SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[i], NULL);
+                        SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[i], 0);
                         SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
 
                         hotkeysNoLongerDefault = true;
@@ -1070,7 +1070,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
                         char line[256];
                         inputC->FormatInputMapping(buf[i], line);
 
-                        SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[i], NULL);
+                        SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[i], 0);
                         SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
 
                         gameinputNoLongerDefault = true;
@@ -1088,7 +1088,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
                         char line[256];
                         inputC->FormatEventMapping(buf[i], line);
 
-                        SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[i], NULL);
+                        SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_DELETESTRING, buf[i], 0);
                         SendDlgItemMessage(hDlg, IDC_HOTKEYBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
 
                         hotkeysNoLongerDefault = true;
@@ -1101,7 +1101,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
                         char line[256];
                         inputC->FormatInputMapping(buf[i], line);
 
-                        SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[i], NULL);
+                        SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_DELETESTRING, buf[i], 0);
                         SendDlgItemMessage(hDlg, IDC_GAMEINPUTBOX, LB_INSERTSTRING, buf[i], (LPARAM)line);
 
                         gameinputNoLongerDefault = true;
@@ -1116,7 +1116,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
                 case IDC_CONF_CLOSE:
                 {
                     // Go to the WM_CLOSE case instead.
-                    SendMessage(hDlg, WM_CLOSE, NULL, NULL);
+                    SendMessage(hDlg, WM_CLOSE, 0, 0);
                 } break;
             }
         } break;
@@ -1124,9 +1124,9 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
         {
             inputC->ReleaseInputs();
             delete inputC;
-            inputC = NULL;
+            inputC = nullptr;
             EndDialog(hDlg, true);
-            HotkeyHWnd = NULL;
+            HotkeyHWnd = nullptr;
             return TRUE;
         } break;
     }
@@ -1137,7 +1137,7 @@ LRESULT CALLBACK InputCapture::ConfigureInput(HWND hDlg, UINT uMsg, WPARAM wPara
 void InputCapture::PopulateListbox(HWND listbox)
 {
     // Make sure the listbox is empty before we populate it.
-    SendMessage(listbox, LB_RESETCONTENT, NULL, NULL);
+    SendMessage(listbox, LB_RESETCONTENT, 0, 0);
 
     int inputNumber = 0;
     if (listbox == hotkeysbox)

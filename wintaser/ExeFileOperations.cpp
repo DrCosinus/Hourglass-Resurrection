@@ -12,7 +12,7 @@ unsigned int GetWin32ExeDefaultStackSize(char *exefile)
 {
     // Open exe
     FILE* exe = fopen(exefile, "rb");
-    if(exe == NULL)
+    if (exe == nullptr)
     {
         return 0;
     }

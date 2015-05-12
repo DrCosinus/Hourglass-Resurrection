@@ -48,21 +48,21 @@ static HANDLE s_hProcess = 0;
 #endif
 
 
-static BOOL(__stdcall *pSymInitialize)(HANDLE, PSTR, BOOL) = NULL;
-static BOOL(__stdcall *pSymCleanup)(HANDLE) = NULL;
-static DWORD(__stdcall *pSymSetOptions)(DWORD) = NULL;
-static DWORD(__stdcall *pSymLoadModule)(HANDLE, HANDLE, PCSTR, PCSTR, DWORD, DWORD) = NULL;
-static BOOL(__stdcall *pSymGetModuleInfo)(HANDLE, DWORD, PIMAGEHLP_MODULE) = NULL;
-static PVOID(__stdcall *pImageRvaToVa)(PIMAGE_NT_HEADERS, PVOID, ULONG, PIMAGE_SECTION_HEADER*) = NULL;
-static BOOL(__stdcall *pSymEnumSymbols)(HANDLE, ULONG64, PCSTR, PSYM_ENUMERATESYMBOLS_CALLBACK, PVOID) = NULL;
-static BOOL(__stdcall *pStackWalk)(DWORD, HANDLE, HANDLE, LPSTACKFRAME, PVOID, PREAD_PROCESS_MEMORY_ROUTINE, PFUNCTION_TABLE_ACCESS_ROUTINE, PGET_MODULE_BASE_ROUTINE, PTRANSLATE_ADDRESS_ROUTINE) = NULL;
-static PVOID(__stdcall *pSymFunctionTableAccess)(HANDLE, DWORD) = NULL;
-static DWORD(__stdcall *pSymGetModuleBase)(HANDLE, DWORD) = NULL;
-static BOOL(__stdcall *pSymFromAddr)(HANDLE, DWORD64, PDWORD64, PSYMBOL_INFO) = NULL;
-static BOOL(__stdcall *pSymGetSymFromAddr)(HANDLE, DWORD, PDWORD, PIMAGEHLP_SYMBOL) = NULL;
-static DWORD(__stdcall *pUnDecorateSymbolName)(PCSTR, PSTR, DWORD, DWORD) = NULL;
-static BOOL(__stdcall *pSymGetLineFromAddr)(HANDLE hProcess, DWORD, PDWORD, PIMAGEHLP_LINE) = NULL;
-static BOOL(__stdcall *pSymGetTypeInfo)(HANDLE, DWORD64, ULONG, IMAGEHLP_SYMBOL_TYPE_INFO, PVOID) = NULL;
+static BOOL(__stdcall *pSymInitialize)(HANDLE, PSTR, BOOL) = nullptr;
+static BOOL(__stdcall *pSymCleanup)(HANDLE) = nullptr;
+static DWORD(__stdcall *pSymSetOptions)(DWORD) = nullptr;
+static DWORD(__stdcall *pSymLoadModule)(HANDLE, HANDLE, PCSTR, PCSTR, DWORD, DWORD) = nullptr;
+static BOOL(__stdcall *pSymGetModuleInfo)(HANDLE, DWORD, PIMAGEHLP_MODULE) = nullptr;
+static PVOID(__stdcall *pImageRvaToVa)(PIMAGE_NT_HEADERS, PVOID, ULONG, PIMAGE_SECTION_HEADER*) = nullptr;
+static BOOL(__stdcall *pSymEnumSymbols)(HANDLE, ULONG64, PCSTR, PSYM_ENUMERATESYMBOLS_CALLBACK, PVOID) = nullptr;
+static BOOL(__stdcall *pStackWalk)(DWORD, HANDLE, HANDLE, LPSTACKFRAME, PVOID, PREAD_PROCESS_MEMORY_ROUTINE, PFUNCTION_TABLE_ACCESS_ROUTINE, PGET_MODULE_BASE_ROUTINE, PTRANSLATE_ADDRESS_ROUTINE) = nullptr;
+static PVOID(__stdcall *pSymFunctionTableAccess)(HANDLE, DWORD) = nullptr;
+static DWORD(__stdcall *pSymGetModuleBase)(HANDLE, DWORD) = nullptr;
+static BOOL(__stdcall *pSymFromAddr)(HANDLE, DWORD64, PDWORD64, PSYMBOL_INFO) = nullptr;
+static BOOL(__stdcall *pSymGetSymFromAddr)(HANDLE, DWORD, PDWORD, PIMAGEHLP_SYMBOL) = nullptr;
+static DWORD(__stdcall *pUnDecorateSymbolName)(PCSTR, PSTR, DWORD, DWORD) = nullptr;
+static BOOL(__stdcall *pSymGetLineFromAddr)(HANDLE hProcess, DWORD, PDWORD, PIMAGEHLP_LINE) = nullptr;
+static BOOL(__stdcall *pSymGetTypeInfo)(HANDLE, DWORD64, ULONG, IMAGEHLP_SYMBOL_TYPE_INFO, PVOID) = nullptr;
 
 void LoadDbghelpDll()
 {
@@ -78,8 +78,8 @@ void LoadDbghelpDll()
     // since it's likely more up-to-date than the one in win32 directory
     // (microsoft recommends distributing dbghelp.dll and using it instead of the os version)
     char path [MAX_PATH+1+sizeof("dbghelp.dll")] = {0};
-    GetModuleFileNameA(NULL, path, MAX_PATH);
-    HMODULE dll = NULL;
+    GetModuleFileNameA(nullptr, path, MAX_PATH);
+    HMODULE dll = nullptr;
     while(!dll)
     {
         char* slash = strrchr(path, '\\');
@@ -191,7 +191,7 @@ void InitSymbolPath( PSTR lpszSymbolPath, PCSTR lpszIniPath )
     }
 
    // Add user defined path
-    if ( lpszIniPath != NULL )
+    if (lpszIniPath != nullptr)
         if ( lpszIniPath[0] != '\0' )
         {
            strcat( lpszSymbolPath, ";" );
@@ -211,7 +211,7 @@ BOOL UninitSymInfo(HANDLE hProcess)
 void* RVAToPointer( DWORD rva, LOADED_IMAGE& Image )
 {
   PIMAGE_SECTION_HEADER* dummy = 0;
-  return pImageRvaToVa ? pImageRvaToVa( Image.FileHeader, Image.MappedAddress, rva, dummy ) : NULL;
+  return pImageRvaToVa ? pImageRvaToVa(Image.FileHeader, Image.MappedAddress, rva, dummy) : nullptr;
 }
 
 BOOL CALLBACK EnumSymProc( 
@@ -232,7 +232,7 @@ void LoadModuleSymbols(HANDLE hProcess, PSTR name)
     hProcess = s_hProcess;
 #endif
 
-    DWORD dwBaseAddress = pSymLoadModule ? pSymLoadModule( hProcess, 0, name, 0, 0, 0 ) : NULL;
+    DWORD dwBaseAddress = pSymLoadModule ? pSymLoadModule(hProcess, 0, name, 0, 0, 0) : 0;
     IMAGEHLP_MODULE im = { sizeof(IMAGEHLP_MODULE) };
     if(pSymGetModuleInfo)
     {
@@ -245,7 +245,7 @@ void LoadModuleSymbols(HANDLE hProcess, PSTR name)
     }
 
     if(pSymEnumSymbols)
-        pSymEnumSymbols(hProcess, dwBaseAddress, NULL, EnumSymProc, NULL);
+        pSymEnumSymbols(hProcess, dwBaseAddress, nullptr, EnumSymProc, nullptr);
 
 
 
@@ -259,7 +259,7 @@ void LoadModuleSymbols(HANDLE hProcess, PSTR name)
 
     if(exportDirectory = (IMAGE_EXPORT_DIRECTORY*)ImageDirectoryEntryToData((void*)dwBaseAddress, TRUE, IMAGE_DIRECTORY_ENTRY_EXPORT, &ulSize))
     {
-        if(MapAndLoad( name, NULL, &imageinfo, true, true ))
+        if(MapAndLoad( name, nullptr, &imageinfo, true, true ))
         {
             DWORD* nameRVAs = (DWORD*)RVAToPointer( DWORD(exportDirectory->AddressOfNames), imageinfo ); 
             //DWORD* functionRVAs = (DWORD*)RVAToPointer( DWORD(exportDirectory->AddressOfFunctions), imageinfo ); 
@@ -284,7 +284,7 @@ void LoadModuleSymbols(HANDLE hProcess, PSTR name, HANDLE file, DWORD base )
 #ifdef ASSUME_SINGLE_HPROCESS
     hProcess = s_hProcess;
 #endif
-    DWORD dwBaseAddress = pSymLoadModule ? pSymLoadModule( hProcess, file, name, 0, base, 0 ) : NULL;
+    DWORD dwBaseAddress = pSymLoadModule ? pSymLoadModule(hProcess, file, name, 0, base, 0) : 0;
     IMAGEHLP_MODULE im = { sizeof(IMAGEHLP_MODULE) };
     if(pSymGetModuleInfo)
     {
@@ -297,7 +297,7 @@ void LoadModuleSymbols(HANDLE hProcess, PSTR name, HANDLE file, DWORD base )
     }
 
     if(pSymEnumSymbols)
-        pSymEnumSymbols(hProcess, dwBaseAddress, NULL, EnumSymProc, NULL);
+        pSymEnumSymbols(hProcess, dwBaseAddress, nullptr, EnumSymProc, nullptr);
 }
 
 
@@ -340,7 +340,7 @@ BOOL InitSymInfo( PCSTR lpszInitialSymbolPath, HANDLE hProcess )
     if(!rv) // pSymInitialize fails on Vista if the last parameter is TRUE, so try again:
         rv = pSymInitialize( hProcess, lpszSymbolPath, FALSE);
     if(!rv) // try without a search path?
-        rv = pSymInitialize( hProcess, NULL, FALSE);
+        rv = pSymInitialize(hProcess, nullptr, FALSE);
     
     return rv;
 }
@@ -930,10 +930,10 @@ void StackTraceOfDepth( HANDLE hThread, LPCTSTR lpszMessage, int minDepth, int m
             hThread,
             &callStack,
             &context, 
-            NULL,
+            nullptr,
             pSymFunctionTableAccess,
             pSymGetModuleBase,
-            NULL);
+            nullptr);
 
 //		debugprintf("AddrPC=0x%X, AddrReturn=0x%X, AddrFrame=0x%X, AddrStack=0x%X, FuncTableEntry=0x%X\n",
 //			callStack.AddrPC.Offset,
@@ -1005,10 +1005,10 @@ void FunctionParameterInfo(HANDLE hThread, HANDLE hProcess)
             hThread,
             &callStack,
             &context, 
-            NULL,
+            nullptr,
             pSymFunctionTableAccess,
             pSymGetModuleBase,
-            NULL);
+            nullptr);
     }
 
     if ( bResult && callStack.AddrFrame.Offset != 0) 

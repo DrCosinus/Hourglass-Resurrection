@@ -21,7 +21,7 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
 //	static char result [2*MAX_PATH+1] = {0};
 //	// temporary, should really follow the official "Dynamic-Link Library Search Order"
 //
-//	if(SearchPathA(NULL, filename, NULL, MAX_PATH, path, &filenameonly))
+//	if(SearchPathA(nullptr, filename, nullptr, MAX_PATH, path, &filenameonly))
 //	{
 //		sprintf(result, "%s\\%s", dlltempDir, filenameonly);
 //		CopyFile(path, result, FALSE);
@@ -77,7 +77,7 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
 //	}
 //
 //	HANDLE handle = GetModuleHandleA(filename);
-//	if(handle == NULL)
+//	if(handle == nullptr)
 //	{
 //		if(deniedList.find(filename) == deniedList.end())
 //			debuglog(LCF_MODULE|LCF_TODO, "DENIED loading DLL: %s\n", filename);
@@ -473,7 +473,7 @@ const char* riidToName(REFIID riid)
         return "SeekingPassThru";
     }
     
-    return NULL;
+    return nullptr;
 }
 
 // in case either MyCoCreateInstance doesn't call MyCoCreateInstanceEx or MyCoCreateInstance is called and MyCoCreateInstanceEx failed to get hooked
@@ -600,7 +600,7 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstanceEx(REFCLSID Clsid, LPUNKNOWN p
 //#define X(y) My##y##DllGetClassObject,
 //    CodeGen_X_List
 //#undef X
-//	NULL
+//	nullptr
 //};
 
 #define IMPLEMENT_MyDllGetClassObject(suffix) \
@@ -797,7 +797,7 @@ BOOL FlsRecursing = FALSE;
 std::map<DWORD,DWORD *> fseeds;
 HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
     BOOL rv = FlsSetValue(dwFlsIndex,lpFlsData);
-    if ((!FlsRecursing) && (lpFlsData != NULL)) {
+    if ((!FlsRecursing) && (lpFlsData != nullptr)) {
         FlsRecursing = TRUE;
         if (fseeds.find(dwFlsIndex) == fseeds.end()) {
             _ptiddata ptd = (_ptiddata)FlsGetValue(dwFlsIndex);
@@ -813,7 +813,7 @@ BOOL TlsRecursing = FALSE;
 std::map<DWORD,DWORD *> tseeds;
 HOOKFUNC BOOL WINAPI MyTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) {
     BOOL rv = TlsSetValue(dwTlsIndex, lpTlsValue);
-    if ((!TlsRecursing) && (lpTlsValue != NULL)) {
+    if ((!TlsRecursing) && (lpTlsValue != nullptr)) {
         TlsRecursing = TRUE;
         if (tseeds.find(dwTlsIndex) == tseeds.end()) {
             _ptiddata ptd = (_ptiddata)TlsGetValue(dwTlsIndex);

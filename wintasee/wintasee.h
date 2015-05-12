@@ -11,7 +11,7 @@
 #include "global.h"
 #include <shared/ipc.h>
 
-void FrameBoundary(void* captureInfo=0, int captureInfoType=CAPTUREINFO_TYPE_NONE);
+void FrameBoundary(void* captureInfo = nullptr, CAPTUREINFO captureInfoType = CAPTUREINFO::TYPE_NONE);
 void MakeWindowWindowed(HWND hwnd, DWORD width, DWORD height);
 bool IsWindowFakeFullscreen(HWND hwnd);
 bool RedrawScreen();
