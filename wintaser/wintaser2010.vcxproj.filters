@@ -11,9 +11,6 @@
     <Filter Include="Source Files\inject">
       <UniqueIdentifier>{848b6770-f704-45e4-a4c9-ce128028573d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\shared">
-      <UniqueIdentifier>{1c8f87bc-c3db-4164-8956-5d9b00548837}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
@@ -80,11 +77,11 @@
     <ClCompile Include="md5.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\shared\DllLoadInfos.cpp">
-      <Filter>Source Files\shared</Filter>
-    </ClCompile>
     <ClCompile Include="Score\DllLoadInfos_EXE.cpp">
       <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\DllLoadInfos_SHARED.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -121,24 +118,6 @@
     <ClInclude Include="inject\process.h">
       <Filter>Source Files\inject</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\asm.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\ipc.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\logcat.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\msg.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\version.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\winutil.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
@@ -150,9 +129,6 @@
     </ClInclude>
     <ClInclude Include="Menu.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\input.h">
-      <Filter>Source Files\shared</Filter>
     </ClInclude>
     <ClInclude Include="CPUinfo.h">
       <Filter>Source Files</Filter>
@@ -166,8 +142,8 @@
     <ClInclude Include="MD5Checksum.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\DllLoadInfos.h">
-      <Filter>Source Files\shared</Filter>
+    <ClInclude Include="Score\DllLoadInfos_EXE.h">
+      <Filter>Score</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

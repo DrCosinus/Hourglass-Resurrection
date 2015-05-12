@@ -1,11 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
+# Visual Studio Express 2013 for Windows Desktop
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wintasee", "wintasee\wintasee2010.vcxproj", "{948D0C09-EE11-4241-9286-D88C5B84DA36}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D8F46874-188B-4684-B2AB-C1013817CDD3} = {D8F46874-188B-4684-B2AB-C1013817CDD3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wintaser", "wintaser\wintaser2010.vcxproj", "{DFDB93E5-7F86-432A-9986-B079B8463FDB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D8F46874-188B-4684-B2AB-C1013817CDD3} = {D8F46874-188B-4684-B2AB-C1013817CDD3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shared", "shared\shared.vcxproj", "{D8F46874-188B-4684-B2AB-C1013817CDD3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +29,10 @@ Global
 		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Debug|Win32.Build.0 = Debug|Win32
 		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Release|Win32.ActiveCfg = Release|Win32
 		{DFDB93E5-7F86-432A-9986-B079B8463FDB}.Release|Win32.Build.0 = Release|Win32
+		{D8F46874-188B-4684-B2AB-C1013817CDD3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D8F46874-188B-4684-B2AB-C1013817CDD3}.Debug|Win32.Build.0 = Debug|Win32
+		{D8F46874-188B-4684-B2AB-C1013817CDD3}.Release|Win32.ActiveCfg = Release|Win32
+		{D8F46874-188B-4684-B2AB-C1013817CDD3}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

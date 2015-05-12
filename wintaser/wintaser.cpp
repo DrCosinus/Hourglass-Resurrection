@@ -154,7 +154,7 @@ TasFlags localTASflags =
 #define ASSERT(x) do{if(!(x))_asm{int 3}}while(0)
 #endif
 
-#include "../shared/DllLoadInfos.h"
+#include "Score/DllLoadInfos_EXE.h"
 
 static const int s_safeMaxIter = 300;
 static const int s_safeSleepPerIter = 10;

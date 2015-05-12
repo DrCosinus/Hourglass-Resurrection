@@ -1,8 +1,6 @@
-#include "DllLoadInfos.h"
+#include "DllLoadInfos_SHARED.h"
 
 namespace Score
 {
-    DllLoadInfos theDllLoadInfos;
-
     const char* LoadedDllList::ourFileMappingName = "Hourglass-SharedLoadedDllList";
 }

@@ -116,7 +116,7 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
 //	return rv;
 //}
 
-#include "../../shared/DllLoadInfos.h"
+#include "../Score/DllLoadInfos_DLL.h"
 
 
 // MyLdrUnloadDll disabled because

@@ -152,8 +152,6 @@
     <ClCompile Include="inject\process.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\shared\DllLoadInfos.h" />
-    <ClInclude Include="..\shared\input.h" />
     <ClInclude Include="AVIDumper.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="CPUinfo.h" />
@@ -169,15 +167,10 @@
     <ClInclude Include="Movie.h" />
     <ClInclude Include="ramsearch.h" />
     <ClInclude Include="ramwatch.h" />
+    <ClInclude Include="Score\DllLoadInfos_EXE.h" />
     <ClInclude Include="trace\extendedtrace.h" />
     <ClInclude Include="inject\iatmodifier.h" />
     <ClInclude Include="inject\process.h" />
-    <ClInclude Include="..\shared\asm.h" />
-    <ClInclude Include="..\shared\ipc.h" />
-    <ClInclude Include="..\shared\logcat.h" />
-    <ClInclude Include="..\shared\msg.h" />
-    <ClInclude Include="..\shared\version.h" />
-    <ClInclude Include="..\shared\winutil.h" />
     <ClInclude Include="Resource.h" />
   </ItemGroup>
   <ItemGroup>

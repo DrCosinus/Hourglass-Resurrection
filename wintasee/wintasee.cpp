@@ -276,7 +276,7 @@ static InfoForDebugger infoForDebugger = {};
 
 static TrustedRangeInfos trustedRangeInfos = {};
 
-#include "../shared/DllLoadInfos.h"
+#include "../shared/DllLoadInfos_SHARED.h"
 
 TasFlags tasflags = {};
 

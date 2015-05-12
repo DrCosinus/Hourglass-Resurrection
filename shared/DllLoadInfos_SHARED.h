@@ -92,27 +92,10 @@ namespace Score
     };
 
     // EXE only
-    namespace Exe
-    {
-        class DllLoadInfos final : public LoadedDllList
-        {
-        public:
-            auto    AddAndSend(const char* filename, bool loaded)    -> void;
-        };
-    }
+
 
     // DLL only
-    namespace Dll
-    {
-        class DllLoadInfos final : public LoadedDllList
-        {
-        public:
-            auto    UpdateHooks() -> void;
-        };
-    }
 
-    using DllLoadInfos = std::conditional<IsDll, Dll::DllLoadInfos, Exe::DllLoadInfos>::type;
 
-    extern DllLoadInfos theDllLoadInfos;
 }
 

@@ -1,7 +1,9 @@
-#include "../../shared/DllLoadInfos.h"
+#include "DllLoadInfos_EXE.h"
 
 namespace Score
 {
+    Exe::DllLoadInfos theDllLoadInfos;
+
     namespace Exe
     {
         // sends to UpdateHooks

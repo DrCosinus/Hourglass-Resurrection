@@ -5,9 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\shared">
-      <UniqueIdentifier>{2a0fd6ce-20ad-472e-b141-0e9e6a1262c9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\hooks_and_tramps">
       <UniqueIdentifier>{8f45bc76-8410-4dcf-9011-dcc4bf233648}</UniqueIdentifier>
     </Filter>
@@ -97,9 +94,6 @@
     <ClCompile Include="Score\DllLoadInfos_DLL.cpp">
       <Filter>Score</Filter>
     </ClCompile>
-    <ClCompile Include="..\shared\DllLoadInfos_SHARED.cpp">
-      <Filter>Source Files\shared</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dettime.h">
@@ -128,21 +122,6 @@
     </ClInclude>
     <ClInclude Include="wintasee.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\asm.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\ipc.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\logcat.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\version.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\winutil.h">
-      <Filter>Source Files\shared</Filter>
     </ClInclude>
     <ClInclude Include="tramps\alltramps.h">
       <Filter>Source Files\hooks_and_tramps</Filter>
@@ -198,11 +177,8 @@
     <ClInclude Include="tramps\Xinputtramps.h">
       <Filter>Source Files\hooks_and_tramps</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\input.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\DllLoadInfos.h">
-      <Filter>Source Files\shared</Filter>
+    <ClInclude Include="Score\DllLoadInfos_DLL.h">
+      <Filter>Score</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
