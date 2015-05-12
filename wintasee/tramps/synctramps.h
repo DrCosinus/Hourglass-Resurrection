@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef SYNCTRAMPS_H_INCL
-#define SYNCTRAMPS_H_INCL
+#pragma once
 
 #define CreateEventA TrampCreateEventA
 TRAMPFUNC HANDLE WINAPI CreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName) TRAMPOLINE_DEF
@@ -54,4 +53,3 @@ TRAMPFUNC BOOL WINAPI DuplicateHandle(HANDLE hSourceProcessHandle,
     DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwOptions
 ) TRAMPOLINE_DEF
 
-#endif

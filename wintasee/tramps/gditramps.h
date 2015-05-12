@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef GDITRAMPS_H_INCL
-#define GDITRAMPS_H_INCL
-
 #define StretchBlt TrampStretchBlt
 TRAMPFUNC BOOL WINAPI StretchBlt(HDC hdcDest, int nXOriginDest, int nYOriginDest, int nWidthDest, int nHeightDest, HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, int nWidthSrc, int nHeightSrc, DWORD dwRop) TRAMPOLINE_DEF
 #define BitBlt TrampBitBlt
@@ -35,4 +32,3 @@ TRAMPFUNC LONG WINAPI ChangeDisplaySettingsA(LPDEVMODEA lpDevMode, DWORD dwFlags
 #define ChangeDisplaySettingsW TrampChangeDisplaySettingsW
 TRAMPFUNC LONG WINAPI ChangeDisplaySettingsW(LPDEVMODEW lpDevMode, DWORD dwFlags) TRAMPOLINE_DEF
 
-#endif

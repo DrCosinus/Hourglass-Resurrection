@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef INTERCEPT_H_INCL
-#define INTERCEPT_H_INCL
+#pragma once
 
 // first some helper macros to use when defining trampoline and hook functions
 
@@ -12,21 +11,21 @@
 #define TRAMPOLINE_DEF  INTERNAL_TRAMPOLINE_DEF
 #define TRAMPOLINE_DEF_VOID  INTERNAL_TRAMPOLINE_DEF_VOID
 #if _MSC_VER > 1310
-	#define TRAMPOLINE_DEF_CUSTOM(...)          { __VA_ARGS__ ; }
+    #define TRAMPOLINE_DEF_CUSTOM(...)          { __VA_ARGS__ ; }
 #else
-	#define TRAMPOLINE_DEF_CUSTOM(__VA_ARGS__)  { __VA_ARGS__ ; }
+    #define TRAMPOLINE_DEF_CUSTOM(__VA_ARGS__)  { __VA_ARGS__ ; }
 #endif
 
 // this macro is used to fill trampolines with some default code as its original contents,
 // that's big enough to get overwritten with a jump to the target.
 // (more than big enough, and slightly different per function, to stay on the safe side.)
 #define TRAMPOLINE_CONTENTS \
-	static int x__ = 0; \
-	x__++; \
-	x__++; \
-	if(x__==2){debugprintf("Function \""__FUNCTION__"\" got called before it was set up!"); _asm{int 3} MessageBox(NULL, "Failed to hook function \""__FUNCTION__"\". This should never happen.", "Error", MB_ICONERROR);} \
-	x__++; \
-	x__++;
+    static int x__ = 0; \
+    x__++; \
+    x__++; \
+    if(x__==2){debugprintf("Function \""__FUNCTION__"\" got called before it was set up!"); _asm{int 3} MessageBox(NULL, "Failed to hook function \""__FUNCTION__"\". This should never happen.", "Error", MB_ICONERROR);} \
+    x__++; \
+    x__++;
 #define INTERNAL_TRAMPOLINE_DEF { TRAMPOLINE_CONTENTS return 0; }
 #define INTERNAL_TRAMPOLINE_DEF_VOID { TRAMPOLINE_CONTENTS }
 
@@ -88,19 +87,19 @@ BOOL HookVTable(void* iface, int entry, FARPROC replace, FARPROC& oldfuncPointer
 template <typename F>
 int offsetof_virtual(F f)
 {
-	unsigned char* c = *(unsigned char**)&f;
-	while(*c++ != 0xFF) {} // search for jmp ff/4? (why don't x86 docs say what each combination of bytes does? I can't decode their gibberish tables.)
-	switch(*c++)
-	{
-		case 0x60:
-			return *((unsigned char*)c) / 4;
-		//case 0x??: // I've never seen this (2-byte address) case used so far, and I can't find the damn thing in any x86 docs, so it's disabled for now
-		//	return *((short*)c) / 4;
-		case 0xA0:
-			return *((int*)c) / 4;
-		default: /*0x20:*/
-			return 0;
-	}
+    unsigned char* c = *(unsigned char**)&f;
+    while(*c++ != 0xFF) {} // search for jmp ff/4? (why don't x86 docs say what each combination of bytes does? I can't decode their gibberish tables.)
+    switch(*c++)
+    {
+        case 0x60:
+            return *((unsigned char*)c) / 4;
+        //case 0x??: // I've never seen this (2-byte address) case used so far, and I can't find the damn thing in any x86 docs, so it's disabled for now
+        //	return *((short*)c) / 4;
+        case 0xA0:
+            return *((int*)c) / 4;
+        default: /*0x20:*/
+            return 0;
+    }
 }
 // if something goes wrong with offsetof_virtual and you just can't figure it out,
 // keep in mind that this is only for convenience since the result is always a constant number
@@ -124,12 +123,12 @@ void HookCOMInterfaceEx(REFIID riid, LPVOID *ppvOut, REFGUID parameter, bool unc
 // thus this only works for interfaces that we use VT hooking on (e.g. VTHOOKRIID).
 #define HookCOMInterfaceUnknownVT(ifacename, ppu) \
 do{ \
-	void* pvOut = 0; \
-	if((ppu) && SUCCEEDED((ppu)->QueryInterface(IID_##ifacename, &pvOut))) \
-	{ \
-		HookCOMInterface(IID_##ifacename, &pvOut); \
-		((ifacename*)pvOut)->Release(); \
-	} \
+    void* pvOut = 0; \
+    if((ppu) && SUCCEEDED((ppu)->QueryInterface(IID_##ifacename, &pvOut))) \
+    { \
+        HookCOMInterface(IID_##ifacename, &pvOut); \
+        ((ifacename*)pvOut)->Release(); \
+    } \
 }while(0)
 
 
@@ -139,8 +138,8 @@ do{ \
 // it's probably because some code accidentally referenced a UUID directly from a header (such as IID_IUnknown) without using this macro first,
 // causing uuid.lib to get automatically linked in and break random other GUIDs.
 #define DEFINE_LOCAL_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-		static const GUID name = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }; \
-		static const DWORD name##_Data1 = l
+        static const GUID name = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }; \
+        static const DWORD name##_Data1 = l
 
 
 
@@ -154,35 +153,35 @@ do{ \
 template<typename TI, typename TM>
 bool type_needs_hooking(TI o)
 {
-	if(!o) return false;
+    if(!o) return false;
 #ifndef _DEBUG
-	cmdprintf("PAUSEEXCEPTIONPRINTING: ");
+    cmdprintf("PAUSEEXCEPTIONPRINTING: ");
 #endif
-	bool rv;
-	__try {
-		rv = dynamic_cast<TM>(o) == NULL;
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
-		rv = true;
-	}
+    bool rv;
+    __try {
+        rv = dynamic_cast<TM>(o) == NULL;
+    } __except(EXCEPTION_EXECUTE_HANDLER) {
+        rv = true;
+    }
 #ifndef _DEBUG
-	cmdprintf("RESUMEEXCEPTIONPRINTING: ");
+    cmdprintf("RESUMEEXCEPTIONPRINTING: ");
 #endif
-	verbosedebugprintf("NEEDS HOOKING: %d\n", rv);
-	//_asm{int 3}
-	return rv;
+    verbosedebugprintf("NEEDS HOOKING: %d\n", rv);
+    //_asm{int 3}
+    return rv;
 }
 
 template<typename TI, typename TM>
 bool is_of_type(TI o)
 {
-	if(!o) return false;
-	bool rv;
-	__try {
-		rv = dynamic_cast<TM>(o) != NULL;
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
-		rv = false;
-	}
-	return rv;
+    if(!o) return false;
+    bool rv;
+    __try {
+        rv = dynamic_cast<TM>(o) != NULL;
+    } __except(EXCEPTION_EXECUTE_HANDLER) {
+        rv = false;
+    }
+    return rv;
 }
 
 #ifdef _DEBUG
@@ -200,8 +199,8 @@ enum { s_isDebug = false };
 #define VTHOOKRIID2(x,n,n2) case IID_I##x##n##_Data1: if(IID_I##x##n == riid) if(My##x<I##x##n2>::Hook(reinterpret_cast<I##x##n2*>(*ppvOut))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: I" #x #n " (0x%X)\n", *ppvOut)); break
 #define VTHOOKRIID3(i,my) case IID_##i##_Data1: if(IID_##i == riid) if(my::Hook(reinterpret_cast<i*>(*ppvOut))) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #i " (0x%X)\n", *ppvOut)); break
 #define VTHOOKRIID3MULTI3(i,my) case IID_##i##_Data1: if(IID_##i == riid) { BOOL v = 0; i* pv = reinterpret_cast<i*>(*ppvOut); \
-	if(!v) v = my<0>::Hook(pv); if(!v) v = my<1>::Hook(pv); if(!v) v = my<2>::Hook(pv); \
-	if(!(v<=0)) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #i " (0x%X)\n", *ppvOut)); }	break
+    if(!v) v = my<0>::Hook(pv); if(!v) v = my<1>::Hook(pv); if(!v) v = my<2>::Hook(pv); \
+    if(!(v<=0)) (uncheckedFastNew&&!s_isDebug || debugprintf("HOOKED COM INTERFACE: " #i " (0x%X)\n", *ppvOut)); }	break
 //#define VTHOOKRIID3MULTI8(i,my) case IID_##i##_Data1: if(IID_##i == riid) { BOOL v = 0; i* pv = reinterpret_cast<i*>(*ppvOut); \
 //	if(!v) v = my<0>::Hook(pv); if(!v) v = my<1>::Hook(pv); \
 //	if(!v) v = my<2>::Hook(pv); if(!v) v = my<3>::Hook(pv); \
@@ -223,18 +222,18 @@ enum { s_isDebug = false };
 
 struct InterceptDescriptor
 {
-	const char* dllName;
-	const char* functionName;
-	FARPROC replacementFunction;
-	FARPROC trampolineFunction;
-	int enabled;
-	// the meaning of "enabled" (the first parameter to MAKE_INTERCEPT) is:
-	//  0 means to point our trampoline at it if it exists, and nothing else
-	//  1 means to point it at our replacement function and point our trampoline at it if it exists
-	//  2 means the same as 1 except force dll to load if it does not exist so our trampoline always works
-	// -1 means the same as 0 except force dll to load if it does not exist so our trampoline always works
+    const char* dllName;
+    const char* functionName;
+    FARPROC replacementFunction;
+    FARPROC trampolineFunction;
+    int enabled;
+    // the meaning of "enabled" (the first parameter to MAKE_INTERCEPT) is:
+    //  0 means to point our trampoline at it if it exists, and nothing else
+    //  1 means to point it at our replacement function and point our trampoline at it if it exists
+    //  2 means the same as 1 except force dll to load if it does not exist so our trampoline always works
+    // -1 means the same as 0 except force dll to load if it does not exist so our trampoline always works
 
-	//const char** dllNameArray;
+    //const char** dllNameArray;
 };
 
 #define MAKE_INTERCEPT(enabled, dll, name) {#dll".dll", #name, (FARPROC)My##name, (FARPROC)Tramp##name, enabled}
@@ -246,6 +245,3 @@ struct InterceptDescriptor
 
 void ApplyInterceptTable(const InterceptDescriptor* intercepts, int count);
 
-
-
-#endif

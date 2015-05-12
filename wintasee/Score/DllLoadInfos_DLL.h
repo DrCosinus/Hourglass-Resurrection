@@ -1,4 +1,4 @@
-#include "../../shared/DllLoadInfos_SHARED.h"
+#include <shared/DllLoadInfos_SHARED.h>
 
 namespace Score
 {

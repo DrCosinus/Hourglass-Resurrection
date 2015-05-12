@@ -15,8 +15,7 @@
 // ExtendedTrace.h
 //
 
-#ifndef EXTENDEDTRACE_H_INCLUDED
-#define EXTENDEDTRACE_H_INCLUDED
+#pragma once
 
 #if 1//defined(_DEBUG) && defined(WIN32)
 
@@ -72,4 +71,3 @@ void LoadModuleSymbols(HANDLE hProcess, PSTR name, HANDLE hFile, DWORD base);
 
 #endif
 
-#endif

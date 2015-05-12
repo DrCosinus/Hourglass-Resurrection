@@ -1,12 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(MODULEHOOKS_INCL) && !defined(UNITY_BUILD)
-#define MODULEHOOKS_INCL
-
-#include "../wintasee.h"
-#include "../../shared/winutil.h"
-#include "../tls.h"
+#include <wintasee/wintasee.h>
+#include <shared/winutil.h>
+#include <wintasee/tls.h>
 #include <map>
 
 bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
@@ -116,7 +113,7 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
 //	return rv;
 //}
 
-#include "../Score/DllLoadInfos_DLL.h"
+#include <Wintasee/Score/DllLoadInfos_DLL.h>
 
 
 // MyLdrUnloadDll disabled because
@@ -183,33 +180,33 @@ bool TrySoundCoCreateInstance(REFIID riid, LPVOID *ppv);
 
 static BOOL ShouldLoadUserDll(LPWSTR lpFileName)
 {
-	if(tasflags.allowLoadInstalledDlls == tasflags.allowLoadUxtheme)
-		return!! tasflags.allowLoadInstalledDlls;
-	char name [1024];
-	{
-		int i = 0;
-		for(; lpFileName[i] && i != sizeof(name)-1; i++)
-			name[i] = tolower((char)lpFileName[i]);
-		name[i] = 0;
-	}
-	char* slash = strrchr(name, '\\');
-	const char* dllname = slash ? slash+1 : name;
-	bool isUxTheme = !strcmp(dllname, "uxtheme.dll") || !strcmp(dllname, "themeui.dll") || !strcmp(dllname, "themeservice.dll");
-	if(isUxTheme)
-		return tasflags.allowLoadUxtheme;
-	return tasflags.allowLoadInstalledDlls;
+    if(tasflags.allowLoadInstalledDlls == tasflags.allowLoadUxtheme)
+        return!! tasflags.allowLoadInstalledDlls;
+    char name [1024];
+    {
+        int i = 0;
+        for(; lpFileName[i] && i != sizeof(name)-1; i++)
+            name[i] = tolower((char)lpFileName[i]);
+        name[i] = 0;
+    }
+    char* slash = strrchr(name, '\\');
+    const char* dllname = slash ? slash+1 : name;
+    bool isUxTheme = !strcmp(dllname, "uxtheme.dll") || !strcmp(dllname, "themeui.dll") || !strcmp(dllname, "themeservice.dll");
+    if(isUxTheme)
+        return tasflags.allowLoadUxtheme;
+    return tasflags.allowLoadInstalledDlls;
 }
 
 static BOOL WideStringContains(LPWSTR lpFileName, const char* match)
 {
-	char name [1024];
-	{
-		int i = 0;
-		for(; lpFileName[i] && i != sizeof(name)-1; i++)
-			name[i] = tolower((char)lpFileName[i]);
-		name[i] = 0;
-	}
-	return (BOOL)strstr(name, match);
+    char name [1024];
+    {
+        int i = 0;
+        for(; lpFileName[i] && i != sizeof(name)-1; i++)
+            name[i] = tolower((char)lpFileName[i]);
+        name[i] = 0;
+    }
+    return (BOOL)strstr(name, match);
 }
 
 bool watchForCLLApiNum = false;
@@ -222,85 +219,85 @@ HOOKFUNC NTSTATUS NTAPI MyLdrLoadDll(PWCHAR PathToFile, ULONG Flags, PUNICODE_ST
 //debugprintf(__FUNCTION__ "(ModuleFileName=\"%S\") called.\n", ModuleFileName->Buffer);
 //cmdprintf("SHORTTRACE: 3,50");
 
-	//debugprintf(__FUNCTION__ "(ModuleFileName=\"%S\") called.\n", ModuleFileName->Buffer);
-	//DWORD myEBP;
+    //debugprintf(__FUNCTION__ "(ModuleFileName=\"%S\") called.\n", ModuleFileName->Buffer);
+    //DWORD myEBP;
  //   __asm
  //   {
  //     mov [myEBP], ebp;
  //   }
-	//debugsplatmem(myEBP, "ebp");
+    //debugsplatmem(myEBP, "ebp");
 
 #if 1 // new method, get list of loaded dlls from debugger (because LdrLoadDll can load multiple dlls)
-	//_asm{int 3} // to print callstack... debugprintf/cmdprintf can cause problems in this context
-	ThreadLocalStuff* pCurtls = 0;
-	if(tlsIsSafeToUse)
-	{
-		pCurtls = &tls;
-		ThreadLocalStuff& curtls = *pCurtls;
-		if(curtls.callingClientLoadLibrary || curtls.treatDLLLoadsAsClient)
-		{
-			curtls.callingClientLoadLibrary = FALSE; // see MyKiUserCallbackDispatcher
-			watchForCLLApiNum = false; // if we were watching for the apiNum, it must have worked
-			if(!ShouldLoadUserDll(ModuleFileName->Buffer))
-			{
-				//debuglog(LCF_MODULE, "DENIED loading DLL: %S\n", ModuleFileName->Buffer);
-				//cmdprintf("SHORTTRACE: 3,50");
-				return /*STATUS_DLL_NOT_FOUND*/0xC0000135;
-			}
-		}
-		
-		// TEST HACK
-		if(WideStringContains(ModuleFileName->Buffer, "dpofeedb.dll"))
-			return /*STATUS_DLL_NOT_FOUND*/0xC0000135;
+    //_asm{int 3} // to print callstack... debugprintf/cmdprintf can cause problems in this context
+    ThreadLocalStuff* pCurtls = 0;
+    if(tlsIsSafeToUse)
+    {
+        pCurtls = &tls;
+        ThreadLocalStuff& curtls = *pCurtls;
+        if(curtls.callingClientLoadLibrary || curtls.treatDLLLoadsAsClient)
+        {
+            curtls.callingClientLoadLibrary = FALSE; // see MyKiUserCallbackDispatcher
+            watchForCLLApiNum = false; // if we were watching for the apiNum, it must have worked
+            if(!ShouldLoadUserDll(ModuleFileName->Buffer))
+            {
+                //debuglog(LCF_MODULE, "DENIED loading DLL: %S\n", ModuleFileName->Buffer);
+                //cmdprintf("SHORTTRACE: 3,50");
+                return /*STATUS_DLL_NOT_FOUND*/0xC0000135;
+            }
+        }
+        
+        // TEST HACK
+        if(WideStringContains(ModuleFileName->Buffer, "dpofeedb.dll"))
+            return /*STATUS_DLL_NOT_FOUND*/0xC0000135;
 
-		pCurtls->callerisuntrusted++;
-	}
-	//if(tlsIsSafeToUse)
-	//{
-	//	debuglog(LCF_MODULE, "Loaded DLL: %S\n", ModuleFileName->Buffer);
-	//	//cmdprintf("SHORTTRACE: 3,50");
-	//}
+        pCurtls->callerisuntrusted++;
+    }
+    //if(tlsIsSafeToUse)
+    //{
+    //	debuglog(LCF_MODULE, "Loaded DLL: %S\n", ModuleFileName->Buffer);
+    //	//cmdprintf("SHORTTRACE: 3,50");
+    //}
 
-	NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
-	//if(rv < 0)
-	//	debuglog(LCF_MODULE|LCF_ERROR, "FAILED to load DLL: %S (0x%X)\n", ModuleFileName->Buffer, rv);
+    NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
+    //if(rv < 0)
+    //	debuglog(LCF_MODULE|LCF_ERROR, "FAILED to load DLL: %S (0x%X)\n", ModuleFileName->Buffer, rv);
     Score::theDllLoadInfos.UpdateHooks();
 
-	if(pCurtls)
-		pCurtls->callerisuntrusted--;
-	return rv;
+    if(pCurtls)
+        pCurtls->callerisuntrusted--;
+    return rv;
 #else
 
-	// for some reason this function is INCREDIBLY fragile.
-	// the slightest bit too much processing will make games fail to load certain critical DLLs.
-	// I'd like to call ShouldAllowDLLLoad to deny certain DLLs from loading, but currently can't.
+    // for some reason this function is INCREDIBLY fragile.
+    // the slightest bit too much processing will make games fail to load certain critical DLLs.
+    // I'd like to call ShouldAllowDLLLoad to deny certain DLLs from loading, but currently can't.
 
-	LPWSTR lpFileName = ModuleFileName->Buffer;
+    LPWSTR lpFileName = ModuleFileName->Buffer;
 
-	// store the string first because LdrLoadDll puts garbage in the string (registry keys?)
-	// this way of doing it seems to be more reliable than sprintf(name, "%S", lpFileName);
-	char name [1024];
-	int i = 0;
-	for(; lpFileName[i] && i != sizeof(name)-1; i++)
-		name[i] = (char)lpFileName[i];
-	name[i] = 0;
+    // store the string first because LdrLoadDll puts garbage in the string (registry keys?)
+    // this way of doing it seems to be more reliable than sprintf(name, "%S", lpFileName);
+    char name [1024];
+    int i = 0;
+    for(; lpFileName[i] && i != sizeof(name)-1; i++)
+        name[i] = (char)lpFileName[i];
+    name[i] = 0;
 
-	//debuglog(LCF_MODULE, __FUNCTION__ "(%S, 0x%X, %S, 0x%X)\n", lpFileName, Flags, PathToFile, ModuleHandle);
-	//if(!ShouldAllowDLLLoad(name))
-	//{
-	//	//return 0xC0000135;
-	//}
+    //debuglog(LCF_MODULE, __FUNCTION__ "(%S, 0x%X, %S, 0x%X)\n", lpFileName, Flags, PathToFile, ModuleHandle);
+    //if(!ShouldAllowDLLLoad(name))
+    //{
+    //	//return 0xC0000135;
+    //}
 
-	NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
+    NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
 
-	//static int inside = 0;
-	//if(inside) if(inside != GetCurrentThreadId()) while(inside) {OutputDebugString("WTFA\n");}
-	//inside = GetCurrentThreadId();
+    //static int inside = 0;
+    //if(inside) if(inside != GetCurrentThreadId()) while(inside) {OutputDebugString("WTFA\n");}
+    //inside = GetCurrentThreadId();
 
 //#if defined(_MSC_VER) && _MSC_VER >= 1400 && _MSC_VER < 1500
-	// terrible mystery hack! to fix some games from failing to find kernel32.dll when this file is compiled with VS2005
-	//static bool already = false;
-	//if(!already)
+    // terrible mystery hack! to fix some games from failing to find kernel32.dll when this file is compiled with VS2005
+    //static bool already = false;
+    //if(!already)
 //	if(lpFileName[0] == 'K' && lpFileName[6] == '3')
 //	{
 //		//already = true;
@@ -313,40 +310,40 @@ HOOKFUNC NTSTATUS NTAPI MyLdrLoadDll(PWCHAR PathToFile, ULONG Flags, PUNICODE_ST
 
 //	NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
 
-	if(rv >= 0)
-	{
-		int namelen = i;
-		if(!(namelen < 4 || !stricmp(name+namelen-4,".exe")))
-		{
-			char* slash = max(strrchr(name, '\\'), strrchr(name, '/'));
-			const char* dllname = slash ? slash+1 : name;
-			//debuglog(LCF_MODULE, "Rehooking: %s\n", dllname);
-			RetryInterceptAPIs(dllname);
+    if(rv >= 0)
+    {
+        int namelen = i;
+        if(!(namelen < 4 || !stricmp(name+namelen-4,".exe")))
+        {
+            char* slash = max(strrchr(name, '\\'), strrchr(name, '/'));
+            const char* dllname = slash ? slash+1 : name;
+            //debuglog(LCF_MODULE, "Rehooking: %s\n", dllname);
+            RetryInterceptAPIs(dllname);
 // disabled because it will make AVIs captured on different machines be slightly different lengths
-			//// loading DLLs takes time
-			//detTimer.AddDelay(/*10*/15, FALSE, FALSE); // must both be FALSE to signal async delay add, otherwise really weird things will happen like inaccurate thread creation reports to the debugger
-		}
-	}
-	else
-	{
-		//HANDLE handle = GetModuleHandleA(name);
-		//if(handle)
-		//{
-		//	*ModuleHandle = handle;
-		//	rv = 0;
-		//}
-		//while(rv < 0)
-		{
-			debuglog(LCF_MODULE|LCF_ERROR, "FAILED to load DLL: %s (0x%X)\n", name, rv);
+            //// loading DLLs takes time
+            //detTimer.AddDelay(/*10*/15, FALSE, FALSE); // must both be FALSE to signal async delay add, otherwise really weird things will happen like inaccurate thread creation reports to the debugger
+        }
+    }
+    else
+    {
+        //HANDLE handle = GetModuleHandleA(name);
+        //if(handle)
+        //{
+        //	*ModuleHandle = handle;
+        //	rv = 0;
+        //}
+        //while(rv < 0)
+        {
+            debuglog(LCF_MODULE|LCF_ERROR, "FAILED to load DLL: %s (0x%X)\n", name, rv);
 //			debuglog(LCF_MODULE|LCF_ERROR, "%S, 0x%X, 0x%X, %S\n", ModuleFileName->Buffer, Flags, ModuleHandle, PathToFile);
 //			rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
-		}
+        }
 
-	//NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
-	}
+    //NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
+    }
 
 //	inside = 0;
-	return rv;
+    return rv;
 #endif
 }
 
@@ -415,99 +412,99 @@ HOOKFUNC NTSTATUS NTAPI MyLdrLoadDll(PWCHAR PathToFile, ULONG Flags, PUNICODE_ST
 
 HOOKFUNC VOID NTAPI MyKiUserCallbackDispatcher(ULONG ApiNumber, PVOID InputBuffer, ULONG InputLength)
 {
-	//debugprintf(__FUNCTION__ "(ApiNumber=%d) called.\n",ApiNumber);
+    //debugprintf(__FUNCTION__ "(ApiNumber=%d) called.\n",ApiNumber);
 
-	// maybe should instead scan the stack in MyLdrLoadDll for something we put on the stack in MyKiUserCallbackDispatcher? but I couldn't get it to work...
+    // maybe should instead scan the stack in MyLdrLoadDll for something we put on the stack in MyKiUserCallbackDispatcher? but I couldn't get it to work...
 //	char test [8] = {0,0x42,0x42,0x42,0x42,0x42,0x42,0x42,};
 //	debugprintf(test);
 
-	if(watchForCLLApiNum)
-		cllApiNum = ApiNumber;
+    if(watchForCLLApiNum)
+        cllApiNum = ApiNumber;
 
-	if(ApiNumber == cllApiNum)
-		tls.callingClientLoadLibrary = TRUE;
+    if(ApiNumber == cllApiNum)
+        tls.callingClientLoadLibrary = TRUE;
 
-	KiUserCallbackDispatcher(ApiNumber, InputBuffer, InputLength);
-	// at least on Windows XP, code placed here won't run,
-	// because KiUserCallbackDispatcher returns directly to the kernel mode code that called us.
-	// so, so we have to reset tls.callingClientLoadLibrary elsewhere (in MyLdrLoadDll)
+    KiUserCallbackDispatcher(ApiNumber, InputBuffer, InputLength);
+    // at least on Windows XP, code placed here won't run,
+    // because KiUserCallbackDispatcher returns directly to the kernel mode code that called us.
+    // so, so we have to reset tls.callingClientLoadLibrary elsewhere (in MyLdrLoadDll)
 }
 
 // TODO it's just for debugging but this is kind of wrong (chooseriid, riidToName)
 inline REFIID chooseriid(REFIID riid, REFCLSID rclsid)
 {
-	if(riid.Data1 > 1)
-		return riid;
-	return (REFIID)rclsid;
+    if(riid.Data1 > 1)
+        return riid;
+    return (REFIID)rclsid;
 }
 const char* riidToName(REFIID riid)
 {
-	switch(riid.Data1)
-	{
-	case 0x56A8689F:
-		return "IFilterGraph";
-	case 0x56A8689C:
-		return "IMemAllocator";
+    switch(riid.Data1)
+    {
+    case 0x56A8689F:
+        return "IFilterGraph";
+    case 0x56A8689C:
+        return "IMemAllocator";
 
 // not sure which of these are helpful, I'm just noting them down for now
-	case 0x56A86895:
-		return "IBaseFilter";
-	case 0xE436EBB3:
-		return "FilgraphManager";
-	case 0XE436EBB8:
-		return "FilgraphManagerNoThread";
-	case 0xCDA42200:
-		return "FilterMapper2";
-	case 0xE436EBB5:
-		return "AsyncReader";
-	case 0x4315D437:
-		return "CDeviceMoniker";
-	case 0xE21BE468:
-		return "RealSplitter";
-	case 0x336475D0:
-		return "MpegSplitter";
-	case 0x0F40E1E5:
-		return "ffdshowAudio";
-	case 0x79376820:
-		return "DirectSoundRender";
-	case 0x1E651CC0:
-		return "MemoryAllocator";
-	case 0x060AF76C:
-		return "SeekingPassThru";
-	}
-	
-	return NULL;
+    case 0x56A86895:
+        return "IBaseFilter";
+    case 0xE436EBB3:
+        return "FilgraphManager";
+    case 0XE436EBB8:
+        return "FilgraphManagerNoThread";
+    case 0xCDA42200:
+        return "FilterMapper2";
+    case 0xE436EBB5:
+        return "AsyncReader";
+    case 0x4315D437:
+        return "CDeviceMoniker";
+    case 0xE21BE468:
+        return "RealSplitter";
+    case 0x336475D0:
+        return "MpegSplitter";
+    case 0x0F40E1E5:
+        return "ffdshowAudio";
+    case 0x79376820:
+        return "DirectSoundRender";
+    case 0x1E651CC0:
+        return "MemoryAllocator";
+    case 0x060AF76C:
+        return "SeekingPassThru";
+    }
+    
+    return NULL;
 }
 
 // in case either MyCoCreateInstance doesn't call MyCoCreateInstanceEx or MyCoCreateInstance is called and MyCoCreateInstanceEx failed to get hooked
 HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv)
 {
-	ThreadLocalStuff& curtls = tls;
-	curtls.callerisuntrusted++;
-	const char* oldName = curtls.curThreadCreateName;
-	const char* newName = riidToName(chooseriid(riid,rclsid));
-	debuglog(LCF_MODULE, __FUNCTION__ "(0x%X, 0x%X (%s)) called.\n", riid.Data1, rclsid.Data1, newName?newName:"?");
-	if(newName)
-		curtls.curThreadCreateName = newName;
+    ThreadLocalStuff& curtls = tls;
+    curtls.callerisuntrusted++;
+    const char* oldName = curtls.curThreadCreateName;
+    const char* newName = riidToName(chooseriid(riid,rclsid));
+    debuglog(LCF_MODULE, __FUNCTION__ "(0x%X, 0x%X (%s)) called.\n", riid.Data1, rclsid.Data1, newName?newName:"?");
+    if(newName)
+        curtls.curThreadCreateName = newName;
 
-	HRESULT rv = E_FAIL;
+    HRESULT rv = E_FAIL;
 
-	if(TrySoundCoCreateInstance(riid, ppv))
-	{
-		rv = S_OK;
-	}
-	else
-	{
-		// normal case
-		rv = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, ppv);
-		if(SUCCEEDED(rv))
-			HookCOMInterface(riid, ppv);
-	}
-	if(newName)
-		curtls.curThreadCreateName = oldName;
+    if(TrySoundCoCreateInstance(riid, ppv))
+    {
+        rv = S_OK;
+    }
+    else
+    {
+        // normal case
+        rv = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, ppv);
+        if(SUCCEEDED(rv))
+            HookCOMInterface(riid, ppv);
+    }
+    if(newName)
+        curtls.curThreadCreateName = oldName;
     Score::theDllLoadInfos.UpdateHooks();
-	curtls.callerisuntrusted--;
-	return rv;
+    curtls.callerisuntrusted--;
+    return rv;
 }
 
 
@@ -516,74 +513,74 @@ DEFINE_LOCAL_GUID(CLSID_FilterGraphNoThread,0xe436ebb8,0x524f,0x11ce,0x9f,0x53,0
 
 static void PreCoGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID FAR* ppv, const char* callerName, const char* oldName)
 {
-	const char* newName = riidToName(chooseriid(riid,rclsid));
-	debuglog(LCF_MODULE, __FUNCTION__ "(0x%X, 0x%X (%s)) called by %s.\n", riid.Data1, rclsid.Data1, newName?newName:"?", callerName);
-	if(rclsid.Data1 == CLSID_FilterGraphManager.Data1 /*&& tasflags.threadMode < 2*/)
-		((IID&)rclsid).Data1 = CLSID_FilterGraphNoThread.Data1; // here's hoping this helps
-	if(!oldName && !newName)
-		newName = "DirectShow"; // TODO
-	ThreadLocalStuff& curtls = tls;
-	if(newName)
-		curtls.curThreadCreateName = newName;
-	curtls.callerisuntrusted++;
+    const char* newName = riidToName(chooseriid(riid,rclsid));
+    debuglog(LCF_MODULE, __FUNCTION__ "(0x%X, 0x%X (%s)) called by %s.\n", riid.Data1, rclsid.Data1, newName?newName:"?", callerName);
+    if(rclsid.Data1 == CLSID_FilterGraphManager.Data1 /*&& tasflags.threadMode < 2*/)
+        ((IID&)rclsid).Data1 = CLSID_FilterGraphNoThread.Data1; // here's hoping this helps
+    if(!oldName && !newName)
+        newName = "DirectShow"; // TODO
+    ThreadLocalStuff& curtls = tls;
+    if(newName)
+        curtls.curThreadCreateName = newName;
+    curtls.callerisuntrusted++;
 }
 static void PostCoGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID FAR* ppv, HRESULT hr, const char* oldName)
 {
-	ThreadLocalStuff& curtls = tls;
-	curtls.callerisuntrusted--;
-	if(SUCCEEDED(hr))
-		HookCOMInterface(riid, ppv);
-	//if(newName)
-		curtls.curThreadCreateName = oldName;
+    ThreadLocalStuff& curtls = tls;
+    curtls.callerisuntrusted--;
+    if(SUCCEEDED(hr))
+        HookCOMInterface(riid, ppv);
+    //if(newName)
+        curtls.curThreadCreateName = oldName;
         Score::theDllLoadInfos.UpdateHooks();
 }
 
 HOOKFUNC HRESULT STDAPICALLTYPE MyCoGetClassObject(REFCLSID rclsid, DWORD dwClsContext, LPVOID pvReserved, REFIID riid, LPVOID FAR* ppv)
 {
-	const char* oldName = tls.curThreadCreateName;
-	PreCoGetClassObject(rclsid,riid,ppv, __FUNCTION__, oldName);
-	HRESULT rv = CoGetClassObject(rclsid, dwClsContext, pvReserved, riid, ppv);
-	PostCoGetClassObject(rclsid,riid,ppv, rv, oldName);
-	return rv;
+    const char* oldName = tls.curThreadCreateName;
+    PreCoGetClassObject(rclsid,riid,ppv, __FUNCTION__, oldName);
+    HRESULT rv = CoGetClassObject(rclsid, dwClsContext, pvReserved, riid, ppv);
+    PostCoGetClassObject(rclsid,riid,ppv, rv, oldName);
+    return rv;
 }
 
 // in case either MyCoCreateInstanceEx is directly instead of from MyCoCreateInstance, or MyCoCreateInstanceEx is called from MyCoCreateInstance but MyCoCreateInstance failed to get hooked
 HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstanceEx(REFCLSID Clsid, LPUNKNOWN punkOuter, DWORD dwClsCtx, struct _COSERVERINFO* pServerInfo, DWORD dwCount, struct tagMULTI_QI* pResults)
 {
-	debuglog(LCF_MODULE, __FUNCTION__ "(clsid=0x%X, dwCount=%d) called.\n", Clsid.Data1, dwCount);
+    debuglog(LCF_MODULE, __FUNCTION__ "(clsid=0x%X, dwCount=%d) called.\n", Clsid.Data1, dwCount);
 
-	// check for creating custom objects that skip COM
+    // check for creating custom objects that skip COM
 //	DEFINE_LOCAL_GUID(IID_IUnknown,0x00000000,0x0000,0x0000,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46);
-	for(DWORD i = 0; i < dwCount; i++)
-	{
-		if(TrySoundCoCreateInstance(*pResults[i].pIID, (LPVOID*)&pResults[i].pItf))
-		{
-			pResults[i].hr = S_OK;
-			HRESULT rv = S_OK;
-			bool anyok = false;
-			for(DWORD j = 0; j < dwCount; j++)
-			{
-				if(i != j)
-				{
-					pResults[j].hr = pResults[i].pItf->QueryInterface(*pResults[j].pIID, (LPVOID*)pResults[j].pItf);
-					if(FAILED(pResults[j].hr))
-						rv = pResults[j].hr;
-					else
-						anyok = true;
-				}
-			}
-			if(anyok && FAILED(rv))
-				rv = CO_S_NOTALLINTERFACES;
-			return rv;
-		}
-	}
+    for(DWORD i = 0; i < dwCount; i++)
+    {
+        if(TrySoundCoCreateInstance(*pResults[i].pIID, (LPVOID*)&pResults[i].pItf))
+        {
+            pResults[i].hr = S_OK;
+            HRESULT rv = S_OK;
+            bool anyok = false;
+            for(DWORD j = 0; j < dwCount; j++)
+            {
+                if(i != j)
+                {
+                    pResults[j].hr = pResults[i].pItf->QueryInterface(*pResults[j].pIID, (LPVOID*)pResults[j].pItf);
+                    if(FAILED(pResults[j].hr))
+                        rv = pResults[j].hr;
+                    else
+                        anyok = true;
+                }
+            }
+            if(anyok && FAILED(rv))
+                rv = CO_S_NOTALLINTERFACES;
+            return rv;
+        }
+    }
 
-	// regular creation
-	HRESULT rv = CoCreateInstanceEx(Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
-	for(DWORD i = 0; i < dwCount; i++)
-		if(SUCCEEDED(pResults[i].hr))
-			HookCOMInterface(*pResults[i].pIID, (LPVOID*)&pResults[i].pItf);
-	return rv;
+    // regular creation
+    HRESULT rv = CoCreateInstanceEx(Clsid, punkOuter, dwClsCtx, pServerInfo, dwCount, pResults);
+    for(DWORD i = 0; i < dwCount; i++)
+        if(SUCCEEDED(pResults[i].hr))
+            HookCOMInterface(*pResults[i].pIID, (LPVOID*)&pResults[i].pItf);
+    return rv;
 }
 
 //static HRESULT STDAPICALLTYPE MyDllGetClassObject_Impl(TypeOfDllGetClassObject DllGetClassObject, const char* dllname, REFCLSID rclsid, REFIID riid, LPVOID *ppv)
@@ -610,11 +607,11 @@ HOOKFUNC HRESULT STDAPICALLTYPE MyCoCreateInstanceEx(REFCLSID Clsid, LPUNKNOWN p
 TRAMPFUNC HRESULT STDAPICALLTYPE TrampDllGetClassObject_##suffix(REFCLSID rclsid, REFIID riid, LPVOID *ppv) TRAMPOLINE_DEF \
 static HRESULT STDAPICALLTYPE MyDllGetClassObject_##suffix(REFCLSID rclsid, REFIID riid, LPVOID *ppv) \
 { \
-	const char* oldName = tls.curThreadCreateName; \
-	PreCoGetClassObject(rclsid,riid,ppv, #suffix, oldName); \
-	HRESULT rv = TrampDllGetClassObject_##suffix(rclsid, riid, ppv); \
-	PostCoGetClassObject(rclsid,riid,ppv, rv, oldName); \
-	return rv; \
+    const char* oldName = tls.curThreadCreateName; \
+    PreCoGetClassObject(rclsid,riid,ppv, #suffix, oldName); \
+    HRESULT rv = TrampDllGetClassObject_##suffix(rclsid, riid, ppv); \
+    PostCoGetClassObject(rclsid,riid,ppv, rv, oldName); \
+    return rv; \
 }
 IMPLEMENT_MyDllGetClassObject(quartz)
 //IMPLEMENT_MyDllGetClassObject(ffdshow) // apparently not needed
@@ -624,64 +621,64 @@ IMPLEMENT_MyDllGetClassObject(quartz)
 
 HOOKFUNC HRESULT STDMETHODCALLTYPE MyIUnknown_QueryInterface_Proxy(IUnknown __RPC_FAR * This,REFIID riid,void __RPC_FAR *__RPC_FAR *ppvObject)
 {
-	debuglog(LCF_MODULE|LCF_UNTESTED, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
-	ThreadLocalStuff& curtls = tls;
-	curtls.callerisuntrusted++;
-	const char* oldName = curtls.curThreadCreateName;
-	const char* newName = riidToName(riid);
-	if(!oldName && !newName)
-		newName = "RPC";
-	if(newName)
-		curtls.curThreadCreateName = newName;
-	HRESULT rv = IUnknown_QueryInterface_Proxy(This, riid, ppvObject);
-	if(SUCCEEDED(rv))
-		HookCOMInterface(riid, ppvObject);
-	if(newName)
-		curtls.curThreadCreateName = oldName;
-	curtls.callerisuntrusted--;
-	return rv;
+    debuglog(LCF_MODULE|LCF_UNTESTED, __FUNCTION__ "(0x%X) called.\n", riid.Data1);
+    ThreadLocalStuff& curtls = tls;
+    curtls.callerisuntrusted++;
+    const char* oldName = curtls.curThreadCreateName;
+    const char* newName = riidToName(riid);
+    if(!oldName && !newName)
+        newName = "RPC";
+    if(newName)
+        curtls.curThreadCreateName = newName;
+    HRESULT rv = IUnknown_QueryInterface_Proxy(This, riid, ppvObject);
+    if(SUCCEEDED(rv))
+        HookCOMInterface(riid, ppvObject);
+    if(newName)
+        curtls.curThreadCreateName = oldName;
+    curtls.callerisuntrusted--;
+    return rv;
 }
 
 struct AutoUntrust
 {
-	ThreadLocalStuff* pCurtls;
-	AutoUntrust()
-	{
-		pCurtls = ThreadLocalStuff::GetIfAllocated();
-		if(pCurtls)
-			pCurtls->callerisuntrusted++;
-	}
-	~AutoUntrust()
-	{
-		if(pCurtls)
-			pCurtls->callerisuntrusted--;
-	}
+    ThreadLocalStuff* pCurtls;
+    AutoUntrust()
+    {
+        pCurtls = ThreadLocalStuff::GetIfAllocated();
+        if(pCurtls)
+            pCurtls->callerisuntrusted++;
+    }
+    ~AutoUntrust()
+    {
+        if(pCurtls)
+            pCurtls->callerisuntrusted--;
+    }
 };
 
 HOOKFUNC PVOID NTAPI MyRtlAllocateHeap(PVOID HeapHandle, ULONG Flags, SIZE_T Size)
 {
-	AutoUntrust au;
-	return RtlAllocateHeap(HeapHandle, Flags, Size);
+    AutoUntrust au;
+    return RtlAllocateHeap(HeapHandle, Flags, Size);
 }
 HOOKFUNC PVOID NTAPI MyRtlCreateHeap(ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, struct RTL_HEAP_PARAMETERS* Parameters)
 {
-	AutoUntrust au;
-	return RtlCreateHeap(Flags, HeapBase, ReserveSize, CommitSize, Lock, Parameters);
+    AutoUntrust au;
+    return RtlCreateHeap(Flags, HeapBase, ReserveSize, CommitSize, Lock, Parameters);
 }
 HOOKFUNC PVOID RPC_ENTRY MyNdrAllocate(PMIDL_STUB_MESSAGE pStubMsg, size_t Len)
 {
-	AutoUntrust au;
-	return NdrAllocate(pStubMsg, Len);
+    AutoUntrust au;
+    return NdrAllocate(pStubMsg, Len);
 }
 HOOKFUNC void RPC_ENTRY MyNdrClientInitializeNew(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum)
 {
-	AutoUntrust au;
-	return NdrClientInitializeNew(pRpcMsg, pStubMsg, pStubDescriptor, ProcNum);
+    AutoUntrust au;
+    return NdrClientInitializeNew(pRpcMsg, pStubMsg, pStubDescriptor, ProcNum);
 }
 HOOKFUNC void RPC_ENTRY MyNdrClientInitialize(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_MESSAGE pStubMsg, PMIDL_STUB_DESC pStubDescriptor, unsigned int ProcNum)
 {
-	AutoUntrust au;
-	return NdrClientInitialize(pRpcMsg, pStubMsg, pStubDescriptor, ProcNum);
+    AutoUntrust au;
+    return NdrClientInitialize(pRpcMsg, pStubMsg, pStubDescriptor, ProcNum);
 }
 
 
@@ -689,70 +686,70 @@ HOOKFUNC void RPC_ENTRY MyNdrClientInitialize(PRPC_MESSAGE pRpcMsg, PMIDL_STUB_M
 
 
 HOOKFUNC BOOL WINAPI MyCreateProcessA(
-	LPCSTR lpApplicationName,
-	LPSTR lpCommandLine,
-	LPSECURITY_ATTRIBUTES lpProcessAttributes,
-	LPSECURITY_ATTRIBUTES lpThreadAttributes,
-	BOOL bInheritHandles,
-	DWORD dwCreationFlags,
-	LPVOID lpEnvironment,
-	LPCSTR lpCurrentDirectory,
-	LPSTARTUPINFOA lpStartupInfo,
-	LPPROCESS_INFORMATION lpProcessInformation
+    LPCSTR lpApplicationName,
+    LPSTR lpCommandLine,
+    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    BOOL bInheritHandles,
+    DWORD dwCreationFlags,
+    LPVOID lpEnvironment,
+    LPCSTR lpCurrentDirectory,
+    LPSTARTUPINFOA lpStartupInfo,
+    LPPROCESS_INFORMATION lpProcessInformation
 )
 {
-	debuglog(LCF_PROCESS|LCF_TODO, __FUNCTION__ " called: %s\n", lpCommandLine);
-	tls.isFrameThread = FALSE;
-	BOOL rv = CreateProcessA(
-		lpApplicationName,
-		lpCommandLine,
-		lpProcessAttributes,
-		lpThreadAttributes,
-		bInheritHandles,
-		dwCreationFlags,
-		lpEnvironment,
-		lpCurrentDirectory,
-		lpStartupInfo,
-		lpProcessInformation
-	);
-	return rv;
+    debuglog(LCF_PROCESS|LCF_TODO, __FUNCTION__ " called: %s\n", lpCommandLine);
+    tls.isFrameThread = FALSE;
+    BOOL rv = CreateProcessA(
+        lpApplicationName,
+        lpCommandLine,
+        lpProcessAttributes,
+        lpThreadAttributes,
+        bInheritHandles,
+        dwCreationFlags,
+        lpEnvironment,
+        lpCurrentDirectory,
+        lpStartupInfo,
+        lpProcessInformation
+    );
+    return rv;
 }
 
 HOOKFUNC BOOL WINAPI MyCreateProcessW(
-	LPCWSTR lpApplicationName,
-	LPWSTR lpCommandLine,
-	LPSECURITY_ATTRIBUTES lpProcessAttributes,
-	LPSECURITY_ATTRIBUTES lpThreadAttributes,
-	BOOL bInheritHandles,
-	DWORD dwCreationFlags,
-	LPVOID lpEnvironment,
-	LPCWSTR lpCurrentDirectory,
-	LPSTARTUPINFOW lpStartupInfo,
-	LPPROCESS_INFORMATION lpProcessInformation
+    LPCWSTR lpApplicationName,
+    LPWSTR lpCommandLine,
+    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    BOOL bInheritHandles,
+    DWORD dwCreationFlags,
+    LPVOID lpEnvironment,
+    LPCWSTR lpCurrentDirectory,
+    LPSTARTUPINFOW lpStartupInfo,
+    LPPROCESS_INFORMATION lpProcessInformation
 )
 {
-	debuglog(LCF_PROCESS|LCF_TODO, __FUNCTION__ " called: %S\n", lpCommandLine);
-	tls.isFrameThread = FALSE;
-	BOOL rv = CreateProcessW(
-		lpApplicationName,
-		lpCommandLine,
-		lpProcessAttributes,
-		lpThreadAttributes,
-		bInheritHandles,
-		dwCreationFlags,
-		lpEnvironment,
-		lpCurrentDirectory,
-		lpStartupInfo,
-		lpProcessInformation
-	);
-	return rv;
+    debuglog(LCF_PROCESS|LCF_TODO, __FUNCTION__ " called: %S\n", lpCommandLine);
+    tls.isFrameThread = FALSE;
+    BOOL rv = CreateProcessW(
+        lpApplicationName,
+        lpCommandLine,
+        lpProcessAttributes,
+        lpThreadAttributes,
+        bInheritHandles,
+        dwCreationFlags,
+        lpEnvironment,
+        lpCurrentDirectory,
+        lpStartupInfo,
+        lpProcessInformation
+    );
+    return rv;
 }
 
 HOOKFUNC VOID WINAPI MyExitProcess(DWORD dwExitCode)
 {
-	debuglog(LCF_PROCESS, __FUNCTION__ " called.\n");
-	_asm{int 3}
-	while(true) { Sleep(10); }
+    debuglog(LCF_PROCESS, __FUNCTION__ " called.\n");
+    _asm{int 3}
+    while(true) { Sleep(10); }
 }
 
 //HOOKFUNC NTSTATUS NTAPI MyNtQueryInformationProcess(HANDLE ProcessHandle, /*PROCESSINFOCLASS*/DWORD ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength)
@@ -792,41 +789,41 @@ struct _tiddata {
     unsigned long   _tdoserrno; /* _doserrno value */
     unsigned int    _fpds;      /* Floating Point data segment */
     unsigned long   _holdrand;  /* rand() seed value */
-	//There's more than this in a full _tiddata struct, but this is probably everything we're interested in
+    //There's more than this in a full _tiddata struct, but this is probably everything we're interested in
 };
 
 typedef struct _tiddata * _ptiddata;
 BOOL FlsRecursing = FALSE;
 std::map<DWORD,DWORD *> fseeds;
 HOOKFUNC BOOL WINAPI MyFlsSetValue(DWORD dwFlsIndex, LPVOID lpFlsData) {
-	BOOL rv = FlsSetValue(dwFlsIndex,lpFlsData);
-	if ((!FlsRecursing) && (lpFlsData != NULL)) {
-		FlsRecursing = TRUE;
-		if (fseeds.find(dwFlsIndex) == fseeds.end()) {
-			_ptiddata ptd = (_ptiddata)FlsGetValue(dwFlsIndex);
-			debuglog(LCF_THREAD,"FlsSetValue(%d,lpFlsData), set _tiddata structure at %08X",dwFlsIndex,ptd);
-			cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Fiber_%d",&(ptd->_holdrand),dwFlsIndex);
-			fseeds[dwFlsIndex] = &(ptd->_holdrand);
-		}
-		FlsRecursing = FALSE;
-	}
-	return rv;
+    BOOL rv = FlsSetValue(dwFlsIndex,lpFlsData);
+    if ((!FlsRecursing) && (lpFlsData != NULL)) {
+        FlsRecursing = TRUE;
+        if (fseeds.find(dwFlsIndex) == fseeds.end()) {
+            _ptiddata ptd = (_ptiddata)FlsGetValue(dwFlsIndex);
+            debuglog(LCF_THREAD,"FlsSetValue(%d,lpFlsData), set _tiddata structure at %08X",dwFlsIndex,ptd);
+            cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Fiber_%d",&(ptd->_holdrand),dwFlsIndex);
+            fseeds[dwFlsIndex] = &(ptd->_holdrand);
+        }
+        FlsRecursing = FALSE;
+    }
+    return rv;
 }
 BOOL TlsRecursing = FALSE;
 std::map<DWORD,DWORD *> tseeds;
 HOOKFUNC BOOL WINAPI MyTlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue) {
-	BOOL rv = TlsSetValue(dwTlsIndex, lpTlsValue);
-	if ((!TlsRecursing) && (lpTlsValue != NULL)) {
-		TlsRecursing = TRUE;
-		if (tseeds.find(dwTlsIndex) == tseeds.end()) {
-			_ptiddata ptd = (_ptiddata)TlsGetValue(dwTlsIndex);
-			debuglog(LCF_THREAD,"TlsSetValue(%d,lpTlsValue), set _tiddata structure at %08X",dwTlsIndex,ptd);
-			cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Thread_%d",&(ptd->_holdrand),dwTlsIndex);
-			tseeds[dwTlsIndex] = &(ptd->_holdrand);
-		}
-		TlsRecursing = FALSE;
-	}
-	return rv;
+    BOOL rv = TlsSetValue(dwTlsIndex, lpTlsValue);
+    if ((!TlsRecursing) && (lpTlsValue != NULL)) {
+        TlsRecursing = TRUE;
+        if (tseeds.find(dwTlsIndex) == tseeds.end()) {
+            _ptiddata ptd = (_ptiddata)TlsGetValue(dwTlsIndex);
+            debuglog(LCF_THREAD,"TlsSetValue(%d,lpTlsValue), set _tiddata structure at %08X",dwTlsIndex,ptd);
+            cmdprintf("WATCH: %08X,d,u,AutoRandSeed_Thread_%d",&(ptd->_holdrand),dwTlsIndex);
+            tseeds[dwTlsIndex] = &(ptd->_holdrand);
+        }
+        TlsRecursing = FALSE;
+    }
+    return rv;
 }
 
 // not really hooked, I just needed their trampolines
@@ -836,40 +833,36 @@ HOOKFUNC PVOID WINAPI MyFlsGetValue(DWORD dwFlsIndex) IMPOSSIBLE_IMPL
 
 void ApplyModuleIntercepts()
 {
-	static const InterceptDescriptor intercepts [] = 
-	{
-		//MAKE_INTERCEPT(1, KERNEL32, GetProcAddress),
-		//MAKE_INTERCEPT(1, KERNEL32, LoadLibraryExW),
-		//MAKE_INTERCEPT(1, NTDLL, LdrUnloadDll),
-		MAKE_INTERCEPT(1, NTDLL, LdrLoadDll),
-		MAKE_INTERCEPT(1, NTDLL, KiUserCallbackDispatcher),
+    static const InterceptDescriptor intercepts [] = 
+    {
+        //MAKE_INTERCEPT(1, KERNEL32, GetProcAddress),
+        //MAKE_INTERCEPT(1, KERNEL32, LoadLibraryExW),
+        //MAKE_INTERCEPT(1, NTDLL, LdrUnloadDll),
+        MAKE_INTERCEPT(1, NTDLL, LdrLoadDll),
+        MAKE_INTERCEPT(1, NTDLL, KiUserCallbackDispatcher),
 
-		MAKE_INTERCEPT(1, OLE32, CoCreateInstance),
-		MAKE_INTERCEPT(1, OLE32, CoCreateInstanceEx),
-		MAKE_INTERCEPT(1, OLE32, CoGetClassObject),
-		MAKE_INTERCEPT3(1, QUARTZ.DLL, DllGetClassObject, quartz), // this is mainly so we can hook the IReferenceClock used by DirectShow
-		MAKE_INTERCEPT(1, RPCRT4, IUnknown_QueryInterface_Proxy), // not sure if this is needed for anything
+        MAKE_INTERCEPT(1, OLE32, CoCreateInstance),
+        MAKE_INTERCEPT(1, OLE32, CoCreateInstanceEx),
+        MAKE_INTERCEPT(1, OLE32, CoGetClassObject),
+        MAKE_INTERCEPT3(1, QUARTZ.DLL, DllGetClassObject, quartz), // this is mainly so we can hook the IReferenceClock used by DirectShow
+        MAKE_INTERCEPT(1, RPCRT4, IUnknown_QueryInterface_Proxy), // not sure if this is needed for anything
 
-		MAKE_INTERCEPT(0, KERNEL32, FlsGetValue), // get trampoline only
-		MAKE_INTERCEPT(0, KERNEL32, TlsGetValue), // get trampoline only
-		MAKE_INTERCEPT(1, KERNEL32, FlsSetValue),
-		MAKE_INTERCEPT(1, KERNEL32, TlsSetValue),
+        MAKE_INTERCEPT(0, KERNEL32, FlsGetValue), // get trampoline only
+        MAKE_INTERCEPT(0, KERNEL32, TlsGetValue), // get trampoline only
+        MAKE_INTERCEPT(1, KERNEL32, FlsSetValue),
+        MAKE_INTERCEPT(1, KERNEL32, TlsSetValue),
 
-		MAKE_INTERCEPT(1, KERNEL32, ExitProcess),
-		MAKE_INTERCEPT(1, KERNEL32, CreateProcessA),
-		MAKE_INTERCEPT(1, KERNEL32, CreateProcessW),
-		//MAKE_INTERCEPT(0, ADVAPI32, OpenServiceA),
-		//MAKE_INTERCEPT(0, ADVAPI32, OpenServiceW),
-		MAKE_INTERCEPT(1, NTDLL, RtlAllocateHeap),
-		MAKE_INTERCEPT(1, NTDLL, RtlCreateHeap),
-		MAKE_INTERCEPT(1, RPCRT4, NdrAllocate),
-		MAKE_INTERCEPT(1, RPCRT4, NdrClientInitialize),
-		MAKE_INTERCEPT(1, RPCRT4, NdrClientInitializeNew),
-	};
-	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+        MAKE_INTERCEPT(1, KERNEL32, ExitProcess),
+        MAKE_INTERCEPT(1, KERNEL32, CreateProcessA),
+        MAKE_INTERCEPT(1, KERNEL32, CreateProcessW),
+        //MAKE_INTERCEPT(0, ADVAPI32, OpenServiceA),
+        //MAKE_INTERCEPT(0, ADVAPI32, OpenServiceW),
+        MAKE_INTERCEPT(1, NTDLL, RtlAllocateHeap),
+        MAKE_INTERCEPT(1, NTDLL, RtlCreateHeap),
+        MAKE_INTERCEPT(1, RPCRT4, NdrAllocate),
+        MAKE_INTERCEPT(1, RPCRT4, NdrClientInitialize),
+        MAKE_INTERCEPT(1, RPCRT4, NdrClientInitializeNew),
+    };
+    ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
 
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

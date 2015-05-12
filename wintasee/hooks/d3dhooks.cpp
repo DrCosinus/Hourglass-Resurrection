@@ -1,12 +1,9 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(D3DHOOKS_INCL) //&& !defined(UNITY_BUILD)
-#define D3DHOOKS_INCL
-
-#include "../../external/d3d.h"
-#include "../wintasee.h"
-#include "../tls.h"
+#include <external/d3d.h>
+#include <wintasee/wintasee.h>
+#include <wintasee/tls.h>
 #include <map>
 
 DEFINE_LOCAL_GUID(IID_IDirect3D, 0x3BBA0080,0x2421,0x11CF,0xA3,0x1A,0x00,0xAA,0x00,0xB9,0x33,0x56); //version  < 0x0500
@@ -26,80 +23,80 @@ template <typename IDirect3DN>
 class MyDirect3D
 {
 public:
-	typedef typename IDirect3DTraits<IDirect3DN>::LPDIRECT3DDEVICEN LPDIRECT3DDEVICEN;
-	typedef typename IDirect3DTraits<IDirect3DN>::DIRECT3DDEVICEN IDirect3DDeviceN;
-	typedef typename IDirect3DTraits<IDirect3DN>::LPDIRECTDRAWSURFACEN LPDIRECTDRAWSURFACEN;
-	typedef typename IDirect3DTraits<IDirect3DN>::DIRECTDRAWSURFACEN DIRECTDRAWSURFACEN;
+    typedef typename IDirect3DTraits<IDirect3DN>::LPDIRECT3DDEVICEN LPDIRECT3DDEVICEN;
+    typedef typename IDirect3DTraits<IDirect3DN>::DIRECT3DDEVICEN IDirect3DDeviceN;
+    typedef typename IDirect3DTraits<IDirect3DN>::LPDIRECTDRAWSURFACEN LPDIRECTDRAWSURFACEN;
+    typedef typename IDirect3DTraits<IDirect3DN>::DIRECTDRAWSURFACEN DIRECTDRAWSURFACEN;
 
-	static const GUID deviceGuid;
-	static const GUID curGuid;
+    static const GUID deviceGuid;
+    static const GUID curGuid;
 
-	static BOOL Hook(IDirect3DN* obj)
-	{
-		//cmdprintf("SHORTTRACE: 3,50");
-		BOOL rv = FALSE;
-		rv |= VTHOOKFUNC(IDirect3DN, CreateDevice);
-		rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
-		return rv;
-	}
+    static BOOL Hook(IDirect3DN* obj)
+    {
+        //cmdprintf("SHORTTRACE: 3,50");
+        BOOL rv = FALSE;
+        rv |= VTHOOKFUNC(IDirect3DN, CreateDevice);
+        rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
+        return rv;
+    }
 
-	static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3DN* pThis, REFIID riid, void** ppvObj);
-	static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3DN* pThis, REFIID riid, void** ppvObj)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X (0x%X?), 0x%X) called.\n", pThis, riid.Data1, MyDirect3D<IDirect3DN>::curGuid.Data1, ppvObj);
-		//if(!ppvObj) { return E_POINTER; }
-		//if(riid == IID_IUnknown) { *ppvObj = (IUnknown*)pThis; pThis->AddRef(); return S_OK; }
-		//if(IDirect3DTraits<IDirect3DN>::NUMBER == 1 && riid == IID_IDirect3D
-		//|| IDirect3DTraits<IDirect3DN>::NUMBER == 2 && riid == IID_IDirect3D2
-		//|| IDirect3DTraits<IDirect3DN>::NUMBER == 3 && riid == IID_IDirect3D3
-		//|| IDirect3DTraits<IDirect3DN>::NUMBER == 7 && riid == IID_IDirect3D7) { *ppvObj = pThis; pThis->AddRef(); return S_OK; } // ninjah
-		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
-		if(SUCCEEDED(rv))
-			HookCOMInterface(riid, ppvObj);
-		return rv;
-	}
+    static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3DN* pThis, REFIID riid, void** ppvObj);
+    static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3DN* pThis, REFIID riid, void** ppvObj)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X (0x%X?), 0x%X) called.\n", pThis, riid.Data1, MyDirect3D<IDirect3DN>::curGuid.Data1, ppvObj);
+        //if(!ppvObj) { return E_POINTER; }
+        //if(riid == IID_IUnknown) { *ppvObj = (IUnknown*)pThis; pThis->AddRef(); return S_OK; }
+        //if(IDirect3DTraits<IDirect3DN>::NUMBER == 1 && riid == IID_IDirect3D
+        //|| IDirect3DTraits<IDirect3DN>::NUMBER == 2 && riid == IID_IDirect3D2
+        //|| IDirect3DTraits<IDirect3DN>::NUMBER == 3 && riid == IID_IDirect3D3
+        //|| IDirect3DTraits<IDirect3DN>::NUMBER == 7 && riid == IID_IDirect3D7) { *ppvObj = pThis; pThis->AddRef(); return S_OK; } // ninjah
+        HRESULT rv = QueryInterface(pThis, riid, ppvObj);
+        if(SUCCEEDED(rv))
+            HookCOMInterface(riid, ppvObj);
+        return rv;
+    }
 
-	static HRESULT(STDMETHODCALLTYPE *CreateDevice)(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device);
-	static HRESULT STDMETHODCALLTYPE MyCreateDevice(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X?) called.\n", rguid.Data1, MyDirect3D<IDirect3DN>::deviceGuid);
-		//HRESULT hr = CreateDevice(pThis, IID_IDirect3DRampDevice, surf, device); // this forces to use a software device
+    static HRESULT(STDMETHODCALLTYPE *CreateDevice)(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device);
+    static HRESULT STDMETHODCALLTYPE MyCreateDevice(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X?) called.\n", rguid.Data1, MyDirect3D<IDirect3DN>::deviceGuid);
+        //HRESULT hr = CreateDevice(pThis, IID_IDirect3DRampDevice, surf, device); // this forces to use a software device
 //		FixSurface(surf);
-		HRESULT hr = CreateDevice(pThis, rguid, surf, device);
-		if(SUCCEEDED(hr))
-			HookCOMInterface(MyDirect3D<IDirect3DN>::deviceGuid, (LPVOID*)device);
-		else ddrawdebugprintf("CreateDevice failed with hr = 0x%X.\n", hr);
-		//cmdprintf("DEBUGPAUSE: B");
-		//return -1;
-		return hr;
-	}
+        HRESULT hr = CreateDevice(pThis, rguid, surf, device);
+        if(SUCCEEDED(hr))
+            HookCOMInterface(MyDirect3D<IDirect3DN>::deviceGuid, (LPVOID*)device);
+        else ddrawdebugprintf("CreateDevice failed with hr = 0x%X.\n", hr);
+        //cmdprintf("DEBUGPAUSE: B");
+        //return -1;
+        return hr;
+    }
 
-	static HRESULT(STDMETHODCALLTYPE *CreateDevice3)(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device, LPUNKNOWN stupidPointlessArgument);
-	static HRESULT STDMETHODCALLTYPE MyCreateDevice3(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device, LPUNKNOWN stupidPointlessArgument)
-	{
-		d3ddebugprintf(__FUNCTION__ " called.\n");
+    static HRESULT(STDMETHODCALLTYPE *CreateDevice3)(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device, LPUNKNOWN stupidPointlessArgument);
+    static HRESULT STDMETHODCALLTYPE MyCreateDevice3(IDirect3DN* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device, LPUNKNOWN stupidPointlessArgument)
+    {
+        d3ddebugprintf(__FUNCTION__ " called.\n");
 //		FixSurface(surf);
-		HRESULT hr = CreateDevice3(pThis, rguid, surf, device, stupidPointlessArgument);
-		if(SUCCEEDED(hr))
-			HookCOMInterface(MyDirect3D<IDirect3DN>::deviceGuid, (LPVOID*)device);
-		return hr;
-	}
+        HRESULT hr = CreateDevice3(pThis, rguid, surf, device, stupidPointlessArgument);
+        if(SUCCEEDED(hr))
+            HookCOMInterface(MyDirect3D<IDirect3DN>::deviceGuid, (LPVOID*)device);
+        return hr;
+    }
 
 };
 
 template<> BOOL MyDirect3D<IDirect3D>::Hook(IDirect3D* obj)
 {
-	BOOL rv = FALSE;
-	//rv |= VTHOOKFUNC(IDirect3D, Initialize);
-	rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
-	return rv;
+    BOOL rv = FALSE;
+    //rv |= VTHOOKFUNC(IDirect3D, Initialize);
+    rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
+    return rv;
 }
 template<> BOOL MyDirect3D<IDirect3D3>::Hook(IDirect3D3* obj)
 {
-	BOOL rv = FALSE;
-	rv |= VTHOOKFUNC2(IDirect3D3, CreateDevice3, CreateDevice);
-	rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
-	return rv;
+    BOOL rv = FALSE;
+    rv |= VTHOOKFUNC2(IDirect3D3, CreateDevice3, CreateDevice);
+    rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
+    return rv;
 }
 
 template<> const GUID MyDirect3D<IDirect3D>::deviceGuid = IID_IDirect3DDevice;
@@ -123,10 +120,10 @@ template<> const GUID MyDirect3D<IDirect3D7>::curGuid = IID_IDirect3D7;
                template<> HRESULT (STDMETHODCALLTYPE* MyDirect3D<x>::CreateDevice)(x* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device) = 0; \
                template<> HRESULT (STDMETHODCALLTYPE* MyDirect3D<x>::CreateDevice3)(x* pThis, REFCLSID rguid, LPDIRECTDRAWSURFACEN surf, LPDIRECT3DDEVICEN* device, LPUNKNOWN stupidPointlessArgument) = 0;
 
-	DEF(IDirect3D)
-	DEF(IDirect3D2)
-	DEF(IDirect3D3)
-	DEF(IDirect3D7)
+    DEF(IDirect3D)
+    DEF(IDirect3D2)
+    DEF(IDirect3D3)
+    DEF(IDirect3D7)
 #undef DEF
 
 #undef HRESULT
@@ -157,226 +154,226 @@ template<> struct IDirect3DDeviceTraits<IDirect3DDevice7> { typedef LPDIRECT3DVE
 template <typename IDirect3DDeviceN>
 struct MyDirect3DDevice
 {
-	typedef typename IDirect3DDeviceTraits<IDirect3DDeviceN>::LPDIRECT3DVERTEXBUFFERN LPDIRECT3DVERTEXBUFFERN;
+    typedef typename IDirect3DDeviceTraits<IDirect3DDeviceN>::LPDIRECT3DVERTEXBUFFERN LPDIRECT3DVERTEXBUFFERN;
 
-	static BOOL Hook(IDirect3DDeviceN* obj)
-	{
-		BOOL rv = FALSE;
-		rv |= VTHOOKFUNC(IDirect3DDeviceN, Release);
-		rv |= VTHOOKFUNC(IDirect3DDeviceN, BeginScene);
-		rv |= VTHOOKFUNC(IDirect3DDeviceN, EndScene);
-		rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawPrimitive);
-		rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawIndexedPrimitive);
-		rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawPrimitiveStrided);
-		rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawIndexedPrimitiveStrided);
-		rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawPrimitiveVB);
-		rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawIndexedPrimitiveVB);
-		rv |= VTHOOKFUNC(IDirect3DDeviceN, Clear);
-		rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
-		return rv;
-	}
+    static BOOL Hook(IDirect3DDeviceN* obj)
+    {
+        BOOL rv = FALSE;
+        rv |= VTHOOKFUNC(IDirect3DDeviceN, Release);
+        rv |= VTHOOKFUNC(IDirect3DDeviceN, BeginScene);
+        rv |= VTHOOKFUNC(IDirect3DDeviceN, EndScene);
+        rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawPrimitive);
+        rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawIndexedPrimitive);
+        rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawPrimitiveStrided);
+        rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawIndexedPrimitiveStrided);
+        rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawPrimitiveVB);
+        rv |= VTHOOKFUNC(IDirect3DDeviceN, DrawIndexedPrimitiveVB);
+        rv |= VTHOOKFUNC(IDirect3DDeviceN, Clear);
+        rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
+        return rv;
+    }
 
-	static ULONG (STDMETHODCALLTYPE *Release)(IDirect3DDeviceN* pThis);
-	static ULONG STDMETHODCALLTYPE MyRelease(IDirect3DDeviceN* pThis)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		ULONG rv = Release(pThis);
-		return rv;
-	}
+    static ULONG (STDMETHODCALLTYPE *Release)(IDirect3DDeviceN* pThis);
+    static ULONG STDMETHODCALLTYPE MyRelease(IDirect3DDeviceN* pThis)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        ULONG rv = Release(pThis);
+        return rv;
+    }
 
-	static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3DDeviceN* pThis, REFIID riid, void** ppvObj);
-	static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3DDeviceN* pThis, REFIID riid, void** ppvObj)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		HRESULT rv = QueryInterface(pThis, riid, ppvObj);
-		if(SUCCEEDED(rv))
-			HookCOMInterface(riid, ppvObj);
-		return rv;
-	}
+    static HRESULT(STDMETHODCALLTYPE *QueryInterface)(IDirect3DDeviceN* pThis, REFIID riid, void** ppvObj);
+    static HRESULT STDMETHODCALLTYPE MyQueryInterface(IDirect3DDeviceN* pThis, REFIID riid, void** ppvObj)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        HRESULT rv = QueryInterface(pThis, riid, ppvObj);
+        if(SUCCEEDED(rv))
+            HookCOMInterface(riid, ppvObj);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *DrawPrimitive)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, DWORD e);
-	static HRESULT STDMETHODCALLTYPE MyDrawPrimitive(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, DWORD e)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = DrawPrimitive(pThis, a, b, c, d, e);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *DrawPrimitive)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, DWORD e);
+    static HRESULT STDMETHODCALLTYPE MyDrawPrimitive(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, DWORD e)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = DrawPrimitive(pThis, a, b, c, d, e);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *DrawIndexedPrimitive)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, LPWORD e, DWORD f, DWORD g);
-	static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitive(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, LPWORD e, DWORD f, DWORD g)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = DrawIndexedPrimitive(pThis, a, b, c, d, e, f, g);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *DrawIndexedPrimitive)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, LPWORD e, DWORD f, DWORD g);
+    static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitive(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPVOID c, DWORD d, LPWORD e, DWORD f, DWORD g)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = DrawIndexedPrimitive(pThis, a, b, c, d, e, f, g);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *DrawPrimitiveStrided)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, DWORD e);
-	static HRESULT STDMETHODCALLTYPE MyDrawPrimitiveStrided(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, DWORD e)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = DrawPrimitiveStrided(pThis, a, b, c, d, e);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *DrawPrimitiveStrided)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, DWORD e);
+    static HRESULT STDMETHODCALLTYPE MyDrawPrimitiveStrided(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, DWORD e)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = DrawPrimitiveStrided(pThis, a, b, c, d, e);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *DrawIndexedPrimitiveStrided)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, LPWORD e, DWORD f, DWORD g);
-	static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitiveStrided(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, LPWORD e, DWORD f, DWORD g)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = DrawIndexedPrimitiveStrided(pThis, a, b, c, d, e, f, g);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *DrawIndexedPrimitiveStrided)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, LPWORD e, DWORD f, DWORD g);
+    static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitiveStrided(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, DWORD b, LPD3DDRAWPRIMITIVESTRIDEDDATA c, DWORD d, LPWORD e, DWORD f, DWORD g)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = DrawIndexedPrimitiveStrided(pThis, a, b, c, d, e, f, g);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *DrawPrimitiveVB)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, DWORD e);
-	static HRESULT STDMETHODCALLTYPE MyDrawPrimitiveVB(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, DWORD e)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = DrawPrimitiveVB(pThis, a, b, c, d, e);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *DrawPrimitiveVB)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, DWORD e);
+    static HRESULT STDMETHODCALLTYPE MyDrawPrimitiveVB(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, DWORD e)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = DrawPrimitiveVB(pThis, a, b, c, d, e);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *DrawIndexedPrimitiveVB)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, LPWORD e, DWORD f, DWORD g);
-	static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitiveVB(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, LPWORD e, DWORD f, DWORD g)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = DrawIndexedPrimitiveVB(pThis, a, b, c, d, e, f, g);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *DrawIndexedPrimitiveVB)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, LPWORD e, DWORD f, DWORD g);
+    static HRESULT STDMETHODCALLTYPE MyDrawIndexedPrimitiveVB(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, LPDIRECT3DVERTEXBUFFERN b, DWORD c, DWORD d, LPWORD e, DWORD f, DWORD g)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = DrawIndexedPrimitiveVB(pThis, a, b, c, d, e, f, g);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *Begin)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, DWORD c);
-	static HRESULT STDMETHODCALLTYPE MyBegin(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, DWORD c)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = Begin(pThis, a, b, c);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *Begin)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, DWORD c);
+    static HRESULT STDMETHODCALLTYPE MyBegin(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, DWORD c)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = Begin(pThis, a, b, c);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *BeginIndexed)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, LPVOID c, DWORD d, DWORD e);
-	static HRESULT STDMETHODCALLTYPE MyBeginIndexed(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, LPVOID c, DWORD d, DWORD e)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = BeginIndexed(pThis, a, b, c, d, e);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *BeginIndexed)(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, LPVOID c, DWORD d, DWORD e);
+    static HRESULT STDMETHODCALLTYPE MyBeginIndexed(IDirect3DDeviceN* pThis, D3DPRIMITIVETYPE a, D3DVERTEXTYPE b, LPVOID c, DWORD d, DWORD e)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = BeginIndexed(pThis, a, b, c, d, e);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *Vertex)(IDirect3DDeviceN* pThis, LPVOID a);
-	static HRESULT STDMETHODCALLTYPE MyVertex(IDirect3DDeviceN* pThis, LPVOID a)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = Vertex(pThis, a);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *Vertex)(IDirect3DDeviceN* pThis, LPVOID a);
+    static HRESULT STDMETHODCALLTYPE MyVertex(IDirect3DDeviceN* pThis, LPVOID a)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = Vertex(pThis, a);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *Index)(IDirect3DDeviceN* pThis, WORD a);
-	static HRESULT STDMETHODCALLTYPE MyIndex(IDirect3DDeviceN* pThis, WORD a)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = Index(pThis, a);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *Index)(IDirect3DDeviceN* pThis, WORD a);
+    static HRESULT STDMETHODCALLTYPE MyIndex(IDirect3DDeviceN* pThis, WORD a)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = Index(pThis, a);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *End)(IDirect3DDeviceN* pThis, DWORD a);
-	static HRESULT STDMETHODCALLTYPE MyEnd(IDirect3DDeviceN* pThis, DWORD a)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = End(pThis, a);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *End)(IDirect3DDeviceN* pThis, DWORD a);
+    static HRESULT STDMETHODCALLTYPE MyEnd(IDirect3DDeviceN* pThis, DWORD a)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = End(pThis, a);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *BeginScene)(IDirect3DDeviceN* pThis);
-	static HRESULT STDMETHODCALLTYPE MyBeginScene(IDirect3DDeviceN* pThis)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		HRESULT rv = BeginScene(pThis);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *BeginScene)(IDirect3DDeviceN* pThis);
+    static HRESULT STDMETHODCALLTYPE MyBeginScene(IDirect3DDeviceN* pThis)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        HRESULT rv = BeginScene(pThis);
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *EndScene)(IDirect3DDeviceN* pThis);
-	static HRESULT STDMETHODCALLTYPE MyEndScene(IDirect3DDeviceN* pThis)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		HRESULT rv = EndScene(pThis);
+    static HRESULT (STDMETHODCALLTYPE *EndScene)(IDirect3DDeviceN* pThis);
+    static HRESULT STDMETHODCALLTYPE MyEndScene(IDirect3DDeviceN* pThis)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        HRESULT rv = EndScene(pThis);
 
-		return rv;
-	}
+        return rv;
+    }
 
-	static HRESULT (STDMETHODCALLTYPE *Clear)(IDirect3DDeviceN* pThis, DWORD a,LPD3DRECT b,DWORD c,D3DCOLOR d,D3DVALUE e,DWORD f);
-	static HRESULT STDMETHODCALLTYPE MyClear(IDirect3DDeviceN* pThis, DWORD a,LPD3DRECT b,DWORD c,D3DCOLOR d,D3DVALUE e,DWORD f)
-	{
-		d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
-		if(ShouldSkipDrawing(false, true))
-			return D3D_OK;
-		HRESULT rv = Clear(pThis,a,b,c,d,e,f);
-		return rv;
-	}
+    static HRESULT (STDMETHODCALLTYPE *Clear)(IDirect3DDeviceN* pThis, DWORD a,LPD3DRECT b,DWORD c,D3DCOLOR d,D3DVALUE e,DWORD f);
+    static HRESULT STDMETHODCALLTYPE MyClear(IDirect3DDeviceN* pThis, DWORD a,LPD3DRECT b,DWORD c,D3DCOLOR d,D3DVALUE e,DWORD f)
+    {
+        d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", pThis);
+        if(ShouldSkipDrawing(false, true))
+            return D3D_OK;
+        HRESULT rv = Clear(pThis,a,b,c,d,e,f);
+        return rv;
+    }
 };
 
 // these D3D versions had fewer drawing functions
 template<> BOOL MyDirect3DDevice<IDirect3DDevice>::Hook(IDirect3DDevice* obj)
 {
-	BOOL rv = FALSE;
-	rv |= VTHOOKFUNC(IDirect3DDevice, Release);
-	rv |= VTHOOKFUNC(IDirect3DDevice, BeginScene);
-	rv |= VTHOOKFUNC(IDirect3DDevice, EndScene);
-	rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
-	return rv;
+    BOOL rv = FALSE;
+    rv |= VTHOOKFUNC(IDirect3DDevice, Release);
+    rv |= VTHOOKFUNC(IDirect3DDevice, BeginScene);
+    rv |= VTHOOKFUNC(IDirect3DDevice, EndScene);
+    rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
+    return rv;
 }
 template<> BOOL MyDirect3DDevice<IDirect3DDevice2>::Hook(IDirect3DDevice2* obj)
 {
-	BOOL rv = FALSE;
-	rv |= VTHOOKFUNC(IDirect3DDevice2, Release);
-	rv |= VTHOOKFUNC(IDirect3DDevice2, BeginScene);
-	rv |= VTHOOKFUNC(IDirect3DDevice2, EndScene);
-	rv |= VTHOOKFUNC(IDirect3DDevice2, DrawPrimitive);
-	rv |= VTHOOKFUNC(IDirect3DDevice2, DrawIndexedPrimitive);
-	rv |= VTHOOKFUNC(IDirect3DDevice2, Begin);
-	rv |= VTHOOKFUNC(IDirect3DDevice2, BeginIndexed);
-	rv |= VTHOOKFUNC(IDirect3DDevice2, Vertex);
-	rv |= VTHOOKFUNC(IDirect3DDevice2, Index);
-	rv |= VTHOOKFUNC(IDirect3DDevice2, End);
-	rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
-	return rv;
+    BOOL rv = FALSE;
+    rv |= VTHOOKFUNC(IDirect3DDevice2, Release);
+    rv |= VTHOOKFUNC(IDirect3DDevice2, BeginScene);
+    rv |= VTHOOKFUNC(IDirect3DDevice2, EndScene);
+    rv |= VTHOOKFUNC(IDirect3DDevice2, DrawPrimitive);
+    rv |= VTHOOKFUNC(IDirect3DDevice2, DrawIndexedPrimitive);
+    rv |= VTHOOKFUNC(IDirect3DDevice2, Begin);
+    rv |= VTHOOKFUNC(IDirect3DDevice2, BeginIndexed);
+    rv |= VTHOOKFUNC(IDirect3DDevice2, Vertex);
+    rv |= VTHOOKFUNC(IDirect3DDevice2, Index);
+    rv |= VTHOOKFUNC(IDirect3DDevice2, End);
+    rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
+    return rv;
 }
 template<> BOOL MyDirect3DDevice<IDirect3DDevice3>::Hook(IDirect3DDevice3* obj)
 {
-	BOOL rv = FALSE;
-	rv |= VTHOOKFUNC(IDirect3DDevice3, Release);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, BeginScene);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, EndScene);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, DrawPrimitive);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, DrawIndexedPrimitive);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, DrawPrimitiveStrided);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, DrawIndexedPrimitiveStrided);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, DrawPrimitiveVB);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, DrawIndexedPrimitiveVB);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, Begin);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, BeginIndexed);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, Vertex);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, Index);
-	rv |= VTHOOKFUNC(IDirect3DDevice3, End);
-	rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
-	return rv;
+    BOOL rv = FALSE;
+    rv |= VTHOOKFUNC(IDirect3DDevice3, Release);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, BeginScene);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, EndScene);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, DrawPrimitive);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, DrawIndexedPrimitive);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, DrawPrimitiveStrided);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, DrawIndexedPrimitiveStrided);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, DrawPrimitiveVB);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, DrawIndexedPrimitiveVB);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, Begin);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, BeginIndexed);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, Vertex);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, Index);
+    rv |= VTHOOKFUNC(IDirect3DDevice3, End);
+    rv |= HookVTable(obj, 0, (FARPROC)MyQueryInterface, (FARPROC&)QueryInterface, __FUNCTION__": QueryInterface");
+    return rv;
 }
 
 
@@ -414,10 +411,10 @@ template<> BOOL MyDirect3DDevice<IDirect3DDevice3>::Hook(IDirect3DDevice3* obj)
                template<> HRESULT (STDMETHODCALLTYPE* MyDirect3DDevice<x>::End)(x* pThis, DWORD); \
                template<> HRESULT (STDMETHODCALLTYPE* MyDirect3DDevice<x>::Clear)(x* pThis, DWORD a,LPD3DRECT b,DWORD c,D3DCOLOR d,D3DVALUE e,DWORD f);
 
-	DEF(IDirect3DDevice)
-	DEF(IDirect3DDevice2)
-	DEF(IDirect3DDevice3)
-	DEF(IDirect3DDevice7)
+    DEF(IDirect3DDevice)
+    DEF(IDirect3DDevice2)
+    DEF(IDirect3DDevice3)
+    DEF(IDirect3DDevice7)
 #undef DEF
 
 #undef HRESULT
@@ -427,95 +424,92 @@ template<> BOOL MyDirect3DDevice<IDirect3DDevice3>::Hook(IDirect3DDevice3* obj)
 
 HOOKFUNC HRESULT WINAPI MyDirect3DCreate(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter)
 {
-	d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", SDKVersion);
-	ThreadLocalStuff& curtls = tls;
-	curtls.callerisuntrusted++;
-	HRESULT rv = Direct3DCreate(SDKVersion, lplpd3d, pUnkOuter);
-	if(SUCCEEDED(rv))
-	{
-		HookCOMInterfaceUnknownVT(IDirect3D, *lplpd3d);
-		//HookCOMInterface(IID_IDirect3D, (LPVOID*)lplpd3d);
-	}
-	curtls.callerisuntrusted--;
-	return rv;
+    d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", SDKVersion);
+    ThreadLocalStuff& curtls = tls;
+    curtls.callerisuntrusted++;
+    HRESULT rv = Direct3DCreate(SDKVersion, lplpd3d, pUnkOuter);
+    if(SUCCEEDED(rv))
+    {
+        HookCOMInterfaceUnknownVT(IDirect3D, *lplpd3d);
+        //HookCOMInterface(IID_IDirect3D, (LPVOID*)lplpd3d);
+    }
+    curtls.callerisuntrusted--;
+    return rv;
 }
 HOOKFUNC HRESULT WINAPI MyDirect3DCreate7(UINT SDKVersion, LPUNKNOWN* lplpd3d, LPUNKNOWN pUnkOuter)
 {
-	d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", SDKVersion);
-	ThreadLocalStuff& curtls = tls;
-	curtls.callerisuntrusted++;
-	HRESULT rv = Direct3DCreate7(SDKVersion, lplpd3d, pUnkOuter);
-	if(SUCCEEDED(rv))
-	{
-		HookCOMInterfaceUnknownVT(IDirect3D7, *lplpd3d);
-		//HookCOMInterface(IID_IDirect3D7, (LPVOID*)lplpd3d); // doesn't work in Ninjah
-	}
-	curtls.callerisuntrusted--;
-	return rv;
+    d3ddebugprintf(__FUNCTION__ "(0x%X) called.\n", SDKVersion);
+    ThreadLocalStuff& curtls = tls;
+    curtls.callerisuntrusted++;
+    HRESULT rv = Direct3DCreate7(SDKVersion, lplpd3d, pUnkOuter);
+    if(SUCCEEDED(rv))
+    {
+        HookCOMInterfaceUnknownVT(IDirect3D7, *lplpd3d);
+        //HookCOMInterface(IID_IDirect3D7, (LPVOID*)lplpd3d); // doesn't work in Ninjah
+    }
+    curtls.callerisuntrusted--;
+    return rv;
 }
 HOOKFUNC HRESULT WINAPI MyDirect3DCreateDevice(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, LPDIRECTDRAWSURFACE surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter)
 {
-	// maybe unnecessary?
-	d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X) called.\n", lpGUID->Data1, lpd3ddevice);
-	ThreadLocalStuff& curtls = tls;
-	curtls.callerisuntrusted++;
-	HRESULT rv = Direct3DCreateDevice(lpGUID, lpd3ddevice, surf, lplpd3ddevice, pUnkOuter);
-	if(SUCCEEDED(rv))
-		HookCOMInterfaceUnknownVT(IDirect3DDevice, *lplpd3ddevice);
-	curtls.callerisuntrusted--;
-	return rv;
+    // maybe unnecessary?
+    d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X) called.\n", lpGUID->Data1, lpd3ddevice);
+    ThreadLocalStuff& curtls = tls;
+    curtls.callerisuntrusted++;
+    HRESULT rv = Direct3DCreateDevice(lpGUID, lpd3ddevice, surf, lplpd3ddevice, pUnkOuter);
+    if(SUCCEEDED(rv))
+        HookCOMInterfaceUnknownVT(IDirect3DDevice, *lplpd3ddevice);
+    curtls.callerisuntrusted--;
+    return rv;
 }
 HOOKFUNC HRESULT WINAPI MyDirect3DCreateDevice7(GUID FAR *lpGUID, LPUNKNOWN lpd3ddevice, LPDIRECTDRAWSURFACE surf, LPUNKNOWN* lplpd3ddevice, LPUNKNOWN pUnkOuter)
 {
-	// maybe unnecessary?
-	d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X) called.\n", lpGUID->Data1, lpd3ddevice);
-	ThreadLocalStuff& curtls = tls;
-	curtls.callerisuntrusted++;
-	HRESULT rv = Direct3DCreateDevice7(lpGUID, lpd3ddevice, surf, lplpd3ddevice, pUnkOuter);
-	if(SUCCEEDED(rv))
-		HookCOMInterfaceUnknownVT(IDirect3DDevice7, *lplpd3ddevice);
-	curtls.callerisuntrusted--;
-	return rv;
+    // maybe unnecessary?
+    d3ddebugprintf(__FUNCTION__ "(0x%X, 0x%X) called.\n", lpGUID->Data1, lpd3ddevice);
+    ThreadLocalStuff& curtls = tls;
+    curtls.callerisuntrusted++;
+    HRESULT rv = Direct3DCreateDevice7(lpGUID, lpd3ddevice, surf, lplpd3ddevice, pUnkOuter);
+    if(SUCCEEDED(rv))
+        HookCOMInterfaceUnknownVT(IDirect3DDevice7, *lplpd3ddevice);
+    curtls.callerisuntrusted--;
+    return rv;
 }
 
 bool HookCOMInterfaceD3D7(REFIID riid, LPVOID* ppvOut, bool uncheckedFastNew)
 {
-	if(!ppvOut)
-		return true;
+    if(!ppvOut)
+        return true;
 
-	switch(riid.Data1)
-	{
-		VTHOOKRIID(Direct3D,);
-		VTHOOKRIID(Direct3D,2);
-		VTHOOKRIID(Direct3D,3);
-		VTHOOKRIID(Direct3D,7);
-		//HOOKRIID(Direct3D,);
-		//HOOKRIID(Direct3D,2);
-		//HOOKRIID(Direct3D,3);
-		//HOOKRIID(Direct3D,7);
+    switch(riid.Data1)
+    {
+        VTHOOKRIID(Direct3D,);
+        VTHOOKRIID(Direct3D,2);
+        VTHOOKRIID(Direct3D,3);
+        VTHOOKRIID(Direct3D,7);
+        //HOOKRIID(Direct3D,);
+        //HOOKRIID(Direct3D,2);
+        //HOOKRIID(Direct3D,3);
+        //HOOKRIID(Direct3D,7);
 
-		VTHOOKRIID(Direct3DDevice,);
-		VTHOOKRIID(Direct3DDevice,2);
-		VTHOOKRIID(Direct3DDevice,3);
-		VTHOOKRIID(Direct3DDevice,7);
+        VTHOOKRIID(Direct3DDevice,);
+        VTHOOKRIID(Direct3DDevice,2);
+        VTHOOKRIID(Direct3DDevice,3);
+        VTHOOKRIID(Direct3DDevice,7);
 
-		default: return false;
-	}
-	return true;
+        default: return false;
+    }
+    return true;
 }
 
 void ApplyD3DIntercepts()
 {
-	static const InterceptDescriptor intercepts [] = 
-	{
-		MAKE_INTERCEPT(1, D3DIM, Direct3DCreate),
-		MAKE_INTERCEPT(1, D3DIM, Direct3DCreateDevice),
-		MAKE_INTERCEPT2(1, D3DIM700, Direct3DCreate, Direct3DCreate7),
-		MAKE_INTERCEPT2(1, D3DIM700, Direct3DCreateDevice, Direct3DCreateDevice7),
-	};
-	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+    static const InterceptDescriptor intercepts [] = 
+    {
+        MAKE_INTERCEPT(1, D3DIM, Direct3DCreate),
+        MAKE_INTERCEPT(1, D3DIM, Direct3DCreateDevice),
+        MAKE_INTERCEPT2(1, D3DIM700, Direct3DCreate, Direct3DCreate7),
+        MAKE_INTERCEPT2(1, D3DIM700, Direct3DCreateDevice, Direct3DCreateDevice7),
+    };
+    ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
 
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

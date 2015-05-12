@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef SOUNDTRAMPS_H_INCL
-#define SOUNDTRAMPS_H_INCL
+#pragma once
 
 #define DirectSoundCreate TrampDirectSoundCreate
 TRAMPFUNC HRESULT WINAPI DirectSoundCreate(LPCGUID pcGuidDevice, struct IDirectSound* *ppDS, LPUNKNOWN pUnkOuter) TRAMPOLINE_DEF
@@ -51,8 +50,6 @@ TRAMPFUNC MCIERROR WINAPI mciSendCommandW(MCIDEVICEID mciId, UINT uMsg, DWORD_PT
 // hack for soundmixing
 struct CachedVolumeAndPan
 {
-	DWORD leftVolumeAsScale; // out of 65536
-	DWORD rightVolumeAsScale; // out of 65536
+    DWORD leftVolumeAsScale; // out of 65536
+    DWORD rightVolumeAsScale; // out of 65536
 };
-
-#endif

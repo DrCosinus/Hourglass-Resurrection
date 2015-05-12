@@ -1,13 +1,10 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(XINPUTHOOKS_INCL) && !defined(UNITY_BUILD)
-#define XINPUTHOOKS_INCL
-
-//#include "../global.h"
-#include "../wintasee.h"
+//#include <wintasee/global.h>
+#include <wintasee/wintasee.h>
 //#include <Xinput.h>
-#include <../../external/Xinput.h>
+#include <external/Xinput.h>
 
 DWORD myDwPacketNumber = 0;
 
@@ -16,19 +13,19 @@ HOOKFUNC DWORD WINAPI MyXInputGetState(
     XINPUT_STATE* pState        // [out] Receives the current state
 )
 {
-	debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
-	//return XInputGetState(dwUserIndex, pState);
+    debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
+    //return XInputGetState(dwUserIndex, pState);
 
-	pState->Gamepad = curinput.gamepad[dwUserIndex];
+    pState->Gamepad = curinput.gamepad[dwUserIndex];
 
-	// We have to see if the state is the same as the previous state
-	// We can use memcmp because the structs have been initialised with memset.
-	if (memcmp(&curinput.gamepad[dwUserIndex], &previnput.gamepad[dwUserIndex], sizeof(XINPUT_GAMEPAD)) == 0)
-		pState->dwPacketNumber = myDwPacketNumber;
-	else
-		pState->dwPacketNumber = ++myDwPacketNumber;
+    // We have to see if the state is the same as the previous state
+    // We can use memcmp because the structs have been initialised with memset.
+    if (memcmp(&curinput.gamepad[dwUserIndex], &previnput.gamepad[dwUserIndex], sizeof(XINPUT_GAMEPAD)) == 0)
+        pState->dwPacketNumber = myDwPacketNumber;
+    else
+        pState->dwPacketNumber = ++myDwPacketNumber;
 
-	return ERROR_SUCCESS;
+    return ERROR_SUCCESS;
 }
 
 HOOKFUNC DWORD WINAPI MyXInputSetState(
@@ -36,10 +33,10 @@ HOOKFUNC DWORD WINAPI MyXInputSetState(
     XINPUT_VIBRATION* pVibration    // [in, out] The vibration information to send to the controller
 )
 {
-	debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
-	//return XInputSetState(dwUserIndex, pVibration);
+    debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
+    //return XInputSetState(dwUserIndex, pVibration);
 
-	return ERROR_SUCCESS;
+    return ERROR_SUCCESS;
 }
 
 HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(
@@ -48,36 +45,36 @@ HOOKFUNC DWORD WINAPI MyXInputGetCapabilities(
     XINPUT_CAPABILITIES* pCapabilities  // [out] Receives the capabilities
 )
 {
-	debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d, dwFlags=%d) called.\n", dwUserIndex, dwFlags);
-	//return XInputGetCapabilities(dwUserIndex, dwFlags, pCapabilities);
+    debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d, dwFlags=%d) called.\n", dwUserIndex, dwFlags);
+    //return XInputGetCapabilities(dwUserIndex, dwFlags, pCapabilities);
 
-	// We always return that 4 standard controllers are plugged in.
+    // We always return that 4 standard controllers are plugged in.
 
-	pCapabilities->Type = XINPUT_DEVTYPE_GAMEPAD;
-	pCapabilities->SubType = XINPUT_DEVSUBTYPE_GAMEPAD;
-	pCapabilities->Flags = 0;
+    pCapabilities->Type = XINPUT_DEVTYPE_GAMEPAD;
+    pCapabilities->SubType = XINPUT_DEVSUBTYPE_GAMEPAD;
+    pCapabilities->Flags = 0;
 
-	XINPUT_GAMEPAD fullySupportedGamepad;
-	fullySupportedGamepad.wButtons = 0xF3FF;
-	/* Doc says: For proportional controls, such as thumbsticks,
-	 *           the value indicates the resolution for that control.
-	 *           Some number of the least significant bits may not be set,
-	 *           indicating that the control does not provide resolution to that level.
-	 */
-	fullySupportedGamepad.bLeftTrigger = 0xFF;
-	fullySupportedGamepad.bRightTrigger = 0xFF;
-	fullySupportedGamepad.sThumbLX = -1;
-	fullySupportedGamepad.sThumbLY = -1;
-	fullySupportedGamepad.sThumbRX = -1;
-	fullySupportedGamepad.sThumbRY = -1;
-	pCapabilities->Gamepad = fullySupportedGamepad;
+    XINPUT_GAMEPAD fullySupportedGamepad;
+    fullySupportedGamepad.wButtons = 0xF3FF;
+    /* Doc says: For proportional controls, such as thumbsticks,
+    *           the value indicates the resolution for that control.
+    *           Some number of the least significant bits may not be set,
+    *           indicating that the control does not provide resolution to that level.
+    */
+    fullySupportedGamepad.bLeftTrigger = 0xFF;
+    fullySupportedGamepad.bRightTrigger = 0xFF;
+    fullySupportedGamepad.sThumbLX = -1;
+    fullySupportedGamepad.sThumbLY = -1;
+    fullySupportedGamepad.sThumbRX = -1;
+    fullySupportedGamepad.sThumbRY = -1;
+    pCapabilities->Gamepad = fullySupportedGamepad;
 
-	XINPUT_VIBRATION noVibration;
-	noVibration.wLeftMotorSpeed = 0;
-	noVibration.wRightMotorSpeed = 0;
-	pCapabilities->Vibration = noVibration;
+    XINPUT_VIBRATION noVibration;
+    noVibration.wLeftMotorSpeed = 0;
+    noVibration.wRightMotorSpeed = 0;
+    pCapabilities->Vibration = noVibration;
 
-	return ERROR_SUCCESS;
+    return ERROR_SUCCESS;
 }
 
 HOOKFUNC DWORD WINAPI MyXInputGetDSoundAudioDeviceGuids(
@@ -86,28 +83,25 @@ HOOKFUNC DWORD WINAPI MyXInputGetDSoundAudioDeviceGuids(
     GUID* pDSoundCaptureGuid    // [out] DSound device ID for capture
 )
 {
-	debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
-	//return XInputGetDSoundAudioDeviceGuids(dwUserIndex, pDSoundRenderGuid, pDSoundCaptureGuid);
+    debuglog(LCF_JOYPAD, __FUNCTION__ "(dwUserIndex=%d) called.\n", dwUserIndex);
+    //return XInputGetDSoundAudioDeviceGuids(dwUserIndex, pDSoundRenderGuid, pDSoundCaptureGuid);
 
-	// No headset plugged in.
-	*pDSoundRenderGuid = GUID_NULL;
-	*pDSoundCaptureGuid = GUID_NULL;
-	return ERROR_SUCCESS;
+    // No headset plugged in.
+    *pDSoundRenderGuid = GUID_NULL;
+    *pDSoundCaptureGuid = GUID_NULL;
+    return ERROR_SUCCESS;
 }
 
 
 void ApplyXinputIntercepts()
 {
-	static const InterceptDescriptor intercepts [] = 
-	{
-	MAKE_INTERCEPT(1, XInput9_1_0, XInputGetState),
-	MAKE_INTERCEPT(1, XInput9_1_0, XInputSetState),
-	MAKE_INTERCEPT(1, XInput9_1_0, XInputGetCapabilities),
-	MAKE_INTERCEPT(1, XInput9_1_0, XInputGetDSoundAudioDeviceGuids),
-	};
-	ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
+    static const InterceptDescriptor intercepts[] =
+    {
+        MAKE_INTERCEPT(1, XInput9_1_0, XInputGetState),
+        MAKE_INTERCEPT(1, XInput9_1_0, XInputSetState),
+        MAKE_INTERCEPT(1, XInput9_1_0, XInputGetCapabilities),
+        MAKE_INTERCEPT(1, XInput9_1_0, XInputGetDSoundAudioDeviceGuids),
+    };
+    ApplyInterceptTable(intercepts, ARRAYSIZE(intercepts));
 }
 
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

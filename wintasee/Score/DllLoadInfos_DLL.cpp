@@ -1,6 +1,6 @@
 #include "DllLoadInfos_DLL.h"
 
-#include "../wintasee/intercept.h" // for RetryInterceptAPIs
+#include <wintasee/intercept.h> // for RetryInterceptAPIs
 
 namespace Score
 {

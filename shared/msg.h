@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef MSG_H_INCL
-#define MSG_H_INCL
+#pragma once
 
 // FIXME: should get things working with EMULATE_MESSAGE_QUEUES enabled, currently it breaks Iji arrow key input
 //#define EMULATE_MESSAGE_QUEUES
@@ -25,9 +24,9 @@
 //     0x8000 breaks iji
 #define whitelistMsgMask 0x2000 // breaks who-knows-what... this is fundamentally flawed, need to implement MessageQueue in wintasee.cpp instead
 //#ifdef whitelistMaskFilter
-//	#define curWhitelistMsgMask whitelistMaskFilter(whitelistMsgMask)
+//    #define curWhitelistMsgMask whitelistMaskFilter(whitelistMsgMask)
 //#else
-//	#define curWhitelistMsgMask whitelistMsgMask
+//    #define curWhitelistMsgMask whitelistMsgMask
 //#endif
 #define toggleWhitelistMessage(message) ((message) ^ (whitelistMsgMask))
 #define isMessageWhitelisted(message) ((message) & (whitelistMsgMask))
@@ -35,4 +34,3 @@
 
 #endif
 
-#endif // MSG_H_INCL

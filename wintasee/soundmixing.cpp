@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#if !defined(SOUNDMIXING_C_INCL) //&& !defined(UNITY_BUILD)
-#define SOUNDMIXING_C_INCL
-
 #include "global.h"
 
 // this is used mainly for clamping from -32678 to 32767
@@ -47,116 +44,112 @@
 template<typename fromtype, typename totype, int fromchannels, int tochannels>
 static void Mix(const unsigned char*__restrict buf, unsigned char*__restrict outbuf, DWORD size, DWORD outSize, bool sizeReachesBufferEnd, CachedVolumeAndPan& volumes)
 {
-	enum { fromshift = (2+sizeof(fromtype)-sizeof(totype))<<3 }; // 16 when both buffers have the same bit/sample... this is for combining differing bitrates
-	enum { maxto = (1<<(8*sizeof(totype)-1))-1 }; // clamping magnitude (127 or 32767)
-	enum { tosignoffset = (totype(-1)<0)?0:-(1<<(8*sizeof(totype)-1)) }; // add this to make numbers in the "to" buffer signed
-	enum { fromsignoffset = (fromtype(-1)<0)?0:-(1<<(8*sizeof(fromtype)-1)) }; // add this to make numbers in the "from" buffer signed
-	enum { toincrement = sizeof(totype) * tochannels };
-	enum { fromincrement = sizeof(fromtype) * fromchannels };
-	
-	DWORD frac = 0; // amount of next sample to use, out of 1024 (for linear interpolation)
-	DWORD fracnumer = (size*(toincrement<<10));
-	DWORD fracincrement = fracnumer / outSize;
-	// unfortunately needs to be very exact (can't drift even by 1 or clicking becomes audible), so we also need:
-	DWORD fracErrorIncrement = fracnumer % outSize;
-	DWORD fracError = 0;
+    enum { fromshift = (2+sizeof(fromtype)-sizeof(totype))<<3 }; // 16 when both buffers have the same bit/sample... this is for combining differing bitrates
+    enum { maxto = (1<<(8*sizeof(totype)-1))-1 }; // clamping magnitude (127 or 32767)
+    enum { tosignoffset = (totype(-1)<0)?0:-(1<<(8*sizeof(totype)-1)) }; // add this to make numbers in the "to" buffer signed
+    enum { fromsignoffset = (fromtype(-1)<0)?0:-(1<<(8*sizeof(fromtype)-1)) }; // add this to make numbers in the "from" buffer signed
+    enum { toincrement = sizeof(totype) * tochannels };
+    enum { fromincrement = sizeof(fromtype) * fromchannels };
+    
+    DWORD frac = 0; // amount of next sample to use, out of 1024 (for linear interpolation)
+    DWORD fracnumer = (size*(toincrement<<10));
+    DWORD fracincrement = fracnumer / outSize;
+    // unfortunately needs to be very exact (can't drift even by 1 or clicking becomes audible), so we also need:
+    DWORD fracErrorIncrement = fracnumer % outSize;
+    DWORD fracError = 0;
 
-	DWORD offsetRemainder = 0;
-	DWORD inOffset = 0;
-	for(DWORD i = 0; i < outSize; outbuf += toincrement, i += toincrement)
-	{
-		DWORD offset = inOffset;
-		offset -= offset % fromincrement; // prevent starting from the wrong speaker (compiler should be smart enough not to do a modulo op here)
-		const unsigned char* inbuf = buf + offset;
-		offset += fromincrement;
-		if(sizeReachesBufferEnd && (offset > (size - fromincrement))) // take pos2IsLastSample into account
-			offset = size - fromincrement; // note: don't subtract bufferSize instead, that doesn't work right (slight clicking) even in the looping case
-		const unsigned char* inbuf2 = buf + offset; // next sample position (for interpolation)
-		int myL = (int)((fromtype*)inbuf)[0] + fromsignoffset;
-		int myR = (int)((fromtype*)inbuf)[fromchannels-1] + fromsignoffset;
-		int myL2 = (int)((fromtype*)inbuf2)[0] + fromsignoffset;
-		int myR2 = (int)((fromtype*)inbuf2)[fromchannels-1] + fromsignoffset;
-		int otherL = (int)((totype*)outbuf)[0] + tosignoffset;
-		int otherR = (int)((totype*)outbuf)[tochannels-1] + tosignoffset;
-		int lvas = volumes.leftVolumeAsScale;
-		int rvas = volumes.rightVolumeAsScale;
-		int mixedL = (otherL + ((int)(((myL * (int)lvas) >> fromshift) * (1024-frac) + ((myL2 * (int)lvas) >> fromshift) * frac) >> 10));
-		int mixedR = (otherR + ((int)(((myR * (int)rvas) >> fromshift) * (1024-frac) + ((myR2 * (int)rvas) >> fromshift) * frac) >> 10));
-		if(tochannels != 1)
-		{
-			// stereo output
-			((totype*)outbuf)[0] = (clamptofullsignedrange(mixedL,-maxto-1,maxto))-tosignoffset;
-			((totype*)outbuf)[1] = (clamptofullsignedrange(mixedR,-maxto-1,maxto))-tosignoffset;
-		}
-		else
-		{
-			// monaural output
-			int mixed = (mixedL + mixedR) >> 1;
-			((totype*)outbuf)[0] = clamptofullsignedrange(mixed,-maxto-1,maxto)-tosignoffset;
-		}
+    DWORD offsetRemainder = 0;
+    DWORD inOffset = 0;
+    for(DWORD i = 0; i < outSize; outbuf += toincrement, i += toincrement)
+    {
+        DWORD offset = inOffset;
+        offset -= offset % fromincrement; // prevent starting from the wrong speaker (compiler should be smart enough not to do a modulo op here)
+        const unsigned char* inbuf = buf + offset;
+        offset += fromincrement;
+        if(sizeReachesBufferEnd && (offset > (size - fromincrement))) // take pos2IsLastSample into account
+            offset = size - fromincrement; // note: don't subtract bufferSize instead, that doesn't work right (slight clicking) even in the looping case
+        const unsigned char* inbuf2 = buf + offset; // next sample position (for interpolation)
+        int myL = (int)((fromtype*)inbuf)[0] + fromsignoffset;
+        int myR = (int)((fromtype*)inbuf)[fromchannels-1] + fromsignoffset;
+        int myL2 = (int)((fromtype*)inbuf2)[0] + fromsignoffset;
+        int myR2 = (int)((fromtype*)inbuf2)[fromchannels-1] + fromsignoffset;
+        int otherL = (int)((totype*)outbuf)[0] + tosignoffset;
+        int otherR = (int)((totype*)outbuf)[tochannels-1] + tosignoffset;
+        int lvas = volumes.leftVolumeAsScale;
+        int rvas = volumes.rightVolumeAsScale;
+        int mixedL = (otherL + ((int)(((myL * (int)lvas) >> fromshift) * (1024-frac) + ((myL2 * (int)lvas) >> fromshift) * frac) >> 10));
+        int mixedR = (otherR + ((int)(((myR * (int)rvas) >> fromshift) * (1024-frac) + ((myR2 * (int)rvas) >> fromshift) * frac) >> 10));
+        if(tochannels != 1)
+        {
+            // stereo output
+            ((totype*)outbuf)[0] = (clamptofullsignedrange(mixedL,-maxto-1,maxto))-tosignoffset;
+            ((totype*)outbuf)[1] = (clamptofullsignedrange(mixedR,-maxto-1,maxto))-tosignoffset;
+        }
+        else
+        {
+            // monaural output
+            int mixed = (mixedL + mixedR) >> 1;
+            ((totype*)outbuf)[0] = clamptofullsignedrange(mixed,-maxto-1,maxto)-tosignoffset;
+        }
 
-		// I'm going to lots of trouble to avoid using integer division or modulus
-		// in this inner loop, since they used to be slowing it down drastically.
-		// in my tests, this function was using 60% of the frame time (in cave story),
-		// and now it runs fully 4 times faster than it did before.
+        // I'm going to lots of trouble to avoid using integer division or modulus
+        // in this inner loop, since they used to be slowing it down drastically.
+        // in my tests, this function was using 60% of the frame time (in cave story),
+        // and now it runs fully 4 times faster than it did before.
 
-		offsetRemainder += size*toincrement;
-		while(offsetRemainder >= outSize) // definitely needs to be while, not if
-		{
-			offsetRemainder -= outSize;
-			inOffset++;
-		}
+        offsetRemainder += size*toincrement;
+        while(offsetRemainder >= outSize) // definitely needs to be while, not if
+        {
+            offsetRemainder -= outSize;
+            inOffset++;
+        }
 
-		fracError += fracErrorIncrement;
-		if(fracError >= outSize)
-		{
-			fracError -= outSize;
-			frac++;
-		}
-		frac = (frac + fracincrement) & 0x3FF;
-	}
+        fracError += fracErrorIncrement;
+        if(fracError >= outSize)
+        {
+            fracError -= outSize;
+            frac++;
+        }
+        frac = (frac + fracincrement) & 0x3FF;
+    }
 }
 
 template<int fromchannels, int tochannels>
 static void Mix(const unsigned char* buf, unsigned char* outbuf, int myBitsPerSample, int outBitsPerSample, DWORD size, DWORD outSize, bool sizeReachesBufferEnd, CachedVolumeAndPan& volumes)
 {
-	// note: WAV uses unsigned for 8-bit and signed for 16-bit (it makes a big difference!)
-	if(myBitsPerSample <= 8 && outBitsPerSample <= 8)
-		Mix<unsigned char,unsigned char,fromchannels,tochannels>(buf, outbuf, size, outSize, sizeReachesBufferEnd, volumes);
-	else if(myBitsPerSample > 8 && outBitsPerSample > 8)
-		Mix<signed short,signed short,fromchannels,tochannels>(buf, outbuf, size, outSize, sizeReachesBufferEnd, volumes);
-	else if(outBitsPerSample > 8)
-		Mix<unsigned char,signed short,fromchannels,tochannels>(buf, outbuf, size, outSize, sizeReachesBufferEnd, volumes);
-	else
-		Mix<signed short,unsigned char,fromchannels,tochannels>(buf, outbuf, size, outSize, sizeReachesBufferEnd, volumes);
+    // note: WAV uses unsigned for 8-bit and signed for 16-bit (it makes a big difference!)
+    if(myBitsPerSample <= 8 && outBitsPerSample <= 8)
+        Mix<unsigned char,unsigned char,fromchannels,tochannels>(buf, outbuf, size, outSize, sizeReachesBufferEnd, volumes);
+    else if(myBitsPerSample > 8 && outBitsPerSample > 8)
+        Mix<signed short,signed short,fromchannels,tochannels>(buf, outbuf, size, outSize, sizeReachesBufferEnd, volumes);
+    else if(outBitsPerSample > 8)
+        Mix<unsigned char,signed short,fromchannels,tochannels>(buf, outbuf, size, outSize, sizeReachesBufferEnd, volumes);
+    else
+        Mix<signed short,unsigned char,fromchannels,tochannels>(buf, outbuf, size, outSize, sizeReachesBufferEnd, volumes);
 }
 
 void MixFromToInternal(DWORD pos1, DWORD pos2, DWORD outPos1, DWORD outPos2, bool pos2IsLastSample,
-	DWORD outSamplesPerSec, WORD myBitsPerSample, WORD outBitsPerSample, WORD myChannels, WORD outChannels, WORD myBlockSize, WORD outBlockSize,
-	unsigned char* buffer, unsigned char* contiguousMixOutBuf, CachedVolumeAndPan& volumes)
+    DWORD outSamplesPerSec, WORD myBitsPerSample, WORD outBitsPerSample, WORD myChannels, WORD outChannels, WORD myBlockSize, WORD outBlockSize,
+    unsigned char* buffer, unsigned char* contiguousMixOutBuf, CachedVolumeAndPan& volumes)
 {
-	if(pos2 <= pos1 || outPos2 <= outPos1)
-		return; // not allowed
+    if(pos2 <= pos1 || outPos2 <= outPos1)
+        return; // not allowed
 
-	unsigned char* buf = buffer + pos1;
-	const DWORD size = pos2 - pos1;
-	
-	unsigned char* outbuf = contiguousMixOutBuf + outPos1;
-	const DWORD outSize = outPos2 - outPos1;
+    unsigned char* buf = buffer + pos1;
+    const DWORD size = pos2 - pos1;
+    
+    unsigned char* outbuf = contiguousMixOutBuf + outPos1;
+    const DWORD outSize = outPos2 - outPos1;
 
 //		debugprintf("size=%d, outsize=%d\n", size, outSize);
-	//debugprintf("blocksize=%d, outblock=%d\n", myBlockSize, outBlockSize);
+    //debugprintf("blocksize=%d, outblock=%d\n", myBlockSize, outBlockSize);
 
-	if(myChannels == 1 && outChannels == 1)
-		Mix<1,1>(buf, outbuf, myBitsPerSample, outBitsPerSample, size, outSize, pos2IsLastSample, volumes);
-	else if(myChannels == 1 && outChannels == 2)
-		Mix<1,2>(buf, outbuf, myBitsPerSample, outBitsPerSample, size, outSize, pos2IsLastSample, volumes);
-	else if(myChannels == 2 && outChannels == 1)
-		Mix<2,1>(buf, outbuf, myBitsPerSample, outBitsPerSample, size, outSize, pos2IsLastSample, volumes);
-	else if(myChannels == 2 && outChannels == 2)
-		Mix<2,2>(buf, outbuf, myBitsPerSample, outBitsPerSample, size, outSize, pos2IsLastSample, volumes);
+    if(myChannels == 1 && outChannels == 1)
+        Mix<1,1>(buf, outbuf, myBitsPerSample, outBitsPerSample, size, outSize, pos2IsLastSample, volumes);
+    else if(myChannels == 1 && outChannels == 2)
+        Mix<1,2>(buf, outbuf, myBitsPerSample, outBitsPerSample, size, outSize, pos2IsLastSample, volumes);
+    else if(myChannels == 2 && outChannels == 1)
+        Mix<2,1>(buf, outbuf, myBitsPerSample, outBitsPerSample, size, outSize, pos2IsLastSample, volumes);
+    else if(myChannels == 2 && outChannels == 2)
+        Mix<2,2>(buf, outbuf, myBitsPerSample, outBitsPerSample, size, outSize, pos2IsLastSample, volumes);
 }
-
-#else
-#pragma message(__FILE__": (skipped compilation)")
-#endif

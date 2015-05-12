@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef PRINT_H_INCL
-#define PRINT_H_INCL
+#pragma once
 
 int debugprintf(const char * fmt, ...);
 int cmdprintf(const char * fmt, ...);
@@ -18,18 +17,18 @@ int cmdprintf(const char * fmt, ...);
 #define timedebugprintf verbosedebugprintf
 
 #if defined(_DEBUG) && 0//1
-	#define verbosedebugprintf debugprintf
+    #define verbosedebugprintf debugprintf
 #else
-	#if _MSC_VER > 1310
-		#define verbosedebugprintf(...) ((void)0)
-	#else
-		#define verbosedebugprintf() ((void)0)
-		#pragma warning(disable:4002)
-	#endif
+    #if _MSC_VER > 1310
+        #define verbosedebugprintf(...) ((void)0)
+    #else
+        #define verbosedebugprintf() ((void)0)
+        #pragma warning(disable:4002)
+    #endif
 #endif
 
 
-#include "../shared/logcat.h"
+#include <shared/logcat.h>
 
 extern LogCategoryFlag& g_includeLogFlags;
 extern LogCategoryFlag& g_excludeLogFlags;
@@ -39,19 +38,16 @@ extern LogCategoryFlag& g_excludeLogFlags;
 #define ENABLE_LOGGING
 
 #ifdef ENABLE_LOGGING
-	int logprintf_internal(LogCategoryFlag cat, const char * fmt, ...);
-	#if _MSC_VER > 1310
-		#define debuglog(cat, ...)         ((((cat) & g_includeLogFlags) && !((cat) & g_excludeLogFlags)) ? logprintf_internal(cat, __VA_ARGS__) : 0)
-	#else
-		#define debuglog(cat, __VA_ARGS__) ((((cat) & g_includeLogFlags) && !((cat) & g_excludeLogFlags)) ? logprintf_internal(cat, __VA_ARGS__) : 0)
-	#endif
+    int logprintf_internal(LogCategoryFlag cat, const char * fmt, ...);
+    #if _MSC_VER > 1310
+        #define debuglog(cat, ...)         ((((cat) & g_includeLogFlags) && !((cat) & g_excludeLogFlags)) ? logprintf_internal(cat, __VA_ARGS__) : 0)
+    #else
+        #define debuglog(cat, __VA_ARGS__) ((((cat) & g_includeLogFlags) && !((cat) & g_excludeLogFlags)) ? logprintf_internal(cat, __VA_ARGS__) : 0)
+    #endif
 #else
-	#if _MSC_VER > 1310
-		#define debuglog(cat, ...)         0
-	#else
-		#define debuglog(cat, __VA_ARGS__) 0
-	#endif
-#endif
-
-
+    #if _MSC_VER > 1310
+        #define debuglog(cat, ...)         0
+    #else
+        #define debuglog(cat, __VA_ARGS__) 0
+    #endif
 #endif

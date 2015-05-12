@@ -1,8 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef REGISTRYTRAMPS_H_INCL
-#define REGISTRYTRAMPS_H_INCL
+#pragma once
 
 #define RegOpenKeyA TrampRegOpenKeyA
 TRAMPFUNC LONG APIENTRY RegOpenKeyA(HKEY hKey, LPCSTR lpSubKey, PHKEY phkResult) TRAMPOLINE_DEF
@@ -142,5 +141,3 @@ TRAMPFUNC BOOL WINAPI PolyTextOutA(HDC hdc, CONST POLYTEXTA * ppt, int nstrings)
 #define PolyTextOutW TrampPolyTextOutW
 TRAMPFUNC BOOL WINAPI PolyTextOutW(HDC hdc, CONST POLYTEXTW * ppt, int nstrings) TRAMPOLINE_DEF
 
-
-#endif

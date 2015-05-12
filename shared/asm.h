@@ -1,16 +1,15 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef ASM_H_INCL
-#define ASM_H_INCL
+#pragma once
 
 // based on a snippet by Nicolas Capens (which he released to the public domain)
 // changed to calculate the length of a single instruction instead of the number of instructions in a function
 // (maybe it doesn't handle everything but it's close enough for me)
 _declspec(noinline) inline
-int instructionLength(const unsigned char *func) 
+int instructionLength(const unsigned char *func)
 { 
-	const unsigned char *funcstart = func;
+    const unsigned char *funcstart = func;
 
     //if(*func != 0xCC) 
     { 
@@ -158,10 +157,8 @@ int instructionLength(const unsigned char *func)
                 func += operandSize;   // Jcc -i
             }
         }
-	}
+    }
 
-	return (int)(func - funcstart);
+    return (int)(func - funcstart);
 }
 
-
-#endif // IPC_H_INCL

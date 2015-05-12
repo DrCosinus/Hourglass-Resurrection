@@ -1,9 +1,7 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef RAM_SEARCH_H
-#define RAM_SEARCH_H
-
+#pragma once
 
 ////64k in Ram_68k[], 8k in Ram_Z80[]   
 //#define _68K_RAM_SIZE 64*1024
@@ -28,38 +26,38 @@
 
 struct RSVal
 {
-	RSVal() { v.i = 0; t = t_i; }
-	RSVal(int i) { v.i = i; t = t_i; }
-	RSVal(unsigned long i) { v.i = i; t = t_i; }
-	RSVal(long long ll) { v.ll = ll; t = t_ll; }
-	RSVal(unsigned long long ll) { v.ll = ll; t = t_ll; }
-	RSVal(float f) { v.f = f; t = t_f; }
-	RSVal(double d) { v.d = d; t = t_d; }
-	RSVal(const RSVal& copy) { v = copy.v; t = copy.t; }
+    RSVal() { v.i = 0; t = t_i; }
+    RSVal(int i) { v.i = i; t = t_i; }
+    RSVal(unsigned long i) { v.i = i; t = t_i; }
+    RSVal(long long ll) { v.ll = ll; t = t_ll; }
+    RSVal(unsigned long long ll) { v.ll = ll; t = t_ll; }
+    RSVal(float f) { v.f = f; t = t_f; }
+    RSVal(double d) { v.d = d; t = t_d; }
+    RSVal(const RSVal& copy) { v = copy.v; t = copy.t; }
 
-	template<typename RV>
-	operator RV () const
-	{
-		if(t==t_i) return RV(v.i);
-		if(t==t_ll) return RV(v.ll);
-		if(t==t_f) return RV(v.f);
-		if(t==t_d) return RV(v.d);
-		//__assume(0);
-		return RV();
-	}
+    template<typename RV>
+    operator RV () const
+    {
+        if(t==t_i) return RV(v.i);
+        if(t==t_ll) return RV(v.ll);
+        if(t==t_f) return RV(v.f);
+        if(t==t_d) return RV(v.d);
+        //__assume(0);
+        return RV();
+    }
 
-	bool CheckBinaryEquality(const RSVal& r) const
-	{
-		if(v.i32s.i1 != r.v.i32s.i1) return false;
-		if(t != t_ll && t != t_d && r.t != t_ll && r.t != t_d) return true;
-		return (v.i32s.i2 == r.v.i32s.i2);
-	}
+    bool CheckBinaryEquality(const RSVal& r) const
+    {
+        if(v.i32s.i1 != r.v.i32s.i1) return false;
+        if(t != t_ll && t != t_d && r.t != t_ll && r.t != t_d) return true;
+        return (v.i32s.i2 == r.v.i32s.i2);
+    }
 
-	union { int i; long long ll; float f; double d; struct {int i1; int i2;} i32s; } v;
-	enum Type { t_i, t_ll, t_f, t_d, } t;
+    union { int i; long long ll; float f; double d; struct {int i1; int i2;} i32s; } v;
+    enum Type { t_i, t_ll, t_f, t_d, } t;
 
-	bool print(char* output, char sizeTypeID, char typeID);
-	bool scan(const char* input, char sizeTypeID, char typeID);
+    bool print(char* output, char sizeTypeID, char typeID);
+    bool scan(const char* input, char sizeTypeID, char typeID);
 };
 
 extern int ResultCount;
@@ -85,11 +83,8 @@ void InitRamSearch(); // call only once at program startup
 void DeallocateRamSearch();
 
 #ifdef _MSC_VER
-	#define ALIGN16 __declspec(align(16)) // 16-byte alignment speeds up memcpy for size >= 0x100 (as of VS2005, if SSE2 is supported at runtime)
+    #define ALIGN16 __declspec(align(16)) // 16-byte alignment speeds up memcpy for size >= 0x100 (as of VS2005, if SSE2 is supported at runtime)
 #else
-	#define ALIGN16 // __attribute__((aligned(16)))
-#endif
-
-
+    #define ALIGN16 // __attribute__((aligned(16)))
 #endif
 

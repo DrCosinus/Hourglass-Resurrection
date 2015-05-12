@@ -1,9 +1,6 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef MESSAGE_H_INCL
-#define MESSAGE_H_INCL
-
 #define SendNotifyMessageA TrampSendNotifyMessageA
 TRAMPFUNC BOOL WINAPI SendNotifyMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) TRAMPOLINE_DEF
 #define SendNotifyMessageW TrampSendNotifyMessageW
@@ -66,4 +63,3 @@ TRAMPFUNC LRESULT WINAPI DefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPAR
 #define DefWindowProcW TrampDefWindowProcW
 TRAMPFUNC LRESULT WINAPI DefWindowProcW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) TRAMPOLINE_DEF
 
-#endif

@@ -8,39 +8,39 @@
 
 struct TasFlags
 {
-	bool playback;
-	int framerate;
-	int keylimit;
-	int forceSoftware;
-	int windowActivateFlags;
-	int threadMode;
-	unsigned int threadStackSize;
-	int timersMode;
-	int messageSyncMode;
-	int waitSyncMode;
-	int aviMode;
-	int emuMode;
-	int forceWindowed;
-	bool fastForward;
-	int forceSurfaceMemory;
-	int audioFrequency;
-	int audioBitsPerSecond;
-	int audioChannels;
-	int stateLoaded;
-	int fastForwardFlags;
-	int initialTime;
-	int debugPrintMode;
-	int timescale, timescaleDivisor;
-	int frameAdvanceHeld;
-	bool allowLoadInstalledDlls, allowLoadUxtheme;
-	int storeVideoMemoryInSavestates;
-	int appLocale;
-	unsigned int movieVersion;
-	int osVersionMajor, osVersionMinor;
-	LogCategoryFlag includeLogFlags;
-	LogCategoryFlag excludeLogFlags;
+    bool playback;
+    int framerate;
+    int keylimit;
+    int forceSoftware;
+    int windowActivateFlags;
+    int threadMode;
+    unsigned int threadStackSize;
+    int timersMode;
+    int messageSyncMode;
+    int waitSyncMode;
+    int aviMode;
+    int emuMode;
+    int forceWindowed;
+    bool fastForward;
+    int forceSurfaceMemory;
+    int audioFrequency;
+    int audioBitsPerSecond;
+    int audioChannels;
+    int stateLoaded;
+    int fastForwardFlags;
+    int initialTime;
+    int debugPrintMode;
+    int timescale, timescaleDivisor;
+    int frameAdvanceHeld;
+    bool allowLoadInstalledDlls, allowLoadUxtheme;
+    int storeVideoMemoryInSavestates;
+    int appLocale;
+    unsigned int movieVersion;
+    int osVersionMajor, osVersionMinor;
+    LogCategoryFlag includeLogFlags;
+    LogCategoryFlag excludeLogFlags;
 #ifdef _USRDLL
-	char reserved [256]; // just-in-case overwrite guard
+    char reserved [256]; // just-in-case overwrite guard
 #endif
 };
 #ifdef _USRDLL
@@ -54,56 +54,56 @@ extern TasFlags tasflags;
 
 struct InfoForDebugger // GeneralInfoFromDll
 {
-	int frames;
-	int ticks;
-	int addedDelay;
-	int lastNewTicks;
+    int frames;
+    int ticks;
+    int addedDelay;
+    int lastNewTicks;
 };
 
 
 enum
 {
-	CAPTUREINFO_TYPE_NONE, // nothing sent
-	CAPTUREINFO_TYPE_NONE_SUBSEQUENT, // nothing sent and it's the same frame/time as last time
-	CAPTUREINFO_TYPE_PREV, // reuse previous frame's image (new sleep frame)
-	CAPTUREINFO_TYPE_DDSD, // locked directdraw surface description
+    CAPTUREINFO_TYPE_NONE, // nothing sent
+    CAPTUREINFO_TYPE_NONE_SUBSEQUENT, // nothing sent and it's the same frame/time as last time
+    CAPTUREINFO_TYPE_PREV, // reuse previous frame's image (new sleep frame)
+    CAPTUREINFO_TYPE_DDSD, // locked directdraw surface description
 };
 
 struct LastFrameSoundInfo
 {
-	DWORD size;
-	unsigned char* buffer;
-	LPWAVEFORMATEX format;
+    DWORD size;
+    unsigned char* buffer;
+    LPWAVEFORMATEX format;
 };
 
 
 enum
 {
-	EMUMODE_EMULATESOUND = 0x01,
-	EMUMODE_NOTIMERS = 0x02,
-	EMUMODE_NOPLAYBUFFERS = 0x04,
-	EMUMODE_VIRTUALDIRECTSOUND = 0x08,
+    EMUMODE_EMULATESOUND = 0x01,
+    EMUMODE_NOTIMERS = 0x02,
+    EMUMODE_NOPLAYBUFFERS = 0x04,
+    EMUMODE_VIRTUALDIRECTSOUND = 0x08,
 };
 
 enum
 {
-	FFMODE_FRONTSKIP = 0x01,
-	FFMODE_BACKSKIP = 0x02,
-	FFMODE_SOUNDSKIP = 0x04,
-	FFMODE_RAMSKIP = 0x08,
-	FFMODE_SLEEPSKIP = 0x10,
-	FFMODE_WAITSKIP = 0x20,
+    FFMODE_FRONTSKIP = 0x01,
+    FFMODE_BACKSKIP = 0x02,
+    FFMODE_SOUNDSKIP = 0x04,
+    FFMODE_RAMSKIP = 0x08,
+    FFMODE_SLEEPSKIP = 0x10,
+    FFMODE_WAITSKIP = 0x20,
 };
 
 
 struct TrustedRangeInfo
 {
-	DWORD start, end;
+    DWORD start, end;
 };
 struct TrustedRangeInfos
 {
-	int numInfos;
-	TrustedRangeInfo infos [32]; // the first one is assumed to be the injected dll's range
+    int numInfos;
+    TrustedRangeInfo infos [32]; // the first one is assumed to be the injected dll's range
 };
 
 #ifndef SUCCESSFUL_EXITCODE

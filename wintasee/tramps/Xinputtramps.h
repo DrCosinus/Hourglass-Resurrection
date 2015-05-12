@@ -1,16 +1,14 @@
 /*  Copyright (C) 2011 nitsuja and contributors
     Hourglass is licensed under GPL v2. Full notice is in COPYING.txt. */
 
-#ifndef XINPUTTRAMPS_H_INCL
-#define XINPUTTRAMPS_H_INCL
+#pragma once
 
-//#include <Xinput.h>
-#include <../../external/Xinput.h>
+#include <external/Xinput.h>
 
 #define XInputGetState TrampXInputGetState
 TRAMPFUNC DWORD WINAPI XInputGetState(
     DWORD         dwUserIndex,
-	XINPUT_STATE* pState
+    XINPUT_STATE* pState
 ) TRAMPOLINE_DEF
 
 #define XInputSetState TrampXInputSetState
@@ -32,5 +30,3 @@ DWORD WINAPI XInputGetDSoundAudioDeviceGuids(
     GUID* pDSoundRenderGuid,    // [out] DSound device ID for render
     GUID* pDSoundCaptureGuid    // [out] DSound device ID for capture
 ) TRAMPOLINE_DEF
-
-#endif
