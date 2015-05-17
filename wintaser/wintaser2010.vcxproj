@@ -79,7 +79,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shared.lib;winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)hourglass-resurrection-d.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)wintaser.pdb</ProgramDatabaseFile>
@@ -88,6 +88,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -118,7 +119,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/SAFESEH %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shared.lib;winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)hourglass-resurrection.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -128,10 +129,10 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\shared\DllLoadInfos_SHARED.cpp" />
     <ClCompile Include="AVIDumper.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="CPUinfo.cpp" />
@@ -148,6 +149,7 @@
     <ClCompile Include="ramsearch.cpp" />
     <ClCompile Include="ramwatch.cpp" />
     <ClCompile Include="Score\DllLoadInfos_EXE.cpp" />
+    <ClCompile Include="Score\TasFlags.cpp" />
     <ClCompile Include="wintaser.cpp" />
     <ClCompile Include="trace\extendedtrace.cpp" />
     <ClCompile Include="inject\iatmodifier.cpp" />
@@ -170,6 +172,7 @@
     <ClInclude Include="ramsearch.h" />
     <ClInclude Include="ramwatch.h" />
     <ClInclude Include="Score\DllLoadInfos_EXE.h" />
+    <ClInclude Include="Score\TasFlags.h" />
     <ClInclude Include="trace\extendedtrace.h" />
     <ClInclude Include="inject\iatmodifier.h" />
     <ClInclude Include="inject\process.h" />

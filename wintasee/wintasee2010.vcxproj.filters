@@ -94,6 +94,9 @@
     <ClCompile Include="Score\DllLoadInfos_DLL.cpp">
       <Filter>Score</Filter>
     </ClCompile>
+    <ClCompile Include="Score\TasFlags.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dettime.h">
@@ -180,5 +183,6 @@
     <ClInclude Include="Score\DllLoadInfos_DLL.h">
       <Filter>Score</Filter>
     </ClInclude>
+    <ClInclude Include="Score\TasFlags.h" />
   </ItemGroup>
 </Project>

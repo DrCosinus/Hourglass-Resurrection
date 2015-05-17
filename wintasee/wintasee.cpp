@@ -238,9 +238,9 @@ static InfoForDebugger infoForDebugger = {};
 
 static TrustedRangeInfos trustedRangeInfos = {};
 
-#include <shared/DllLoadInfos_SHARED.h>
+#include <shared/Score/DllLoadInfos_SHARED.h>
 
-TasFlags tasflags = {};
+//TasFlags tasflags = {};
 
 PALETTEENTRY activePalette [256];
 
@@ -1620,7 +1620,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (fdwReason)
     {
     case DLL_PROCESS_ATTACH:
-        tasflags.debugPrintMode = 2;
+        tasflags.debugPrintMode = DebugPrintModeMask::DebuggerAndFile;
         tasflags.timescale = 1;
         tasflags.timescaleDivisor = 1;
 

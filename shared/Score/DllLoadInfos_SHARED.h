@@ -7,12 +7,6 @@
 
 namespace Score
 {
-#if defined(_USRDLL)
-    enum { IsDll = 1 };
-#else
-    enum { IsDll = 0 };
-#endif
-
     namespace SharedMemory
     {
         template<typename T>
@@ -90,12 +84,5 @@ namespace Score
             return myData.myDllInfos[myData.myInfoCount - 1];
         }
     };
-
-    // EXE only
-
-
-    // DLL only
-
-
 }
 

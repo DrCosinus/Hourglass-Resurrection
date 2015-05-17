@@ -53,6 +53,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_MBCS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -67,6 +68,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_MBCS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -76,16 +78,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="asm.h" />
-    <ClInclude Include="DllLoadInfos_SHARED.h" />
+    <ClInclude Include="Score\Constants.h" />
+    <ClInclude Include="Score\DllLoadInfos_SHARED.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="ipc.h" />
     <ClInclude Include="logcat.h" />
+    <ClInclude Include="Score\Logger.h" />
     <ClInclude Include="msg.h" />
+    <ClInclude Include="Score\TasFlags.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="winutil.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DllLoadInfos_SHARED.cpp" />
+    <ClCompile Include="Score\DllLoadInfos_SHARED.cpp" />
+    <ClCompile Include="Score\Logger.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -8,9 +8,13 @@
     <ClInclude Include="msg.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="winutil.h" />
-    <ClInclude Include="DllLoadInfos_SHARED.h" />
+    <ClInclude Include="Score\Logger.h" />
+    <ClInclude Include="Score\DllLoadInfos_SHARED.h" />
+    <ClInclude Include="Score\Constants.h" />
+    <ClInclude Include="Score\TasFlags.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DllLoadInfos_SHARED.cpp" />
+    <ClCompile Include="Score\Logger.cpp" />
+    <ClCompile Include="Score\DllLoadInfos_SHARED.cpp" />
   </ItemGroup>
 </Project>

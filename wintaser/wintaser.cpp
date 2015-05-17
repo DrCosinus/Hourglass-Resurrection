@@ -32,7 +32,6 @@
 #include "Movie.h"
 //#include "crc32.h"
 //#include "CRCMath.h"
-//#include "inputsetup.h"
 #include "MD5Checksum.h"
 #include "Menu.h"
 #include "Config.h"
@@ -4816,13 +4815,47 @@ DWORD GetErrorModeXP()
 }
 
 
+#include <shared/Score/Logger.h>
 //HACCEL hAccelTable = nullptr;
+using Score::Logger;
+
+class TestClass
+{
+public:
+    auto Output(Logger::Category, Logger::Severity, const char* aFilename, size_t aLineNumber, const char* aMessage) -> void
+    {
+        char buff[1024];
+        sprintf(buff, "%s (%d): %s [METHOD]\n", aFilename, aLineNumber, aMessage);
+        OutputDebugString(buff);
+        //std::cout << aFilename << " (" << aLineNumber << "): " << aMessage << std::endl;
+    }
+};
+
+auto Output(Logger::Category, Logger::Severity, const char* aFilename, size_t aLineNumber, const char* aMessage) -> void
+{
+    char buff[1024];
+    sprintf(buff, "%s (%d): %s [FUNCTION]\n", aFilename, aLineNumber, aMessage);
+    OutputDebugString(buff);
+}
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
     HINSTANCE hPrevInstance,
     LPTSTR    lpCmdLine,
     int       nCmdShow)
 {
+    TestClass tc;
+
+    Logger::Register(Output);
+    Logger::Register(&tc, &TestClass::Output);
+    Logger::Register(
+        [](Logger::Category, Logger::Severity, const char* aFilename, size_t aLineNumber, const char* aMessage)
+        {
+            char buff[1024];
+            sprintf(buff, "%s (%d): %s [LAMBDA]\n", aFilename, aLineNumber, aMessage);
+            OutputDebugString(buff);
+        });
+    MODERN_LOG("%d / %d", 123, 456);
+
     GetCurrentDirectory(MAX_PATH, thisprocessPath);
 
     // this is so we don't start the target with the debug heap,
@@ -6091,9 +6124,9 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_TRACE_LCF_TIMERS: traceLogFlags ^= LCF_TIMERS; if (traceLogFlags & LCF_TIMERS){ traceEnabled = true; } tasFlagsDirty = true; break;
 
 
-            case ID_DEBUGLOG_DISABLED: localTASflags.debugPrintMode = 0; tasFlagsDirty = true; break;
-            case ID_DEBUGLOG_DEBUGGER: localTASflags.debugPrintMode = 1; tasFlagsDirty = true; break;
-            case ID_DEBUGLOG_LOGFILE: localTASflags.debugPrintMode = 2; tasFlagsDirty = true; break;
+            case ID_DEBUGLOG_DISABLED: localTASflags.debugPrintMode = DebugPrintModeMask::None; tasFlagsDirty = true; break;
+            case ID_DEBUGLOG_DEBUGGER: localTASflags.debugPrintMode ^= DebugPrintModeMask::Debugger; tasFlagsDirty = true; break;
+            case ID_DEBUGLOG_LOGFILE: localTASflags.debugPrintMode ^= DebugPrintModeMask::File; tasFlagsDirty = true; break;
 
             case ID_DEBUGLOG_TOGGLETRACEENABLE: traceEnabled = !traceEnabled; mainMenuNeedsRebuilding = true; break;
             case ID_DEBUGLOG_TOGGLECRCVERIFY: crcVerifyEnabled = !crcVerifyEnabled; mainMenuNeedsRebuilding = true; break;

@@ -152,6 +152,7 @@
     <ClCompile Include="phasedetection.cpp" />
     <ClCompile Include="print.cpp" />
     <ClCompile Include="Score\DllLoadInfos_DLL.cpp" />
+    <ClCompile Include="Score\TasFlags.cpp" />
     <ClCompile Include="soundmixing.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Full</Optimization>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
@@ -193,6 +194,7 @@
     <ClInclude Include="phasedetection.h" />
     <ClInclude Include="print.h" />
     <ClInclude Include="Score\DllLoadInfos_DLL.h" />
+    <ClInclude Include="Score\TasFlags.h" />
     <ClInclude Include="tls.h" />
     <ClInclude Include="tramps\Xinputtramps.h" />
     <ClInclude Include="wintasee.h" />

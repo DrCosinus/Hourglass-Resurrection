@@ -3,54 +3,13 @@
 
 #pragma once
 
-#include "logcat.h"
 #include <mmsystem.h>
 
-struct TasFlags
-{
-    bool playback;
-    int framerate;
-    int keylimit;
-    int forceSoftware;
-    int windowActivateFlags;
-    int threadMode;
-    unsigned int threadStackSize;
-    int timersMode;
-    int messageSyncMode;
-    int waitSyncMode;
-    int aviMode;
-    int emuMode;
-    int forceWindowed;
-    bool fastForward;
-    int forceSurfaceMemory;
-    int audioFrequency;
-    int audioBitsPerSecond;
-    int audioChannels;
-    int stateLoaded;
-    int fastForwardFlags;
-    int initialTime;
-    int debugPrintMode;
-    int timescale, timescaleDivisor;
-    int frameAdvanceHeld;
-    bool allowLoadInstalledDlls, allowLoadUxtheme;
-    int storeVideoMemoryInSavestates;
-    int appLocale;
-    unsigned int movieVersion;
-    int osVersionMajor, osVersionMinor;
-    LogCategoryFlag includeLogFlags;
-    LogCategoryFlag excludeLogFlags;
-#ifdef _USRDLL
-    char reserved [256]; // just-in-case overwrite guard
+#if defined(_USRDLL)
+#include <wintasee/Score/TasFlags.h>
+#else
+#include <wintaser/Score/TasFlags.h>
 #endif
-};
-#ifdef _USRDLL
-extern TasFlags tasflags;
-#endif
-
-
-
-
-
 
 struct InfoForDebugger // GeneralInfoFromDll
 {
@@ -77,25 +36,6 @@ struct LastFrameSoundInfo
 };
 
 
-enum
-{
-    EMUMODE_EMULATESOUND = 0x01,
-    EMUMODE_NOTIMERS = 0x02,
-    EMUMODE_NOPLAYBUFFERS = 0x04,
-    EMUMODE_VIRTUALDIRECTSOUND = 0x08,
-};
-
-enum
-{
-    FFMODE_FRONTSKIP = 0x01,
-    FFMODE_BACKSKIP = 0x02,
-    FFMODE_SOUNDSKIP = 0x04,
-    FFMODE_RAMSKIP = 0x08,
-    FFMODE_SLEEPSKIP = 0x10,
-    FFMODE_WAITSKIP = 0x20,
-};
-
-
 struct TrustedRangeInfo
 {
     DWORD start, end;
@@ -103,7 +43,7 @@ struct TrustedRangeInfo
 struct TrustedRangeInfos
 {
     int numInfos;
-    TrustedRangeInfo infos [32]; // the first one is assumed to be the injected dll's range
+    TrustedRangeInfo infos[32]; // the first one is assumed to be the injected dll's range
 };
 
 #ifndef SUCCESSFUL_EXITCODE

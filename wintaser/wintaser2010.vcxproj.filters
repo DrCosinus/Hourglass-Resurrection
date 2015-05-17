@@ -80,7 +80,7 @@
     <ClCompile Include="Score\DllLoadInfos_EXE.cpp">
       <Filter>Score</Filter>
     </ClCompile>
-    <ClCompile Include="..\shared\DllLoadInfos_SHARED.cpp">
+    <ClCompile Include="Score\TasFlags.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -145,6 +145,7 @@
     <ClInclude Include="Score\DllLoadInfos_EXE.h">
       <Filter>Score</Filter>
     </ClInclude>
+    <ClInclude Include="Score\TasFlags.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="wintaser.ico">

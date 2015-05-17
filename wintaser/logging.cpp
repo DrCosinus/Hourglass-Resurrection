@@ -21,8 +21,10 @@ void InitDebugCriticalSection()
 
 int debugprintf(const char * fmt, ...)
 {
-    if(Config::localTASflags.debugPrintMode == 0)
+    if (Config::localTASflags.debugPrintMode == DebugPrintModeMask::None)
+    {
         return 0;
+    }
     char str[4096];
     va_list args;
     va_start (args, fmt);
@@ -56,17 +58,18 @@ int debugprintf(const char * fmt, ...)
     }
 #endif
     OutputDebugString(str);
-    if(Config::localTASflags.debugPrintMode == 1)
-        return rv;
-    EnterCriticalSection(&g_debugPrintCS);
-    if(!debuglogfile)
-        debuglogfile = fopen("hourglasslog.txt", "w");
-    if(debuglogfile)
+    if (Config::localTASflags.debugPrintMode && DebugPrintModeMask::File)
     {
-        fputs(str, debuglogfile);
-        fflush(debuglogfile);
+        EnterCriticalSection(&g_debugPrintCS);
+        if (!debuglogfile)
+            debuglogfile = fopen("hourglasslog.txt", "w");
+        if (debuglogfile)
+        {
+            fputs(str, debuglogfile);
+            fflush(debuglogfile);
+        }
+        LeaveCriticalSection(&g_debugPrintCS);
     }
-    LeaveCriticalSection(&g_debugPrintCS);
     return rv;
 }
 
