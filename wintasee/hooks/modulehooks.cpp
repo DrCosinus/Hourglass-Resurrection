@@ -294,20 +294,6 @@ HOOKFUNC NTSTATUS NTAPI MyLdrLoadDll(PWCHAR PathToFile, ULONG Flags, PUNICODE_ST
     //if(inside) if(inside != GetCurrentThreadId()) while(inside) {OutputDebugString("WTFA\n");}
     //inside = GetCurrentThreadId();
 
-//#if defined(_MSC_VER) && _MSC_VER >= 1400 && _MSC_VER < 1500
-    // terrible mystery hack! to fix some games from failing to find kernel32.dll when this file is compiled with VS2005
-    //static bool already = false;
-    //if(!already)
-//	if(lpFileName[0] == 'K' && lpFileName[6] == '3')
-//	{
-//		//already = true;
-//		NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
-////		inside = 0;
-//		return rv;
-//	}
-//#endif
-
-
 //	NTSTATUS rv = LdrLoadDll(PathToFile, Flags, ModuleFileName, ModuleHandle);
 
     if(rv >= 0)

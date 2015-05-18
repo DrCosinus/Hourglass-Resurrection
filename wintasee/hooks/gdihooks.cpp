@@ -18,10 +18,10 @@ bool PresentOGLD3D();
 void FakeBroadcastDisplayChange(int width, int height, int depth);
 
 
-static void FrameBoundaryDIBitsToAVI(const void* bits, const BITMAPINFO& bmi)
+static void FrameBoundaryDIBitsToAVI(void* bits, const BITMAPINFO& bmi)
 {
     DDSURFACEDESC desc = { sizeof(DDSURFACEDESC) };
-    desc.lpSurface = const_cast<LPVOID>(bits);
+    desc.lpSurface = bits;
     desc.dwWidth = bmi.bmiHeader.biWidth;
     desc.dwHeight = bmi.bmiHeader.biHeight;
     desc.lPitch = bmi.bmiHeader.biWidth * (bmi.bmiHeader.biBitCount >> 3);
@@ -386,7 +386,7 @@ bool RedrawScreenGDI()
 }
 
 
-HOOKFUNC int WINAPI MySetDIBitsToDevice(HDC hdc, int xDest, int yDest, DWORD w, DWORD h, int xSrc, int ySrc, UINT StartScan, UINT cLines, CONST VOID * lpvBits, CONST BITMAPINFO * lpbmi, UINT ColorUse)
+HOOKFUNC int WINAPI MySetDIBitsToDevice(HDC hdc, int xDest, int yDest, DWORD w, DWORD h, int xSrc, int ySrc, UINT StartScan, UINT cLines, VOID * lpvBits, CONST BITMAPINFO * lpbmi, UINT ColorUse)
 {
     int rv = SetDIBitsToDevice(hdc, xDest, yDest, w, h, xSrc, ySrc, StartScan, cLines, lpvBits, lpbmi, ColorUse);
     if(!usingSDLOrDD /*&& !inPauseHandler*/ && !redrawingScreen)
@@ -412,7 +412,7 @@ HOOKFUNC int WINAPI MySetDIBitsToDevice(HDC hdc, int xDest, int yDest, DWORD w, 
     return rv;
 }
 
-HOOKFUNC int WINAPI MyStretchDIBits(HDC hdc, int xDest, int yDest, int DestWidth, int DestHeight, int xSrc, int ySrc, int SrcWidth, int SrcHeight, CONST VOID * lpBits, CONST BITMAPINFO * lpbmi, UINT iUsage, DWORD rop)
+HOOKFUNC int WINAPI MyStretchDIBits(HDC hdc, int xDest, int yDest, int DestWidth, int DestHeight, int xSrc, int ySrc, int SrcWidth, int SrcHeight, VOID * lpBits, CONST BITMAPINFO * lpbmi, UINT iUsage, DWORD rop)
 {
     int rv = StretchDIBits(hdc, xDest, yDest, DestWidth, DestHeight, xSrc, ySrc, SrcWidth, SrcHeight, lpBits, lpbmi, iUsage, rop);
     if(!usingSDLOrDD /*&& !inPauseHandler*/ && !redrawingScreen)

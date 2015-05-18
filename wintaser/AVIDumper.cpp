@@ -47,12 +47,7 @@ char avifilename [MAX_PATH+1];
     #include "Movie.h"
     extern Movie movie;
 #else
-    #if _MSC_VER > 1310
-        #define verbosedebugprintf(...) ((void)0)
-    #else
-        #define verbosedebugprintf() ((void)0)
-        #pragma warning(disable:4002)
-    #endif
+    #define verbosedebugprintf(...) ((void)0)
 #endif
 
 // wrapper for LPWAVEFORMATEX that lets me pass it around like a value type

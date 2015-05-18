@@ -1524,7 +1524,7 @@ HOOKFUNC VOID WINAPI MyPostQuitMessage(int nExitCode)
 
 
 
-HOOKFUNC BOOL WINAPI MyTranslateMessage(CONST MSG *lpMsg)
+HOOKFUNC BOOL WINAPI MyTranslateMessage(MSG *lpMsg)
 {
     MSG& msg = *const_cast<MSG*>(lpMsg);
 

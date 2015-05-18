@@ -82,9 +82,7 @@ void Update_RAM_Search(); //keeps RAM values up to date in the search and watch 
 void InitRamSearch(); // call only once at program startup
 void DeallocateRamSearch();
 
-#ifdef _MSC_VER
-    #define ALIGN16 __declspec(align(16)) // 16-byte alignment speeds up memcpy for size >= 0x100 (as of VS2005, if SSE2 is supported at runtime)
-#else
-    #define ALIGN16 // __attribute__((aligned(16)))
-#endif
+
+#define ALIGN16 __declspec(align(16)) // 16-byte alignment speeds up memcpy for size >= 0x100 (as of VS2005, if SSE2 is supported at runtime)
+
 

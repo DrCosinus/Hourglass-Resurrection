@@ -240,13 +240,11 @@ static TrustedRangeInfos trustedRangeInfos = {};
 
 #include <shared/Score/DllLoadInfos_SHARED.h>
 
-//TasFlags tasflags = {};
-
 PALETTEENTRY activePalette [256];
 
 //HACK for externs
-LogCategoryFlag& g_includeLogFlags = tasflags.includeLogFlags;
-LogCategoryFlag& g_excludeLogFlags = tasflags.excludeLogFlags;
+LogCategoryFlag g_includeLogFlags;
+LogCategoryFlag g_excludeLogFlags;
 
 
 CurrentInput previnput = {0};
@@ -716,7 +714,7 @@ void GetFrameInput()
     ProcessFrameInput();
 }
 
-HOOKFUNC BOOL WINAPI MyTranslateMessage(CONST MSG *lpMsg); // extern
+HOOKFUNC BOOL WINAPI MyTranslateMessage(MSG* lpMsg); // extern
 HOOKFUNC LRESULT WINAPI MyDispatchMessageA(CONST MSG *lpMsg); // extern
 LRESULT DispatchMessageInternal(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, bool ascii/*=true*/, MessageActionFlags maf/*=MAF_PASSTHROUGH|MAF_RETURN_OS*/); // extern
 LRESULT CALLBACK MyWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam); // extern
@@ -1620,10 +1618,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (fdwReason)
     {
     case DLL_PROCESS_ATTACH:
-        tasflags.debugPrintMode = DebugPrintModeMask::DebuggerAndFile;
-        tasflags.timescale = 1;
-        tasflags.timescaleDivisor = 1;
-
         debugprintf("DllMain started, injection must have worked.\n");
         hCurrentProcess = GetCurrentProcess();
         DisableThreadLibraryCalls(hModule);

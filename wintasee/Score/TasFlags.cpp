@@ -1,3 +1,3 @@
 #include <wintasee/Score/TasFlags.h>
 
-Score::Dll::TasFlags tasflags;
+const Score::Dll::TasFlags tasflags;

@@ -9,9 +9,6 @@
 #define clamptofullsignedrange(x,lo,hi) (((unsigned int)((x)-(lo))<=(unsigned int)((hi)-(lo)))?(x):(((x)<0)?(lo):(hi)))
 // TODO: maybe _mm_adds_pi16 or _mm_adds_pi8 would be even faster? especially if vectorized.
 
-#if _MSC_VER < 1400 && !defined(__restrict)
-#define __restrict 
-#endif
 
 // this is the mixing uber-function that does all the hard work.
 // there is a heavy focus on performance here,

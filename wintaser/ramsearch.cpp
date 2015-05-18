@@ -67,58 +67,6 @@ typedef INT_PTR intptr_t;
 #include "stdint.h"
 #endif
 
-#if defined(_MSC_VER) && (_MSC_VER <= 1310)
-
-#define LINELINELINELINE(x) #x
-#define LINELINELINE(x) LINELINELINELINE(x)
-#define LINELINE LINELINELINE(__LINE__)
-#pragma message("ramsearch.inl(" LINELINE ") : warning: your compiler is too old to compile this file. (VS2005 or newer has __VA_ARGS__ support)")
-
-// dummy implementation for old compiler, enough to get the file compiling but doing basically nothing
-// (besides the minimum required for ramwatch.cpp to work)
-void ResetResults() {}
-void CloseRamWindows() {}
-void ReopenRamWindows() {}
-void Update_RAM_Search()
-{
-    extern HWND RamWatchHWnd;
-    if(RamWatchHWnd)
-    {
-        Update_RAM_Watch();
-    }
-}
-void InitRamSearch() {}
-void reset_address_info () {}
-extern HANDLE hGameProcess;
-void signal_new_frame () {}
-bool IsHardwareAddressValid(HWAddressType address)
-{
-    char temp [4];
-    return ReadProcessMemory(hGameProcess, (const void*)address, (void*)temp, 1, nullptr)
-        && WriteProcessMemory(hGameProcess, (void*)address, (const void*)temp, 1, nullptr);
-}
-unsigned int ReadValueAtHardwareAddress(HWAddressType address, unsigned int size)
-{
-    unsigned int value = 0;
-    ReadProcessMemory(hGameProcess, (const void*)address, (void*)&value, size, nullptr);
-    return value;
-}
-LRESULT CALLBACK RamSearchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    extern HWND RamSearchHWnd;
-    RamSearchHWnd = nullptr;
-    EndDialog(hDlg, true);
-    return true;
-}
-bool noMisalign=0;
-int ResultCount=0;
-
-void DeallocateRamSearch(){}
-
-
-#else // actual implementation on a capable-enough compiler:
-
-
 struct MemoryRegion
 {
     HWAddressType hardwareAddress; // hardware address of the start of this region
@@ -2263,8 +2211,6 @@ void InitRamSearch()
 {
     InitializeCriticalSection(&s_activeMemoryRegionsCS);
 }
-
-#endif // compiler version
 
 
 void init_list_box(HWND Box, const char* Strs[], int numColumns, int *columnWidths) //initializes the ram search and/or ram watch listbox

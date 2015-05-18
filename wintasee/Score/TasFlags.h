@@ -10,6 +10,9 @@ namespace Score {
         public:
             TasFlags()
             {
+                debugPrintMode = DebugPrintModeMask::DebuggerAndFile;
+                timescale = 1;
+                timescaleDivisor = 1;
                 //playback = true;
                 //framerate = 60;
                 //keylimit = 8;
@@ -49,4 +52,4 @@ namespace Score {
     } /*namespace Dll */
 } /* namespace Score */
 
-extern Score::Dll::TasFlags tasflags;
+extern const Score::Dll::TasFlags tasflags;

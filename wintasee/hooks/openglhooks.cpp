@@ -744,15 +744,9 @@ public:
 
     void* AllocBuffer(int numBytes, int alignment=4)
     {
-#if _MSC_VER > 1310
         if(buffer)
             _aligned_free(buffer);
         buffer = (char*)_aligned_malloc(numBytes, alignment);
-#else
-        if(buffer)
-            free(buffer);
-        buffer = (char*)malloc(numBytes);
-#endif
         return (void*)buffer;
     }
 
@@ -764,11 +758,8 @@ public:
         args.clear();
         if(buffer)
         {
-#if _MSC_VER > 1310
             _aligned_free(buffer);
-#else
-            free(buffer);
-#endif
+
             buffer = nullptr;
         }
     }

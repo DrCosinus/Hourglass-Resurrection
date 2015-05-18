@@ -959,9 +959,6 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
             RamWatchAccels = LoadAccelerators(hInst, MAKEINTRESOURCE(IDR_ACCELERATOR1));
 
-            // due to some bug in windows, the arrow button width from the resource gets ignored, so we have to set it here
-            SetWindowPos(GetDlgItem(hDlg,ID_WATCHES_UPDOWN), 0,0,0, 30,60, SWP_NOMOVE);
-
             Update_RAM_Watch();
 
             DragAcceptFiles(hDlg, TRUE);
@@ -1104,12 +1101,6 @@ LRESULT CALLBACK RamWatchProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                     ListView_SetItemCount(GetDlgItem(hDlg,IDC_WATCHLIST),WatchCount);
                     RWfileChanged=true;
                     return true;
-                }
-                case ID_WATCHES_UPDOWN:
-                {
-                    int delta = ((LPNMUPDOWN)lParam)->iDelta;
-                    SendMessage(hDlg, WM_COMMAND, delta<0 ? IDC_C_WATCH_UP : IDC_C_WATCH_DOWN,0);
-                    break;
                 }
                 case RAMMENU_FILE_AUTOLOAD:
                 {

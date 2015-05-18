@@ -133,12 +133,9 @@ LCF_ERROR, //excludeLogFlags
 #if defined(_DEBUG) && 0//1
 #define verbosedebugprintf debugprintf
 #else
-#if _MSC_VER > 1310
+
 #define verbosedebugprintf(...) ((void)0)
-#else
-#define verbosedebugprintf() ((void)0)
-#pragma warning(disable:4002)
-#endif
+
 #endif
 
 //#define DEBUG_THREADS

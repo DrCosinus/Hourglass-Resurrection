@@ -507,9 +507,7 @@ void Build_Main_Menu(HMENU& MainMenu, HWND hWnd)
 
     bool ramSearchAvailable = true;
     const char* ramSearchString = "&RAM Search (not done)";
-#if defined(_MSC_VER) && (_MSC_VER <= 1310)
-    ramSearchAvailable = false;
-#endif
+
     MENU_L(TAS_Tools,i++,Flags|(ramSearchAvailable ? MF_ENABLED : MF_DISABLED | MF_GRAYED),ID_RAM_SEARCH,"",ramSearchString,"compiler too old");
 
     //i = 0;

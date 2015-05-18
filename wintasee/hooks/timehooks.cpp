@@ -295,14 +295,6 @@ HOOKFUNC DWORD WINAPI MytimeGetTime(void)
 
 HOOKFUNC VOID WINAPI MyGetSystemTimeAsFileTime(LPFILETIME lpSystemTimeAsFileTime)
 {
-//#if defined(_MSC_VER) && _MSC_VER >= 1400 && _MSC_VER < 1500
-//	static bool already = 0;
-//	if(!already)
-//	{
-//		LoadLibrary(0);
-//		already = true;
-//	}
-//#endif
 
 //	GetSystemTimeAsFileTime(lpSystemTimeAsFileTime);
 //	debugprintf("  ACTUAL: low = 0x%X (%d), high = 0x%X (%d)\n", lpSystemTimeAsFileTime->dwLowDateTime, lpSystemTimeAsFileTime->dwLowDateTime, lpSystemTimeAsFileTime->dwHighDateTime, lpSystemTimeAsFileTime->dwHighDateTime);

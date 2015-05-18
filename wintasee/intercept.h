@@ -10,11 +10,9 @@
 
 #define TRAMPOLINE_DEF  INTERNAL_TRAMPOLINE_DEF
 #define TRAMPOLINE_DEF_VOID  INTERNAL_TRAMPOLINE_DEF_VOID
-#if _MSC_VER > 1310
-    #define TRAMPOLINE_DEF_CUSTOM(...)          { __VA_ARGS__ ; }
-#else
-    #define TRAMPOLINE_DEF_CUSTOM(__VA_ARGS__)  { __VA_ARGS__ ; }
-#endif
+
+#define TRAMPOLINE_DEF_CUSTOM(...)          { __VA_ARGS__ ; }
+
 
 // this macro is used to fill trampolines with some default code as its original contents,
 // that's big enough to get overwritten with a jump to the target.

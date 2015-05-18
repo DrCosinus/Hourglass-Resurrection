@@ -64,11 +64,9 @@
     #undef TRAMPOLINE_DEF_CUSTOM
     #define TRAMPOLINE_DEF ;
     #define TRAMPOLINE_DEF_VOID ;
-    #if _MSC_VER > 1310
-        #define TRAMPOLINE_DEF_CUSTOM(...) ;
-    #else
-        #define TRAMPOLINE_DEF_CUSTOM(__VA_ARGS__) ;
-    #endif
+
+    #define TRAMPOLINE_DEF_CUSTOM(...) ;
+
 #endif
 
 #include "timetramps.h"
@@ -96,11 +94,9 @@
     #undef TRAMPOLINE_DEF_CUSTOM
     #define TRAMPOLINE_DEF  INTERNAL_TRAMPOLINE_DEF
     #define TRAMPOLINE_DEF_VOID  INTERNAL_TRAMPOLINE_DEF_VOID
-    #if _MSC_VER > 1310
-        #define TRAMPOLINE_DEF_CUSTOM(...)          { __VA_ARGS__ ; }
-    #else
-        #define TRAMPOLINE_DEF_CUSTOM(__VA_ARGS__)  { __VA_ARGS__ ; }
-    #endif
+
+    #define TRAMPOLINE_DEF_CUSTOM(...)          { __VA_ARGS__ ; }
+
 #else
     bool notramps = true;
 #endif

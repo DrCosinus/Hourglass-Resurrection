@@ -11,12 +11,7 @@
 #if defined(_DINPUTDEBUG)
     #define dinputdebugprintf debugprintf
 #else
-    #if _MSC_VER > 1310
-        #define dinputdebugprintf(...) ((void)0)
-    #else
-        #define dinputdebugprintf() ((void)0)
-        #pragma warning(disable:4002)
-    #endif
+    #define dinputdebugprintf(...) ((void)0)
 #endif
 
 DEFINE_LOCAL_GUID(IID_IDirectInputDeviceA, 0x5944E680,0xC92E,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
