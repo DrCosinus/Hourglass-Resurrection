@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <Score/Ram/Watch/Watcher.h>
+
 #include "ramsearch.h"
 
 bool ResetWatches();
@@ -16,24 +18,25 @@ extern int ramw_x;
 extern int ramw_y;
 extern bool RWfileChanged;
 
+//enum class CCHHEECCKK;
 // AddressWatcher is self-contained now
-struct AddressWatcher
-{
-	unsigned int Address; // hardware address
-	char Size;
-	char Type;
-	char* comment; // nullptr means no comment, non-nullptr means allocated comment
-	bool WrongEndian;
-	RSVal CurValue;
-};
-#define MAX_WATCH_COUNT 256
-extern AddressWatcher rswatches[MAX_WATCH_COUNT];
-extern int WatchCount; // number of valid items in rswatches
+//struct AddressWatcher
+//{
+//    unsigned int Address; // hardware address
+//    char/*/CCHHEECCKK*/ Size;
+//    char Type;
+//    char* comment; // nullptr means no comment, non-nullptr means allocated comment
+//    bool WrongEndian;
+//    RSVal CurValue;
+//};
+//#define MAX_WATCH_COUNT 256
+//extern AddressWatcher rswatches[MAX_WATCH_COUNT];
+//extern int WatchCount; // number of valid items in rswatches
 
 extern char Watch_Dir[1024];
 
-bool InsertWatch(const AddressWatcher& Watch, char *Comment);
-void RemoveWatch(const AddressWatcher& Watch, int ignoreIndex=-1);
-bool InsertWatch(const AddressWatcher& Watch, HWND parent = nullptr); // asks user for comment
+bool InsertWatch(const Score::Ram::Watch::Watcher& Watch, const char *Comment);
+void RemoveWatch(const Score::Ram::Watch::Watcher& Watch, int ignoreIndex = -1);
+bool InsertWatch(const Score::Ram::Watch::Watcher& Watch, HWND parent = nullptr); // asks user for comment
 void Update_RAM_Watch();
 bool Load_Watches(bool clear, const char* filename);

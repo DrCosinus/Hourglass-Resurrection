@@ -66,7 +66,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(ProjectDir)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;PSAPI_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -107,7 +107,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(ProjectDir)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;PSAPI_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -149,6 +149,10 @@
     <ClCompile Include="ramsearch.cpp" />
     <ClCompile Include="ramwatch.cpp" />
     <ClCompile Include="Score\DllLoadInfos_EXE.cpp" />
+    <ClCompile Include="Score\Ram\HardwareAddress.cpp" />
+    <ClCompile Include="Score\Ram\Value.cpp" />
+    <ClCompile Include="Score\Ram\Watch\Watcher.cpp" />
+    <ClCompile Include="Score\Ram\Watch\WatcherCollection.cpp" />
     <ClCompile Include="Score\TasFlags.cpp" />
     <ClCompile Include="wintaser.cpp" />
     <ClCompile Include="trace\extendedtrace.cpp" />
@@ -172,6 +176,10 @@
     <ClInclude Include="ramsearch.h" />
     <ClInclude Include="ramwatch.h" />
     <ClInclude Include="Score\DllLoadInfos_EXE.h" />
+    <ClInclude Include="Score\Ram\HardwareAddress.h" />
+    <ClInclude Include="Score\Ram\Value.h" />
+    <ClInclude Include="Score\Ram\Watch\Watcher.h" />
+    <ClInclude Include="Score\Ram\Watch\WatcherCollection.h" />
     <ClInclude Include="Score\TasFlags.h" />
     <ClInclude Include="trace\extendedtrace.h" />
     <ClInclude Include="inject\iatmodifier.h" />

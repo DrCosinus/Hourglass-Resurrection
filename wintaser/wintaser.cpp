@@ -3776,18 +3776,22 @@ static DWORD WINAPI DebuggerThreadFunc(LPVOID lpParam)
                         }
                         else if (MessagePrefixMatch("WATCH"))
                         {
-                            AddressWatcher auto_watch;
+                            Score::Ram::Watch::Watcher auto_watch;
                             char comment[256];
-                            sscanf(pstr, "%08X,%c,%c,%s", &(auto_watch.Address), &(auto_watch.Size), &(auto_watch.Type), comment);
-                            auto_watch.WrongEndian = false;
-                            if (IsHardwareAddressValid(auto_watch.Address))
+#pragma message("DrCos: To be fixed!!")
+                            sscanf(pstr, "%08X,%c,%c,%s", &(auto_watch.myAddress), &(auto_watch.mySizeID), &(auto_watch.myTypeID), comment);
+                            auto_watch.myEndianness = Score::Ram::Endianness::Little;
+                            if (auto_watch.myAddress.IsValid())
+                            {
                                 InsertWatch(auto_watch, comment);
+                            }
                         }
                         else if (MessagePrefixMatch("UNWATCH"))
                         {
-                            AddressWatcher auto_unwatch;
-                            sscanf(pstr, "%08X, %c, %c", &(auto_unwatch.Address), &(auto_unwatch.Size), &(auto_unwatch.Type));
-                            auto_unwatch.WrongEndian = false;
+                            Score::Ram::Watch::Watcher auto_unwatch;
+#pragma message("DrCos: To be fixed!!")
+                            sscanf(pstr, "%08X, %c, %c", &(auto_unwatch.myAddress), &(auto_unwatch.mySizeID), &(auto_unwatch.myTypeID));
+                            auto_unwatch.myEndianness = Score::Ram::Endianness::Little;
                             RemoveWatch(auto_unwatch);
                         }
                         else if (MessagePrefixMatch("SHORTTRACE"))
