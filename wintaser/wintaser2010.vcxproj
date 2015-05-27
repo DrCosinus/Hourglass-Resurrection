@@ -149,7 +149,10 @@
     <ClCompile Include="ramsearch.cpp" />
     <ClCompile Include="ramwatch.cpp" />
     <ClCompile Include="Score\DllLoadInfos_EXE.cpp" />
+    <ClCompile Include="Score\ModuleInfo.cpp" />
     <ClCompile Include="Score\Ram\HardwareAddress.cpp" />
+    <ClCompile Include="Score\Ram\Search\MemoryRegion.cpp" />
+    <ClCompile Include="Score\Ram\Search\MemoryRegionCollection.cpp" />
     <ClCompile Include="Score\Ram\Value.cpp" />
     <ClCompile Include="Score\Ram\Watch\Watcher.cpp" />
     <ClCompile Include="Score\Ram\Watch\WatcherCollection.cpp" />
@@ -176,7 +179,10 @@
     <ClInclude Include="ramsearch.h" />
     <ClInclude Include="ramwatch.h" />
     <ClInclude Include="Score\DllLoadInfos_EXE.h" />
+    <ClInclude Include="Score\ModuleInfo.h" />
     <ClInclude Include="Score\Ram\HardwareAddress.h" />
+    <ClInclude Include="Score\Ram\Search\MemoryRegion.h" />
+    <ClInclude Include="Score\Ram\Search\MemoryRegionCollection.h" />
     <ClInclude Include="Score\Ram\Value.h" />
     <ClInclude Include="Score\Ram\Watch\Watcher.h" />
     <ClInclude Include="Score\Ram\Watch\WatcherCollection.h" />

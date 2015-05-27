@@ -71,9 +71,12 @@ typedef INT_PTR intptr_t;
 #pragma region The Score
 #include <Score/Ram/HardwareAddress.h>
 #include <Score/Ram/Watch/WatcherCollection.h>
+#include <Score/Ram/Search/MemoryRegionCollection.h>
 
 #pragma message("DrCos: Temporary using declaration")
 using Score::Ram::HardwareAddress;
+using Score::Ram::Search::MemoryRegion;
+using Score::Ram::Search::MemoryRegionCollection;
 
 extern Score::Ram::Watch::WatcherCollection theWatchers;
 #pragma endregion The Score
@@ -87,24 +90,6 @@ void ResetResults();
 
 #pragma endregion Declarations
 
-struct MemoryRegion
-{
-    HardwareAddress hardwareAddress; // hardware address of the start of this region
-    size_t          size; // number of bytes to the end of this region
-
-    unsigned int virtualIndex; // index into s_prevValues, s_curValues, and s_numChanges, valid after being initialized in ResetMemoryRegions()
-    unsigned int itemIndex; // index into listbox items, valid when s_itemIndicesInvalid is false
-};
-
-int MAX_RAM_SIZE = 0;
-static unsigned char* s_prevValues = nullptr; // values at last search or reset
-static unsigned char* s_curValues = nullptr; // values at last frame update
-static unsigned short* s_numChanges = nullptr; // number of changes of the item starting at this virtual index address
-static MemoryRegion** s_itemIndexToRegionPointer = nullptr; // used for random access into the memory list (trading memory size to get speed here, too bad it's so much memory), only valid when s_itemIndicesInvalid is false
-static bool s_itemIndicesInvalid = true; // if true, the link from listbox items to memory regions (s_itemIndexToRegionPointer) and the link from memory regions to list box items (MemoryRegion::itemIndex) both need to be recalculated
-static bool s_prevValuesNeedUpdate = true; // if true, the "prev" values should be updated using the "cur" values on the next frame update signaled
-static unsigned int s_maxItemIndex = 0; // max currently valid item index, the listbox sometimes tries to update things past the end of the list so we need to know this to ignore those attempts
-
 extern HWND RamSearchHWnd;
 extern HWND RamWatchHWnd;
 extern HWND hWnd;
@@ -116,330 +101,23 @@ static char Str_Tmp_RS[1024];
 int disableRamSearchUpdate = false;
 
 // list of contiguous uneliminated memory regions
-typedef std::list<MemoryRegion> MemoryList;
-static MemoryList s_activeMemoryRegions;
+
+static MemoryRegionCollection theActiveMemoryRegions; //s_activeMemoryRegions;
 static CRITICAL_SECTION s_activeMemoryRegionsCS;
 
 // for undo support (could be better, but this way was really easy)
-static MemoryList s_activeMemoryRegionsBackup;
+static MemoryRegionCollection theActiveMemoryRegionsBackup;
 static int s_undoType = 0; // 0 means can't undo, 1 means can undo, 2 means can redo
 
-void RamSearchSaveUndoStateIfNotTooBig(HWND hDlg);
+//void RamSearchSaveUndoStateIfNotTooBig(HWND hDlg);
 static const int tooManyRegionsForUndo = 10000;
-
-
-
-bool IsInNonCurrentYetTrustedAddressSpace(DWORD address);
-
-
-void ResetMemoryRegions()
-{
-    EnterCriticalSection(&s_activeMemoryRegionsCS);
-
-    s_activeMemoryRegions.clear();
-
-    if (hGameProcess)
-    {
-        EnterCriticalSection(&g_processMemCS);
-
-        MEMORY_BASIC_INFORMATION mbi = { 0 };
-        SYSTEM_INFO si = { 0 };
-        GetSystemInfo(&si);
-        // walk process addresses
-        void* lpMem = si.lpMinimumApplicationAddress;
-        int totalSize = 0;
-        while (lpMem < si.lpMaximumApplicationAddress)
-        {
-            VirtualQueryEx(hGameProcess, lpMem, &mbi, sizeof(MEMORY_BASIC_INFORMATION));
-            // increment lpMem to next region of memory
-            lpMem = (LPVOID)((unsigned char*)mbi.BaseAddress + (DWORD)mbi.RegionSize);
-
-            // check if it's readable and writable
-            // (including read-only regions gives us WAY too much memory to search)
-            if (((mbi.Protect & PAGE_READWRITE)
-                || (mbi.Protect & PAGE_EXECUTE_READWRITE))
-                && !(mbi.Protect & PAGE_GUARD)
-                && (mbi.State & MEM_COMMIT)
-                )
-            {
-                if (!IsInNonCurrentYetTrustedAddressSpace((unsigned int)mbi.BaseAddress))
-                    continue;
-
-                if (HardwareAddress::IsValid(mbi.BaseAddress))
-                {
-                    MemoryRegion region = { HardwareAddress(mbi.BaseAddress), mbi.RegionSize };
-                    s_activeMemoryRegions.push_back(region);
-                }
-            }
-        }
-
-        LeaveCriticalSection(&g_processMemCS);
-    }
-
-
-
-
-    int nextVirtualIndex = 0;
-    for (MemoryList::iterator iter = s_activeMemoryRegions.begin(); iter != s_activeMemoryRegions.end(); ++iter)
-    {
-        MemoryRegion& region = *iter;
-        region.virtualIndex = nextVirtualIndex;
-        nextVirtualIndex = region.virtualIndex + region.size;
-    }
-    //assert(nextVirtualIndex <= MAX_RAM_SIZE);
-
-    if (nextVirtualIndex > MAX_RAM_SIZE)
-    {
-        s_prevValues = (unsigned char*)realloc(s_prevValues, sizeof(char)*(nextVirtualIndex + 8));
-        memset(s_prevValues, 0, sizeof(char)*(nextVirtualIndex + 8));
-
-        s_curValues = (unsigned char*)realloc(s_curValues, sizeof(char)*(nextVirtualIndex + 8));
-        memset(s_curValues, 0, sizeof(char)*(nextVirtualIndex + 8));
-
-        s_numChanges = (unsigned short*)realloc(s_numChanges, sizeof(short)*(nextVirtualIndex + 8));
-        memset(s_numChanges, 0, sizeof(short)*(nextVirtualIndex + 8));
-
-        s_itemIndexToRegionPointer = (MemoryRegion**)realloc(s_itemIndexToRegionPointer, sizeof(MemoryRegion*)*(nextVirtualIndex + 8));
-        memset(s_itemIndexToRegionPointer, 0, sizeof(MemoryRegion*)*(nextVirtualIndex + 8));
-
-        MAX_RAM_SIZE = nextVirtualIndex;
-    }
-    LeaveCriticalSection(&s_activeMemoryRegionsCS);
-}
-
-// eliminates a range of hardware addresses from the search results
-// returns 2 if it changed the region and moved the iterator to another region
-// returns 1 if it changed the region but didn't move the iterator
-// returns 0 if it had no effect
-// warning: don't call anything that takes an itemIndex in a loop that calls DeactivateRegion...
-//   doing so would be tremendously slow because DeactivateRegion invalidates the index cache
-int DeactivateRegion(MemoryRegion& region, MemoryList::iterator& iter, HardwareAddress hardwareAddress, unsigned int size)
-{
-    if (hardwareAddress + size <= region.hardwareAddress || hardwareAddress >= region.hardwareAddress + region.size)
-    {
-        // region is unaffected
-        return 0;
-    }
-    else if (hardwareAddress > region.hardwareAddress && hardwareAddress + size >= region.hardwareAddress + region.size)
-    {
-        // erase end of region
-        region.size = hardwareAddress - region.hardwareAddress;
-        return 1;
-    }
-    else if (hardwareAddress <= region.hardwareAddress && hardwareAddress + size < region.hardwareAddress + region.size)
-    {
-        // erase start of region
-        int eraseSize = (hardwareAddress + size) - region.hardwareAddress;
-        region.hardwareAddress += eraseSize;
-        region.size -= eraseSize;
-        //region.softwareAddress += eraseSize;
-        region.virtualIndex += eraseSize;
-        return 1;
-    }
-    else if (hardwareAddress <= region.hardwareAddress && hardwareAddress + size >= region.hardwareAddress + region.size)
-    {
-        // erase entire region
-        iter = s_activeMemoryRegions.erase(iter);
-        s_itemIndicesInvalid = TRUE;
-        return 2;
-    }
-    else //if(hardwareAddress > region.hardwareAddress && hardwareAddress + size < region.hardwareAddress + region.size)
-    {
-        // split region
-        int eraseSize = (hardwareAddress + size) - region.hardwareAddress;
-        MemoryRegion region2 = { region.hardwareAddress + eraseSize, region.size - eraseSize, /*region.softwareAddress + eraseSize,*/ region.virtualIndex + eraseSize };
-        region.size = hardwareAddress - region.hardwareAddress;
-        iter = s_activeMemoryRegions.insert(++iter, region2);
-        s_itemIndicesInvalid = TRUE;
-        return 2;
-    }
-}
-
-/*
-// eliminates a range of hardware addresses from the search results
-// this is a simpler but usually slower interface for the above function
-void DeactivateRegion(HWAddressType hardwareAddress, unsigned int size)
-{
-for(MemoryList::iterator iter = s_activeMemoryRegions.begin(); iter != s_activeMemoryRegions.end(); )
-{
-MemoryRegion& region = *iter;
-if(2 != DeactivateRegion(region, iter, hardwareAddress, size))
-++iter;
-}
-}
-*/
-
-// warning: can be slow
-void CalculateItemIndices(int itemSize)
-{
-    AutoCritSect cs(&s_activeMemoryRegionsCS);
-    unsigned int itemIndex = 0;
-    for (MemoryList::iterator iter = s_activeMemoryRegions.begin(); iter != s_activeMemoryRegions.end(); ++iter)
-    {
-        MemoryRegion& region = *iter;
-        region.itemIndex = itemIndex;
-        auto startSkipSize = region.hardwareAddress.SkipSize(itemSize); // FIXME: is this still ok?
-        unsigned int start = startSkipSize;
-        unsigned int end = region.size;
-        for (unsigned int i = start; i < end; i += itemSize)
-        {
-            s_itemIndexToRegionPointer[itemIndex++] = &region;
-        }
-    }
-    s_maxItemIndex = itemIndex;
-    s_itemIndicesInvalid = FALSE;
-}
-
-template<size_t stepSize, size_t compareSize>
-void UpdateRegionT(const MemoryRegion& region, const MemoryRegion* nextRegionPtr)
-{
-    //if(GetAsyncKeyState(VK_SHIFT) & 0x8000) // speed hack
-    //	return;
-
-    if (s_prevValuesNeedUpdate)
-    {
-        memcpy(s_prevValues + region.virtualIndex, s_curValues + region.virtualIndex, region.size + compareSize - stepSize);
-    }
-
-    auto startSkipSize = region.hardwareAddress.SkipSize(stepSize);
-
-    //unsigned char* sourceAddr = region.softwareAddress - region.virtualIndex;
-    static unsigned char* memoryBuffer = nullptr;
-    static unsigned int memoryBufferAllocated = 0;
-    if (memoryBufferAllocated < region.size + 8)
-    {
-        memoryBufferAllocated = region.size + 8;
-        memoryBuffer = (unsigned char*)realloc(memoryBuffer, memoryBufferAllocated);
-    }
-    ReadProcessMemory(hGameProcess, (const void*)region.hardwareAddress, (void*)memoryBuffer, region.size, nullptr);
-    if (compareSize > 1)
-    {
-        ReadProcessMemory(hGameProcess, (const void*)(region.hardwareAddress + region.size), (void*)(memoryBuffer + region.size), compareSize - 1, nullptr);
-    }
-    unsigned char* sourceAddr = memoryBuffer - region.virtualIndex;
-
-    unsigned int indexStart = region.virtualIndex + startSkipSize;
-    unsigned int indexEnd = region.virtualIndex + region.size;
-
-    if (compareSize == 1)
-    {
-        for (unsigned int i = indexStart; i < indexEnd; i++)
-        {
-            if (s_curValues[i] != sourceAddr[i]) // if value changed
-            {
-                s_curValues[i] = sourceAddr[i]; // update value
-                //if(s_numChanges[i] != 0xFFFF)
-                s_numChanges[i]++; // increase change count
-            }
-        }
-    }
-    else // it's more complicated for non-byte sizes because:
-    {    // - more than one byte can affect a given change count entry
-        // - when more than one of those bytes changes simultaneously the entry's change count should only increase by 1
-        // - a few of those bytes can be outside the region
-
-        unsigned int endSkipSize = ((unsigned int)(startSkipSize - region.size)) % stepSize;
-        unsigned int lastIndexToRead = indexEnd + endSkipSize + compareSize - stepSize;
-        unsigned int lastIndexToCopy = lastIndexToRead;
-        if (nextRegionPtr)
-        {
-            const MemoryRegion& nextRegion = *nextRegionPtr;
-            int nextStartSkipSize = ((unsigned int)(stepSize - size_t(nextRegion.hardwareAddress))) % stepSize;
-            unsigned int nextIndexStart = nextRegion.virtualIndex + nextStartSkipSize;
-            if (lastIndexToCopy > nextIndexStart)
-            {
-                lastIndexToCopy = nextIndexStart;
-            }
-        }
-
-        unsigned int nextValidChange[compareSize];
-        for (unsigned int i = 0; i < compareSize; ++i)
-        {
-            nextValidChange[i] = indexStart + i;
-        }
-
-        for (unsigned int i = indexStart, j = 0; i < lastIndexToRead; i++, j++)
-        {
-            if (s_curValues[i] != sourceAddr[i]) // if value of this byte changed
-            {
-                if (i < lastIndexToCopy)
-                {
-                    s_curValues[i] = sourceAddr[i]; // update value
-                }
-                for (int k = 0; k < compareSize; k++) // loop through the previous entries that contain this byte
-                {
-                    if (i >= indexEnd + k)
-                    {
-                        continue;
-                    }
-                    int m = (j - k + compareSize) & (compareSize - 1);
-                    if (nextValidChange[m] <= i) // if we didn't already increase the change count for this entry
-                    {
-                        //if(s_numChanges[i-k] != 0xFFFF)
-                        s_numChanges[i - k]++; // increase the change count for this entry
-                        nextValidChange[m] = i - k + compareSize; // and remember not to increase it again
-                    }
-                }
-            }
-        }
-    }
-}
-
-template<size_t stepSize, typename compareType>
-void UpdateRegionsT()
-{
-    for (MemoryList::iterator iter = s_activeMemoryRegions.begin(); iter != s_activeMemoryRegions.end();)
-    {
-        const MemoryRegion& region = *iter;
-        ++iter;
-        const MemoryRegion* nextRegion = (iter == s_activeMemoryRegions.end()) ? nullptr : &*iter;
-
-        UpdateRegionT<stepSize, sizeof(compareType)>(region, nextRegion);
-    }
-
-    s_prevValuesNeedUpdate = false;
-}
-
-template<size_t stepSize, typename>
-int CountRegionItemsT()
-{
-    AutoCritSect cs(&s_activeMemoryRegionsCS);
-    if (stepSize == 1)
-    {
-        if (s_activeMemoryRegions.empty())
-        {
-            return 0;
-        }
-
-        if (s_itemIndicesInvalid)
-        {
-            CalculateItemIndices(stepSize);
-        }
-
-        MemoryRegion& lastRegion = s_activeMemoryRegions.back();
-        return lastRegion.itemIndex + lastRegion.size;
-    }
-    else // the branch above is faster but won't work if the step size isn't 1
-    {
-        int total = 0;
-        for (auto& region: s_activeMemoryRegions)
-        {
-            auto startSkipSize = region.hardwareAddress.SkipSize(stepSize);
-            total += (region.size - startSkipSize + (stepSize - 1)) / stepSize;
-        }
-        return total;
-    }
-}
 
 // returns information about the item in the form of a "fake" region
 // that has the item in it and nothing else
 template<size_t stepSize, size_t compareSize>
 void ItemIndexToVirtualRegion(unsigned int itemIndex, MemoryRegion& virtualRegion)
 {
-    if (s_itemIndicesInvalid)
-    {
-        CalculateItemIndices(stepSize);
-    }
+    theActiveMemoryRegions.CalculateItemIndices(stepSize);
 
     if (itemIndex >= s_maxItemIndex)
     {
@@ -487,12 +165,6 @@ compareType GetCurValueFromVirtualIndex(unsigned int virtualIndex)
     return ReadLocalValue<compareType>(s_curValues + virtualIndex);
 }
 
-unsigned short GetNumChangesFromVirtualIndex(unsigned int virtualIndex)
-{
-    unsigned short num = s_numChanges[virtualIndex];
-    return num;
-}
-
 template<size_t stepSize, typename compareType>
 compareType GetPrevValueFromItemIndex(unsigned int itemIndex)
 {
@@ -526,10 +198,7 @@ HardwareAddress GetHardwareAddressFromItemIndex(unsigned int itemIndex)
 template<size_t stepSize, typename>
 unsigned int HardwareAddressToItemIndex(HardwareAddress hardwareAddress)
 {
-    if (s_itemIndicesInvalid)
-    {
-        CalculateItemIndices(stepSize);
-    }
+    theActiveMemoryRegions.CalculateItemIndices(stepSize);
 
     for (MemoryList::iterator iter = s_activeMemoryRegions.begin(); iter != s_activeMemoryRegions.end(); ++iter)
     {
@@ -686,111 +355,6 @@ namespace Comparison
 }
 #pragma endregion Basic comparison functions
 
-    // compare-to type functions:
-    template<size_t stepSize, typename compareType>
-    void SearchRelative(bool(*cmpFun)(compareType, compareType, compareType), compareType , compareType param)
-    {
-        for (MemoryList::iterator iter = s_activeMemoryRegions.begin(); iter != s_activeMemoryRegions.end();)
-        {
-            MemoryRegion& region = *iter;
-            auto startSkipSize = region.hardwareAddress.SkipSize(stepSize);
-            unsigned int start = region.virtualIndex + startSkipSize;
-            unsigned int end = region.virtualIndex + region.size;
-            auto hwaddr = region.hardwareAddress;
-            for (unsigned int i = start; i < end; i += stepSize, hwaddr += stepSize)
-            {
-                if (!cmpFun(GetCurValueFromVirtualIndex<compareType>(i), GetPrevValueFromVirtualIndex<compareType>(i), param))
-                {
-                    if (2 == DeactivateRegion(region, iter, hwaddr, stepSize))
-                    {
-                        goto outerContinue;
-                    }
-                }
-            }
-            ++iter;
-        outerContinue:
-            continue;
-        }
-    }
-
-    template<size_t stepSize, typename compareType>
-    void SearchSpecific(bool(*cmpFun)(compareType, compareType, compareType), compareType value, compareType param)
-    {
-        for (MemoryList::iterator iter = s_activeMemoryRegions.begin(); iter != s_activeMemoryRegions.end();)
-        {
-            MemoryRegion& region = *iter;
-            auto startSkipSize = region.hardwareAddress.SkipSize(stepSize);
-            unsigned int start = region.virtualIndex + startSkipSize;
-            unsigned int end = region.virtualIndex + region.size;
-            auto hwaddr = region.hardwareAddress;
-            for (unsigned int i = start; i < end; i += stepSize, hwaddr += stepSize)
-            {
-                if (!cmpFun(GetCurValueFromVirtualIndex<compareType>(i), value, param))
-                {
-                    if (2 == DeactivateRegion(region, iter, hwaddr, stepSize))
-                    {
-                        goto outerContinue;
-                    }
-                }
-            }
-            ++iter;
-        outerContinue:
-            continue;
-        }
-    }
-
-    template<size_t stepSize, typename compareType>
-    void SearchAddress(bool(*cmpFun)(compareType, compareType, compareType), compareType address, compareType param)
-    {
-        for (MemoryList::iterator iter = s_activeMemoryRegions.begin(); iter != s_activeMemoryRegions.end();)
-        {
-            MemoryRegion& region = *iter;
-            auto startSkipSize = region.hardwareAddress.SkipSize(stepSize);
-            unsigned int start = region.virtualIndex + startSkipSize;
-            unsigned int end = region.virtualIndex + region.size;
-            auto hwaddr = region.hardwareAddress;
-            for (unsigned int i = start; i < end; i += stepSize, hwaddr += stepSize)
-            {
-                if (!cmpFun(compareType(hwaddr), address, param))
-                {
-                    if (2 == DeactivateRegion(region, iter, hwaddr, stepSize))
-                    {
-                        goto outerContinue;
-                    }
-                }
-            }
-            ++iter;
-        outerContinue:
-            continue;
-        }
-    }
-
-    template<size_t stepSize, typename compareType>
-    void SearchChanges(bool(*cmpFun)(compareType, compareType, compareType), compareType changes, compareType param)
-    {
-        for (MemoryList::iterator iter = s_activeMemoryRegions.begin(); iter != s_activeMemoryRegions.end();)
-        {
-            MemoryRegion& region = *iter;
-            auto startSkipSize = region.hardwareAddress.SkipSize(stepSize);
-            unsigned int start = region.virtualIndex + startSkipSize;
-            unsigned int end = region.virtualIndex + region.size;
-            auto hwaddr = region.hardwareAddress;
-            for (unsigned int i = start; i < end; i += stepSize, hwaddr += stepSize)
-            {
-                if (!cmpFun(GetNumChangesFromVirtualIndex(i), changes, param))
-                {
-                    if (2 == DeactivateRegion(region, iter, hwaddr, stepSize))
-                    {
-                        goto outerContinue;
-                    }
-                }
-            }
-            ++iter;
-        outerContinue:
-            continue;
-        }
-    }
-
     char rs_c = 's'; // Compare To/by: 'r' previous value, 's' specific value, 'a' specific address, 'n' number of changes
     char rs_o = '='; // Comparison Operator: Less than, Greater than, Less than or equal to, Greater than or equal to, equal to, Not equel to, Different by:, Modulo X is
     auto rs_type = Score::Ram::TypeID::SignedDecimal;
@@ -832,16 +396,16 @@ namespace Comparison
         switch (c)
         {
 #define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_SIZE_TYPES(sf, rs_type_size, t, noMisalign, CmpFun,v,p)
-        case 'r': DO_SEARCH(SearchRelative); break;
-        case 's': DO_SEARCH(SearchSpecific); break;
+        case 'r': DO_SEARCH(theActiveMemoryRegions.SearchRelative); break;
+        case 's': DO_SEARCH(theActiveMemoryRegions.SearchSpecific); break;
 #undef DO_SEARCH_2
 
 #define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_STEP(sf, rs_type_size, unsigned, int, noMisalign, CmpFun,v,p);
-        case 'a': DO_SEARCH(SearchAddress); break;
+        case 'a': DO_SEARCH(theActiveMemoryRegions.SearchAddress); break;
 #undef DO_SEARCH_2
 
 #define DO_SEARCH_2(CmpFun,sf) CALL_WITH_T_STEP(sf, rs_type_size, unsigned, short, noMisalign, CmpFun,v,p);
-        case 'n': DO_SEARCH(SearchChanges); break;
+        case 'n': DO_SEARCH(theActiveMemoryRegions.SearchChanges); break;
 #undef DO_SEARCH_2
 
         default: assert(!"Invalid search comparison type."); break;
@@ -1025,10 +589,10 @@ namespace Comparison
         int size = noMisalign ? sizeTypeIDToSize(rs_type_size) : 1;
         int prevResultCount = ResultCount;
 
-        CalculateItemIndices(size);
-        ResultCount = CALL_WITH_T_SIZE_TYPES(CountRegionItemsT, rs_type_size, rs_type, noMisalign);
+        theActiveMemoryRegions.CalculateItemIndices(size);
+        ResultCount = CALL_WITH_T_SIZE_TYPES(theActiveMemoryRegions.CountRegionItemsT, rs_type_size, rs_type, noMisalign);
 
-        UpdatePossibilities(ResultCount, (int)s_activeMemoryRegions.size());
+        UpdatePossibilities(ResultCount, theActiveMemoryRegions.Count());
 
         if (ResultCount != prevResultCount)
             ListView_SetItemCount(GetDlgItem(RamSearchHWnd, IDC_RAMLIST), ResultCount);
@@ -1037,10 +601,10 @@ namespace Comparison
     void soft_reset_address_info()
     {
         s_prevValuesNeedUpdate = false;
-        ResetMemoryRegions();
+        theActiveMemoryRegions.ResetAll();
         if (!RamSearchHWnd)
         {
-            s_activeMemoryRegions.clear();
+            theActiveMemoryRegions.Clear();
             ResultCount = 0;
         }
         else
@@ -1050,24 +614,22 @@ namespace Comparison
             s_prevValuesNeedUpdate = true;
             signal_new_frame();
         }
-        if (s_numChanges)
-            memset(s_numChanges, 0, (sizeof(*s_numChanges)*(MAX_RAM_SIZE)));
+        theActiveMemoryRegions.ResetChanges();
         CompactAddrs();
     }
     void reset_address_info()
     {
         SetRamSearchUndoType(RamSearchHWnd, 0);
         EnterCriticalSection(&s_activeMemoryRegionsCS);
-        s_activeMemoryRegionsBackup.clear(); // not necessary, but we'll take the time hit here instead of at the next thing that sets up an undo
+        theActiveMemoryRegions.Clear(); // not necessary, but we'll take the time hit here instead of at the next thing that sets up an undo
         LeaveCriticalSection(&s_activeMemoryRegionsCS);
-        if (s_prevValues)
-            memcpy(s_prevValues, s_curValues, (sizeof(*s_prevValues)*(MAX_RAM_SIZE)));
+        theActiveMemoryRegions.CopyCurrentToPrevious();
         s_prevValuesNeedUpdate = false;
-        ResetMemoryRegions();
+        theActiveMemoryRegions.ResetAll();
         if (!RamSearchHWnd)
         {
             EnterCriticalSection(&s_activeMemoryRegionsCS);
-            s_activeMemoryRegions.clear();
+            theActiveMemoryRegions.Clear();
             LeaveCriticalSection(&s_activeMemoryRegionsCS);
             ResultCount = 0;
         }
@@ -1078,7 +640,7 @@ namespace Comparison
             s_prevValuesNeedUpdate = true;
             signal_new_frame();
         }
-        memset(s_numChanges, 0, (sizeof(*s_numChanges)*(MAX_RAM_SIZE)));
+        theActiveMemoryRegions.ResetChanges();
         CompactAddrs();
     }
 
@@ -1086,7 +648,7 @@ namespace Comparison
     {
         EnterCriticalSection(&s_activeMemoryRegionsCS);
         EnterCriticalSection(&g_processMemCS);
-        CALL_WITH_T_SIZE_TYPES(UpdateRegionsT, rs_type_size, rs_type, noMisalign);
+        CALL_WITH_T_SIZE_TYPES(theActiveMemoryRegions.UpdateRegionsT, rs_type_size, rs_type, noMisalign);
         LeaveCriticalSection(&g_processMemCS);
         LeaveCriticalSection(&s_activeMemoryRegionsCS);
     }
@@ -1372,7 +934,7 @@ namespace Comparison
                 // previous values got updated, refresh everything visible
                 ListView_Update(lv, -1);
             }
-            else if (s_numChanges)
+            else if (theActiveMemoryRegions.IsNumChangesValid())
             {
                 // refresh any visible parts of the listview box that changed
                 static int changes[128];
@@ -1593,7 +1155,7 @@ namespace Comparison
 
             // force possibility count to refresh
             last_rs_possible--;
-            UpdatePossibilities(ResultCount, (int)s_activeMemoryRegions.size());
+            UpdatePossibilities(ResultCount, theActiveMemoryRegions.Count());
 
             rs_val_valid = Set_RS_Val();
 
@@ -1843,7 +1405,7 @@ namespace Comparison
                     }
                 case IDC_C_RESET:
                     {
-                        RamSearchSaveUndoStateIfNotTooBig(RamSearchHWnd);
+                        //RamSearchSaveUndoStateIfNotTooBig(RamSearchHWnd);
                         int prevNumItems = last_rs_possible;
 
                         soft_reset_address_info();
@@ -1858,35 +1420,35 @@ namespace Comparison
                         {rv = true; break; }
                     }
                 case IDC_C_RESET_CHANGES:
-                    memset(s_numChanges, 0, (sizeof(*s_numChanges)*(MAX_RAM_SIZE)));
+                    theActiveMemoryRegions.ResetChanges();
                     ListView_Update(GetDlgItem(hDlg, IDC_RAMLIST), -1);
                     //SetRamSearchUndoType(hDlg, 0);
                     {rv = true; break; }
-                case IDC_C_UNDO:
-                    if (s_undoType > 0)
-                    {
-                        //						Clear_Sound_Buffer();
-                        EnterCriticalSection(&s_activeMemoryRegionsCS);
-                        if (s_activeMemoryRegions.size() < tooManyRegionsForUndo)
-                        {
-                            MemoryList tempMemoryList = s_activeMemoryRegions;
-                            s_activeMemoryRegions = s_activeMemoryRegionsBackup;
-                            s_activeMemoryRegionsBackup = tempMemoryList;
-                            LeaveCriticalSection(&s_activeMemoryRegionsCS);
-                            SetRamSearchUndoType(hDlg, 3 - s_undoType);
-                        }
-                        else
-                        {
-                            s_activeMemoryRegions = s_activeMemoryRegionsBackup;
-                            LeaveCriticalSection(&s_activeMemoryRegionsCS);
-                            SetRamSearchUndoType(hDlg, -1);
-                        }
-                        CompactAddrs();
-                        ListView_SetItemState(GetDlgItem(hDlg, IDC_RAMLIST), -1, 0, LVIS_SELECTED); // deselect all
-                        ListView_SetSelectionMark(GetDlgItem(hDlg, IDC_RAMLIST), 0);
-                        RefreshRamListSelectedCountControlStatus(hDlg);
-                    }
-                    {rv = true; break; }
+                //case IDC_C_UNDO:
+                //    if (s_undoType > 0)
+                //    {
+                //        //						Clear_Sound_Buffer();
+                //        EnterCriticalSection(&s_activeMemoryRegionsCS);
+                //        if (theActiveMemoryRegions.Count() < tooManyRegionsForUndo)
+                //        {
+                //            MemoryList tempMemoryList = s_activeMemoryRegions;
+                //            s_activeMemoryRegions = s_activeMemoryRegionsBackup;
+                //            s_activeMemoryRegionsBackup = tempMemoryList;
+                //            LeaveCriticalSection(&s_activeMemoryRegionsCS);
+                //            SetRamSearchUndoType(hDlg, 3 - s_undoType);
+                //        }
+                //        else
+                //        {
+                //            s_activeMemoryRegions = s_activeMemoryRegionsBackup;
+                //            LeaveCriticalSection(&s_activeMemoryRegionsCS);
+                //            SetRamSearchUndoType(hDlg, -1);
+                //        }
+                //        CompactAddrs();
+                //        ListView_SetItemState(GetDlgItem(hDlg, IDC_RAMLIST), -1, 0, LVIS_SELECTED); // deselect all
+                //        ListView_SetSelectionMark(GetDlgItem(hDlg, IDC_RAMLIST), 0);
+                //        RefreshRamListSelectedCountControlStatus(hDlg);
+                //    }
+                //    {rv = true; break; }
                 case IDC_C_AUTOSEARCH:
                     AutoSearch = SendDlgItemMessage(hDlg, IDC_C_AUTOSEARCH, BM_GETCHECK, 0, 0) != 0;
                     AutoSearchAutoRetry = false;
@@ -1900,7 +1462,7 @@ namespace Comparison
 
                         if (ResultCount)
                         {
-                            RamSearchSaveUndoStateIfNotTooBig(hDlg);
+                            //RamSearchSaveUndoStateIfNotTooBig(hDlg);
 
                             prune(rs_c, rs_o, rs_type, rs_val, rs_param);
 
@@ -1959,69 +1521,69 @@ namespace Comparison
                         {rv = true; break; }
                     }
 
-                    // eliminate all selected items
-                case IDC_C_ELIMINATE:
-                    {
-                        RamSearchSaveUndoStateIfNotTooBig(hDlg);
+                //    // eliminate all selected items
+                //case IDC_C_ELIMINATE:
+                //    {
+                //        //RamSearchSaveUndoStateIfNotTooBig(hDlg);
 
-                        HWND ramListControl = GetDlgItem(hDlg, IDC_RAMLIST);
-                        int size = noMisalign ? sizeTypeIDToSize(rs_type_size) : 1;
-                        int selCount = ListView_GetSelectedCount(ramListControl);
-                        int watchIndex = -1;
+                //        HWND ramListControl = GetDlgItem(hDlg, IDC_RAMLIST);
+                //        int size = noMisalign ? sizeTypeIDToSize(rs_type_size) : 1;
+                //        int selCount = ListView_GetSelectedCount(ramListControl);
+                //        int watchIndex = -1;
 
-                        // time-saving trick #1:
-                        // condense the selected items into an array of address ranges
-                        std::vector<AddrRange> selHardwareAddrs;
-                        for (int i = 0, j = 1024; i < selCount; ++i, --j)
-                        {
-                            watchIndex = ListView_GetNextItem(ramListControl, watchIndex, LVNI_SELECTED);
-                            auto addr = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_type_size, rs_type, noMisalign, watchIndex);
-                            if (!selHardwareAddrs.empty() && addr == selHardwareAddrs.back().End())
-                            {
-                                selHardwareAddrs.back().size += size;
-                            }
-                            else
-                            {
-                                selHardwareAddrs.push_back(AddrRange(addr, size));
-                            }
+                //        // time-saving trick #1:
+                //        // condense the selected items into an array of address ranges
+                //        std::vector<AddrRange> selHardwareAddrs;
+                //        for (int i = 0, j = 1024; i < selCount; ++i, --j)
+                //        {
+                //            watchIndex = ListView_GetNextItem(ramListControl, watchIndex, LVNI_SELECTED);
+                //            auto addr = CALL_WITH_T_SIZE_TYPES(GetHardwareAddressFromItemIndex, rs_type_size, rs_type, noMisalign, watchIndex);
+                //            if (!selHardwareAddrs.empty() && addr == selHardwareAddrs.back().End())
+                //            {
+                //                selHardwareAddrs.back().size += size;
+                //            }
+                //            else
+                //            {
+                //                selHardwareAddrs.push_back(AddrRange(addr, size));
+                //            }
 
-                            if (!j) UpdateRamSearchProgressBar(i * 50 / selCount), j = 1024;
-                        }
+                //            if (!j) UpdateRamSearchProgressBar(i * 50 / selCount), j = 1024;
+                //        }
 
-                        // now deactivate the ranges
+                //        // now deactivate the ranges
 
-                        // time-saving trick #2:
-                        // take advantage of the fact that the listbox items must be in the same order as the regions
-                        MemoryList::iterator iter = s_activeMemoryRegions.begin();
-                        int numHardwareAddrRanges = selHardwareAddrs.size();
-                        for (int i = 0, j = 16; i < numHardwareAddrRanges; ++i, --j)
-                        {
-                            auto addr = selHardwareAddrs[i].addr;
-                            int size = selHardwareAddrs[i].size;
-                            bool affected = false;
-                            while (iter != s_activeMemoryRegions.end())
-                            {
-                                MemoryRegion& region = *iter;
-                                int affNow = DeactivateRegion(region, iter, addr, size);
-                                if (affNow)
-                                    affected = true;
-                                else if (affected)
-                                    break;
-                                if (affNow != 2)
-                                    ++iter;
-                            }
+                //        // time-saving trick #2:
+                //        // take advantage of the fact that the listbox items must be in the same order as the regions
+                //        MemoryList::iterator iter = s_activeMemoryRegions.begin();
+                //        int numHardwareAddrRanges = selHardwareAddrs.size();
+                //        for (int i = 0, j = 16; i < numHardwareAddrRanges; ++i, --j)
+                //        {
+                //            auto addr = selHardwareAddrs[i].addr;
+                //            int size = selHardwareAddrs[i].size;
+                //            bool affected = false;
+                //            while (iter != s_activeMemoryRegions.end())
+                //            {
+                //                MemoryRegion& region = *iter;
+                //                int affNow = DeactivateRegion(region, iter, addr, size);
+                //                if (affNow)
+                //                    affected = true;
+                //                else if (affected)
+                //                    break;
+                //                if (affNow != 2)
+                //                    ++iter;
+                //            }
 
-                            if (!j) UpdateRamSearchProgressBar(50 + (i * 50 / selCount)), j = 16;
-                        }
-                        UpdateRamSearchTitleBar();
+                //            if (!j) UpdateRamSearchProgressBar(50 + (i * 50 / selCount)), j = 16;
+                //        }
+                //        UpdateRamSearchTitleBar();
 
-                        // careful -- if the above two time-saving tricks aren't working,
-                        // the runtime can absolutely explode (seconds -> hours) when there are lots of regions
+                //        // careful -- if the above two time-saving tricks aren't working,
+                //        // the runtime can absolutely explode (seconds -> hours) when there are lots of regions
 
-                        ListView_SetItemState(ramListControl, -1, 0, LVIS_SELECTED); // deselect all
-                        signal_new_size();
-                        {rv = true; break; }
-                    }
+                //        ListView_SetItemState(ramListControl, -1, 0, LVIS_SELECTED); // deselect all
+                //        signal_new_size();
+                //        {rv = true; break; }
+                //    }
                     //case IDOK:
                 case IDCANCEL:
                     RamSearchHWnd = nullptr;
@@ -2120,21 +1682,21 @@ namespace Comparison
         }
     }
 
-    void RamSearchSaveUndoStateIfNotTooBig(HWND hDlg)
-    {
-        EnterCriticalSection(&s_activeMemoryRegionsCS);
-        if (s_activeMemoryRegions.size() < tooManyRegionsForUndo)
-        {
-            s_activeMemoryRegionsBackup = s_activeMemoryRegions;
-            LeaveCriticalSection(&s_activeMemoryRegionsCS);
-            SetRamSearchUndoType(hDlg, 1);
-        }
-        else
-        {
-            LeaveCriticalSection(&s_activeMemoryRegionsCS);
-            SetRamSearchUndoType(hDlg, 0);
-        }
-    }
+    //void RamSearchSaveUndoStateIfNotTooBig(HWND hDlg)
+    //{
+    //    EnterCriticalSection(&s_activeMemoryRegionsCS);
+    //    if (s_activeMemoryRegions.size() < tooManyRegionsForUndo)
+    //    {
+    //        s_activeMemoryRegionsBackup = s_activeMemoryRegions;
+    //        LeaveCriticalSection(&s_activeMemoryRegionsCS);
+    //        SetRamSearchUndoType(hDlg, 1);
+    //    }
+    //    else
+    //    {
+    //        LeaveCriticalSection(&s_activeMemoryRegionsCS);
+    //        SetRamSearchUndoType(hDlg, 0);
+    //    }
+    //}
 
     void InitRamSearch()
     {
@@ -2168,18 +1730,16 @@ namespace Comparison
             last_rs_possible--;
             UpdatePossibilities(0, 0);
         }
-        s_itemIndicesInvalid = true;
+
+        theActiveMemoryRegions.FreeAll();
+
         s_prevValuesNeedUpdate = true;
-        s_maxItemIndex = 0;
-        MAX_RAM_SIZE = 0;
+
         s_undoType = 0;
-        free(s_prevValues); s_prevValues = 0;
-        free(s_curValues); s_curValues = 0;
-        free(s_numChanges); s_numChanges = 0;
-        free(s_itemIndexToRegionPointer); s_itemIndexToRegionPointer = 0;
-        EnterCriticalSection(&s_activeMemoryRegionsCS);
-        MemoryList temp1; s_activeMemoryRegions.swap(temp1);
-        MemoryList temp2; s_activeMemoryRegionsBackup.swap(temp2);
-        LeaveCriticalSection(&s_activeMemoryRegionsCS);
+
+        //EnterCriticalSection(&s_activeMemoryRegionsCS);
+        //MemoryList temp1; s_activeMemoryRegions.swap(temp1);
+        //MemoryList temp2; s_activeMemoryRegionsBackup.swap(temp2);
+        //LeaveCriticalSection(&s_activeMemoryRegionsCS);
     }
 

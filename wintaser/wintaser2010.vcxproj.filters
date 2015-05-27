@@ -95,6 +95,15 @@
     <ClCompile Include="Score\Ram\HardwareAddress.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Score\Ram\Search\MemoryRegion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Score\Ram\Search\MemoryRegionCollection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Score\ModuleInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVIDumper.h">
@@ -162,6 +171,9 @@
     <ClInclude Include="Score\Ram\Watch\Watcher.h" />
     <ClInclude Include="Score\Ram\Watch\WatcherCollection.h" />
     <ClInclude Include="Score\Ram\HardwareAddress.h" />
+    <ClInclude Include="Score\Ram\Search\MemoryRegion.h" />
+    <ClInclude Include="Score\Ram\Search\MemoryRegionCollection.h" />
+    <ClInclude Include="Score\ModuleInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="wintaser.ico">
