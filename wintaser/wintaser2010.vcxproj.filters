@@ -83,18 +83,6 @@
     <ClCompile Include="Score\TasFlags.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Score\Ram\Watch\Watcher.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Score\Ram\Value.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Score\Ram\Watch\WatcherCollection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Score\Ram\HardwareAddress.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVIDumper.h">
@@ -158,10 +146,6 @@
       <Filter>Score</Filter>
     </ClInclude>
     <ClInclude Include="Score\TasFlags.h" />
-    <ClInclude Include="Score\Ram\Value.h" />
-    <ClInclude Include="Score\Ram\Watch\Watcher.h" />
-    <ClInclude Include="Score\Ram\Watch\WatcherCollection.h" />
-    <ClInclude Include="Score\Ram\HardwareAddress.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="wintaser.ico">
